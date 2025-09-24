@@ -31,7 +31,6 @@ final class EmptyStateView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        print("EmptyStateView")
         configureUI()
     }
     
@@ -53,8 +52,6 @@ final class EmptyStateView: UIView {
         addCategoryButton.snp.makeConstraints { make in
             make.top.equalTo(logoImageView.snp.bottom).offset(16)
             make.centerX.equalToSuperview()
-            make.leading.greaterThanOrEqualToSuperview().offset(40)
-            make.trailing.lessThanOrEqualToSuperview().offset(-40)
             make.height.equalTo(44)
         }
     }

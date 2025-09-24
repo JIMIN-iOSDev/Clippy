@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 
 final class CategoryViewController: BaseViewController {
+    
     // MARK: - Properties
     
     // MARK: - UI Components
