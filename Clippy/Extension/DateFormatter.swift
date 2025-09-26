@@ -6,3 +6,11 @@
 //
 
 import Foundation
+
+extension DateFormatter {
+    static let displayFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy. MM. dd."
+        return formatter
+    }()
+}
