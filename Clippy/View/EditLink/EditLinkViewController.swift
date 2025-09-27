@@ -13,7 +13,6 @@ import RxCocoa
 final class EditLinkViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private var selectedCategories: Set<String> = []
     
     // MARK: - UI Components
     private let scrollView = {
@@ -195,8 +194,51 @@ final class EditLinkViewController: BaseViewController {
     
     // MARK: - Configuration
     override func bind() {
+        urlTextField.rx.text.orEmpty
+            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
+            .distinctUntilChanged()
+            .flatMapLatest { urlString -> Observable<LinkMetadata?> in
+                guard !urlString.isEmpty, let url = URL(string: urlString) else { return Observable.just(nil) }
+                
+                return LinkManager.shared.fetchLinkMetadata(for: url)
+                    .map { Optional($0) }
+                    .catch { _ in Observable.just(nil) }
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] metadata in
+                guard let self = self, let metadata = metadata else { return }
+                
+                // 자동으로 제목 설정 (사용자가 입력하지 않은 경우)
+                if self.titleTextField.text?.isEmpty == true {
+                    self.titleTextField.text = metadata.title
+                }
+            })
+            .disposed(by: disposeBag)
         
+        // 저장 버튼
+        saveButton.rx.tap
+            .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty))
+            .flatMapLatest { urlString, title, memo -> Observable<LinkMetadata> in
+                guard let url = URL(string: urlString) else { return Observable.empty() }
+                
+                let finalTitle = title.isEmpty ? nil : title
+                let finalMemo = memo.isEmpty ? nil : memo
+                
+                return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, category: nil, dueDate: nil)
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                self?.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        // 로딩 상태 바인딩
+        LinkManager.shared.isLoading
+            .map { !$0 }
+            .bind(to: saveButton.rx.isEnabled)
+            .disposed(by: disposeBag)
     }
+    
     
     override func configureHierarchy() {
         [scrollView, saveButton]
