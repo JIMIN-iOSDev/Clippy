@@ -664,7 +664,19 @@ final class CategoryViewController: BaseViewController {
     
     // MARK: - Configuration
     override func bind() {
+        addCategoryButton.rx.tap
+            .asDriver()
+            .drive(with: self) { owner, _ in
+                owner.present(UINavigationController(rootViewController: EditCategoryViewController()), animated: true)
+            }
+            .disposed(by: disposeBag)
         
+        floatingAddButton.rx.tap
+            .asDriver()
+            .drive(with: self) { owner, _ in
+                owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
+            }
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
