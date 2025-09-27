@@ -5,4 +5,27 @@
 //  Created by Jimin on 9/27/25.
 //
 
-import Foundation
+import UIKit
+
+struct LinkMetadata {
+    let url: URL
+    let title: String
+    let description: String?
+    let thumbnailImage: UIImage?
+    let category: String?
+
+    let dueDate: Date?
+    let createdAt: Date
+    let isLiked: Bool
+    
+    init(url: URL, title: String = "", description: String? = nil, thumbnailImage: UIImage? = nil, category: String? = nil, dueDate: Date? = nil, createdAt: Date = Date(), isLiked: Bool = false) {
+        self.url = url
+        self.title = title.isEmpty ? url.absoluteString : title
+        self.description = description
+        self.thumbnailImage = thumbnailImage
+        self.category = category
+        self.dueDate = dueDate
+        self.createdAt = createdAt
+        self.isLiked = isLiked
+    }
+}
