@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>top-level-items</key>
+	<array>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>40</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>39</string>
+					<key>Timestamp</key>
+					<string>780659504.320732</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>    var expiredLinksCount: Observable&lt;Int&gt; {
+</string>
+				<key>leading</key>
+				<string>    }
+    
+</string>
+				<key>trailing</key>
+				<string>        return links.map { links in
+            let now = Date()
+            return links.filter { link in
+</string>
+			</dict>
+			<key>title</key>
+			<string>마감 임박 체크</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>50</string>
+					<key>StartingColumnNumber</key>
+					<string>37</string>
+					<key>StartingLineNumber</key>
+					<string>49</string>
+					<key>Timestamp</key>
+					<string>780659781.620695</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>    }
+    
+    var isLoading: Observable&lt;Bool&gt; {</string>
+				<key>trailing</key>
+				<string>        return isLoadingSubject.asObservable()
+    }
+    
+</string>
+			</dict>
+			<key>title</key>
+			<string>로딩 상태 어디 쓰지</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>171</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>170</string>
+					<key>Timestamp</key>
+					<string>780665438.735907</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>        if let index = currentLinks.firstIndex(where: { $0.url.absoluteString == linkMetadata.url.absoluteString }) {
+</string>
+				<key>leading</key>
+				<string>        
+        // 기존 링크 업데이트 또는 새 링크 추가
+</string>
+				<key>trailing</key>
+				<string>            currentLinks[index] = linkMetadata
+        } else {
+            currentLinks.append(linkMetadata)
+</string>
+			</dict>
+			<key>title</key>
+			<string>같은 url인데 마지막 / 하나만 차이나는 경우엔 어케할거?</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>84</string>
+					<key>StartingColumnNumber</key>
+					<string>64</string>
+					<key>StartingLineNumber</key>
+					<string>83</string>
+					<key>Timestamp</key>
+					<string>780664967.096192</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>    }
+    
+    func toggleLike(for url: URL) -&gt; Observable&lt;LinkMetadata?&gt; {</string>
+				<key>trailing</key>
+				<string>        let cacheKey = url.absoluteString
+        
+        guard let linkMetadata = linkCache[cacheKey] else {
+</string>
+			</dict>
+			<key>title</key>
+			<string>like는 굳이 이렇게 안써도 될거 같은데</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>104</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>103</string>
+					<key>Timestamp</key>
+					<string>780665105.290776</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>        currentLinks.removeAll { $0.url.absoluteString == cacheKey }
+</string>
+				<key>leading</key>
+				<string>        
+        var currentLinks = linksSubject.value
+</string>
+				<key>trailing</key>
+				<string>        linksSubject.accept(currentLinks)
+        
+        return Observable.just(true)
+</string>
+			</dict>
+			<key>title</key>
+			<string>/ 하나 차이나는 같은 url은?</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>154</string>
+					<key>StartingColumnNumber</key>
+					<string>186</string>
+					<key>StartingLineNumber</key>
+					<string>153</string>
+					<key>Timestamp</key>
+					<string>780665487.569692</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>                    }
+                } else {
+                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: nil)</string>
+				<key>trailing</key>
+				<string>                    observer.onNext(linkMetadata)
+                    observer.onCompleted()
+                }
+</string>
+			</dict>
+			<key>title</key>
+			<string>이미지 안들어올 때 로고 이미지 넣어주기</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>182</string>
+					<key>StartingColumnNumber</key>
+					<string>23</string>
+					<key>StartingLineNumber</key>
+					<string>181</string>
+					<key>Timestamp</key>
+					<string>780673332.421537</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Manager/LinkManager.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>    }
+    
+    func clearCache() {</string>
+				<key>trailing</key>
+				<string>        linkCache.removeAll()
+        linksSubject.accept([])
+    }
+</string>
+			</dict>
+			<key>title</key>
+			<string>캐시 관련 다시 보기</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>34</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>34</string>
+					<key>Timestamp</key>
+					<string>780749281.696285</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/Category/CategoryViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string></string>
+				<key>leading</key>
+				<string>        CategoryItem(title: "뉴스2", count: 0, iconName: "newspaper.fill", iconColor: .systemCyan, backgroundColor: .systemCyan.withAlphaComponent(0.1))
+    ]
+</string>
+				<key>trailing</key>
+				<string>    
+    // MARK: - UI Components
+    private let scrollView = {
+</string>
+			</dict>
+			<key>title</key>
+			<string>예시</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>18</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>17</string>
+					<key>Timestamp</key>
+					<string>780749307.7727129</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/EditLink/EditLinkViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>    private let dummyCategories = ["업무업무업무업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타"]
+</string>
+				<key>leading</key>
+				<string>    private let selectedCategories = BehaviorRelay&lt;[String]&gt;(value: [])
+    
+</string>
+				<key>trailing</key>
+				<string>    
+    // MARK: - UI Components
+    private let scrollView = {
+</string>
+			</dict>
+			<key>title</key>
+			<string>삭제</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>170</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>169</string>
+					<key>Timestamp</key>
+					<string>780749307.772738</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/EditLink/EditLinkViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>        picker.preferredDatePickerStyle = .inline
+</string>
+				<key>leading</key>
+				<string>        let picker = UIDatePicker()
+        picker.datePickerMode = .date
+</string>
+				<key>trailing</key>
+				<string>        return picker
+    }()
+    
+</string>
+			</dict>
+			<key>title</key>
+			<string>FSCalendar로 변환</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+	</array>
+</dict>
+</plist>
