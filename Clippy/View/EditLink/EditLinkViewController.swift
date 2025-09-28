@@ -13,6 +13,9 @@ import RxCocoa
 final class EditLinkViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private let selectedCategories = BehaviorRelay<[String]>(value: [])
+    
+    private let dummyCategories = ["업무업무업무업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타"]
     
     // MARK: - UI Components
     private let scrollView = {
@@ -107,34 +110,11 @@ final class EditLinkViewController: BaseViewController {
         return label
     }()
     
-    private let categorySelectionView = {
-        let view = UIView()
-        view.backgroundColor = .systemGray6
-        view.layer.cornerRadius = 12
-        return view
-    }()
-    
-    private let categoryPlaceholderLabel = {
-        let label = UILabel()
-        label.text = "카테고리를 선택하세요"
-        label.font = UIFont.systemFont(ofSize: 16)
-        label.textColor = .placeholderText
-        return label
-    }()
-    
-    private let categoryArrowImageView = {
-        let imageView = UIImageView()
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        imageView.image = UIImage(systemName: "chevron.down", withConfiguration: config)
-        imageView.tintColor = .systemGray3
-        return imageView
-    }()
-    
     private let categoryTagsStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.spacing = 8
-        stackView.alignment = .leading
+        stackView.alignment = .center
         stackView.distribution = .fillProportionally
         return stackView
     }()
@@ -142,7 +122,6 @@ final class EditLinkViewController: BaseViewController {
     private let categoryTagsScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.isHidden = true
         return scrollView
     }()
     
@@ -188,7 +167,7 @@ final class EditLinkViewController: BaseViewController {
     private let datePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
-        picker.preferredDatePickerStyle = .wheels
+        picker.preferredDatePickerStyle = .inline
         return picker
     }()
     
@@ -237,25 +216,84 @@ final class EditLinkViewController: BaseViewController {
             .map { !$0 }
             .bind(to: saveButton.rx.isEnabled)
             .disposed(by: disposeBag)
+        
+        dummyCategories.forEach { category in
+            let button = UIButton(type: .system)
+            button.setTitle(category, for: .normal)
+            button.titleLabel?.font = .systemFont(ofSize: 14)
+            button.layer.cornerRadius = 12
+            button.layer.borderWidth = 1
+            button.layer.borderColor = UIColor.systemGray4.cgColor
+            button.backgroundColor = .systemGray6
+            button.setTitleColor(.label, for: .normal)
+            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+            
+            categoryTagsStackView.addArrangedSubview(button)
+            
+            button.rx.tap
+                .withLatestFrom(selectedCategories) { (_, current) -> [String] in
+                    var updated = current
+                    if updated.contains(category) {
+                        updated.removeAll { $0 == category }
+                    } else {
+                        updated.append(category)
+                    }
+                    return updated
+                }
+                .bind(to: selectedCategories)
+                .disposed(by: disposeBag)
+        }
+        
+        selectedCategories
+            .bind(with: self) { owner, selected in
+                for (index, view) in owner.categoryTagsStackView.arrangedSubviews.enumerated() {
+                    guard let button = view as? UIButton else { continue }
+                    let category = owner.dummyCategories[index]
+                    let isSelected = selected.contains(category)
+                    
+                    button.backgroundColor = isSelected ? .systemBlue : .systemGray6
+                    button.setTitleColor(isSelected ? .white : .label, for: .normal)
+                    button.layer.borderColor = (isSelected ? UIColor.systemBlue : UIColor.systemGray4).cgColor
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        
+        
+        // 선택된 마감일 TextField에 바인딩
+        dueDateTextField.inputView = datePicker
+        
+        datePicker.rx.date
+            .map { DateFormatter.displayFormatter.string(from: $0) }
+            .bind(to: dueDateTextField.rx.text)
+            .disposed(by: disposeBag)
+        
+        // 완료 버튼 툴바
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
+        toolbar.setItems([doneButton], animated: true)
+        dueDateTextField.inputAccessoryView = toolbar
+        
+        // 완료 버튼 탭 -> 키보드 닫기
+        doneButton.rx.tap
+            .bind(with: self) { owner, _ in
+                owner.dueDateTextField.resignFirstResponder()
+            }
+            .disposed(by: disposeBag)
     }
     
     
     override func configureHierarchy() {
-        [scrollView, saveButton]
-            .forEach { view.addSubview($0) }
+        [scrollView, saveButton].forEach { view.addSubview($0) }
         
         scrollView.addSubview(contentView)
         
-        [urlLabel, urlTextField, titleSectionLabel, titleTextField, memoLabel, memoTextView,
-         categoryLabel, categorySelectionView, categoryTagsScrollView, dueDateLabel, dueDateTextField]
-            .forEach { contentView.addSubview($0) }
+        [urlLabel, urlTextField, titleSectionLabel, titleTextField, memoLabel, memoTextView, categoryLabel, categoryTagsScrollView, dueDateLabel, dueDateTextField].forEach { contentView.addSubview($0) }
         
         urlTextField.addSubview(linkIconImageView)
         
         memoTextView.addSubview(memoPlaceholderLabel)
-        
-        [categoryPlaceholderLabel, categoryArrowImageView]
-            .forEach { categorySelectionView.addSubview($0) }
         
         categoryTagsScrollView.addSubview(categoryTagsStackView)
         
@@ -322,24 +360,8 @@ final class EditLinkViewController: BaseViewController {
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         
-        categorySelectionView.snp.makeConstraints { make in
-            make.top.equalTo(categoryLabel.snp.bottom).offset(8)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(48)
-        }
-        
-        categoryPlaceholderLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
-            make.centerY.equalToSuperview()
-        }
-        
-        categoryArrowImageView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-16)
-            make.centerY.equalToSuperview()
-        }
-        
         categoryTagsScrollView.snp.makeConstraints { make in
-            make.top.equalTo(categorySelectionView.snp.bottom).offset(12)
+            make.top.equalTo(categoryLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(32)
         }
