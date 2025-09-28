@@ -197,7 +197,7 @@ final class CategoryViewController: BaseViewController {
         addCategoryButton.rx.tap
             .asDriver()
             .drive(with: self) { owner, _ in
-                owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
+                owner.present(UINavigationController(rootViewController: EditCategoryViewController()), animated: true)
             }
             .disposed(by: disposeBag)
 
