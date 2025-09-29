@@ -6,3 +6,7 @@
 //
 
 import Foundation
+
+extension Notification.Name {
+    static let categoryDidCreate = Notification.Name("categoryDidCreate")
+}
