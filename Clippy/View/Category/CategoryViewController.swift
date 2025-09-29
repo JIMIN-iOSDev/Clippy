@@ -21,17 +21,9 @@ struct CategoryItem {
 final class CategoryViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private let repository = CategoryRepository()
     
-    private let categories = [
-        CategoryItem(title: "업무", count: 2, iconName: "briefcase.fill", iconColor: .systemBlue, backgroundColor: .systemBlue.withAlphaComponent(0.1)),
-        CategoryItem(title: "학습", count: 3, iconName: "book.fill", iconColor: .systemTeal, backgroundColor: .systemTeal.withAlphaComponent(0.1)),
-        CategoryItem(title: "쇼핑", count: 1, iconName: "cart.fill", iconColor: .systemOrange, backgroundColor: .systemOrange.withAlphaComponent(0.1)),
-        CategoryItem(title: "개인", count: 2, iconName: "heart.fill", iconColor: .systemPurple, backgroundColor: .systemPurple.withAlphaComponent(0.1)),
-        CategoryItem(title: "엔터테인먼트", count: 0, iconName: "tv.fill", iconColor: .systemPink, backgroundColor: .systemPink.withAlphaComponent(0.1)),
-        CategoryItem(title: "뉴스", count: 0, iconName: "newspaper.fill", iconColor: .systemCyan, backgroundColor: .systemCyan.withAlphaComponent(0.1)),
-        CategoryItem(title: "뉴스1", count: 0, iconName: "newspaper.fill", iconColor: .systemCyan, backgroundColor: .systemCyan.withAlphaComponent(0.1)),
-        CategoryItem(title: "뉴스2", count: 0, iconName: "newspaper.fill", iconColor: .systemCyan, backgroundColor: .systemCyan.withAlphaComponent(0.1))
-    ]
+    private let categories = BehaviorRelay<[CategoryItem]>(value: [])
     
     // MARK: - UI Components
     private let scrollView = {
@@ -192,7 +184,16 @@ final class CategoryViewController: BaseViewController {
         return button
     }()
     
-    // MARK: - Configuration
+    // MARK: - Configuration    
+    private func loadCategories() {
+        let realmCategories = repository.readCategoryList()
+        let categoryItems = realmCategories.map {
+            CategoryItem(title: $0.name, count: $0.category.count, iconName: $0.iconName, iconColor: CategoryColor.color(index: $0.colorIndex), backgroundColor: CategoryColor.color(index: $0.colorIndex).withAlphaComponent(0.1))
+        }
+        
+        categories.accept(categoryItems)
+    }
+    
     override func bind() {
         addCategoryButton.rx.tap
             .asDriver()
@@ -218,10 +219,16 @@ final class CategoryViewController: BaseViewController {
             .bind(to: expiredLinksCountLabel.rx.text)
             .disposed(by: disposeBag)
         
-        // 카테고리 컬렉션뷰 바인딩
-        Observable.just(categories)
+        categories
             .bind(to: categoryCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.identifier, cellType: CategoryCollectionViewCell.self)) { _, category, cell in
                 cell.configure(with: category)
+            }
+            .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.categoryDidCreate)
+            .bind(with: self) { owner, _ in
+                owner.loadCategories()
             }
             .disposed(by: disposeBag)
         
@@ -394,6 +401,9 @@ final class CategoryViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
+        
+        repository.createDefaultCategory()  // "일반" 카테고리 기본 제공
+        loadCategories()
         
         navigationItem.title = "Clippy"
         navigationController?.navigationBar.prefersLargeTitles = false

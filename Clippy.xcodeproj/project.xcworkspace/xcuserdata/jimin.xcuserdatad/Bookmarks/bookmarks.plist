@@ -341,52 +341,6 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>34</string>
-					<key>StartingColumnNumber</key>
-					<string>0</string>
-					<key>StartingLineNumber</key>
-					<string>34</string>
-					<key>Timestamp</key>
-					<string>780749281.696285</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>Clippy/View/Category/CategoryViewController.swift</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string></string>
-				<key>leading</key>
-				<string>        CategoryItem(title: "뉴스2", count: 0, iconName: "newspaper.fill", iconColor: .systemCyan, backgroundColor: .systemCyan.withAlphaComponent(0.1))
-    ]
-</string>
-				<key>trailing</key>
-				<string>    
-    // MARK: - UI Components
-    private let scrollView = {
-</string>
-			</dict>
-			<key>title</key>
-			<string>예시</string>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>0</string>
-					<key>EndingLineNumber</key>
 					<string>18</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
@@ -470,6 +424,194 @@
 			</dict>
 			<key>title</key>
 			<string>FSCalendar로 변환</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>17</string>
+					<key>StartingColumnNumber</key>
+					<string>33</string>
+					<key>StartingLineNumber</key>
+					<string>16</string>
+					<key>Timestamp</key>
+					<string>780838854.307404</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/LinkList/LinkListViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>무"
+</string>
+				<key>leading</key>
+				<string>    // MARK: - Properties
+    private let disposeBag = DisposeBag()
+    var categoryName: String = "업</string>
+				<key>trailing</key>
+				<string>    
+    private let mockData: [LinkMetadata] = [
+        LinkMetadata(
+</string>
+			</dict>
+			<key>title</key>
+			<string>DI로 변경하기</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>15</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>14</string>
+					<key>Timestamp</key>
+					<string>780840138.656777</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/Resource/CategoryColor.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>            return .systemBlue
+</string>
+				<key>leading</key>
+				<string>    static func color(index: Int) -&gt; UIColor {
+        guard index &gt;= 0 &amp;&amp; index &lt; colors.count else {
+</string>
+				<key>trailing</key>
+				<string>        }
+        return colors[index]
+    }
+</string>
+			</dict>
+			<key>title</key>
+			<string>앱 포인트 색상 정하면 변경</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>188</string>
+					<key>StartingColumnNumber</key>
+					<string>79</string>
+					<key>StartingLineNumber</key>
+					<string>187</string>
+					<key>Timestamp</key>
+					<string>780840602.15912</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/EditCategory/EditCategoryViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>                let (name, memo, colorIndex, iconIndex) = value
+                
+                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {</string>
+				<key>trailing</key>
+				<string>                    let alert = UIAlertController(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다", preferredStyle: .alert)
+                    let ok = UIAlertAction(title: "확인", style: .default)
+                    alert.addAction(ok)
+</string>
+			</dict>
+			<key>title</key>
+			<string>카테고리 글자 수 제한</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>201</string>
+					<key>StartingColumnNumber</key>
+					<string>86</string>
+					<key>StartingLineNumber</key>
+					<string>200</string>
+					<key>Timestamp</key>
+					<string>780842849.699596</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/EditCategory/EditCategoryViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>                owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
+                
+                NotificationCenter.default.post(name: .categoryDidCreate, object: nil)</string>
+				<key>trailing</key>
+				<string>                
+                owner.dismiss(animated: true)
+            }
+</string>
+			</dict>
+			<key>title</key>
+			<string>설명 글자 수 제한</string>
 			<key>type</key>
 			<string>bookmark</string>
 		</dict>

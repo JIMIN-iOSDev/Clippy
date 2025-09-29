@@ -13,6 +13,7 @@ import RxCocoa
 final class EditCategoryViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private let repository = CategoryRepository()
     
     private let selectedColorIndex = BehaviorRelay<Int>(value: 0)
     private let selectedIconIndex = BehaviorRelay<Int>(value: 0)
@@ -178,6 +179,30 @@ final class EditCategoryViewController: BaseViewController {
                 owner.updateIconButtons()
             }
             .disposed(by: disposeBag)
+        
+        createButton.rx.tap
+            .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, descriptionTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
+            .bind(with: self) { owner, value in
+                let (name, memo, colorIndex, iconIndex) = value
+                
+                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    let alert = UIAlertController(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다", preferredStyle: .alert)
+                    let ok = UIAlertAction(title: "확인", style: .default)
+                    alert.addAction(ok)
+                    owner.present(alert, animated: true)
+                    return
+                }
+                
+                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
+                let iconName = allIcons[iconIndex]
+                
+                owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
+                
+                NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
+                
+                owner.dismiss(animated: true)
+            }
+            .disposed(by: disposeBag)
     }
     
     private func updateColorButtons() {
@@ -218,9 +243,7 @@ final class EditCategoryViewController: BaseViewController {
     }
     
     private func createColorButtons() {
-        let colors: [UIColor] = [.systemBlue, .systemPurple, .systemGreen, .systemOrange, .systemRed, .systemPink, .systemTeal, .systemYellow]
-        
-        colors.forEach { color in
+        CategoryColor.colors.forEach { color in
             let button = UIButton(type: .system)
             button.backgroundColor = color
             button.layer.borderWidth = 1
