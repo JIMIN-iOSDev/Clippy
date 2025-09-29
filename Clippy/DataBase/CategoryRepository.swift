@@ -5,7 +5,7 @@
 //  Created by Jimin on 9/25/25.
 //
 
-import Foundation
+import UIKit
 import RealmSwift
 
 final class CategoryRepository {
@@ -14,15 +14,20 @@ final class CategoryRepository {
     
     /// 카테고리 추가
     /// - Parameter name: 카테고리명
-    func createCategory(name: String, colorIndex: Int, iconName: String, memo: String? = nil) {
+    func createCategory(name: String, colorIndex: Int, iconName: String, memo: String? = nil) -> Bool {
+        
+        if readCategory(name: name) != nil { return false } // 중복 카테고리 체크
+        
         let category = Category(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo)
         
         do {
             try realm.write {
                 realm.add(category)
             }
+            return true
         } catch {
             print("카테고리 만들기 실패")
+            return false
         }
     }
     

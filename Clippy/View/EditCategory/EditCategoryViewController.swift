@@ -186,23 +186,29 @@ final class EditCategoryViewController: BaseViewController {
                 let (name, memo, colorIndex, iconIndex) = value
                 
                 guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-                    let alert = UIAlertController(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다", preferredStyle: .alert)
-                    let ok = UIAlertAction(title: "확인", style: .default)
-                    alert.addAction(ok)
-                    owner.present(alert, animated: true)
+                    owner.showAlert(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다")
                     return
                 }
                 
                 let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
                 let iconName = allIcons[iconIndex]
                 
-                owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
+                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
                 
-                NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
-                
-                owner.dismiss(animated: true)
+                if success {
+                    NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
+                    owner.dismiss(animated: true)
+                } else {
+                    owner.showAlert(title: "카테고리 중복", message: "이미 존재하는 카테고리 이름입니다")
+                }
             }
             .disposed(by: disposeBag)
+    }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
     
     private func updateColorButtons() {
