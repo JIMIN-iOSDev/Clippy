@@ -14,7 +14,6 @@ final class LikeViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
     private let sortType = BehaviorRelay<SortType>(value: .latest)
-    private let mockLinks = BehaviorRelay<[LinkMetadata]>(value: [])
     
     enum SortType {
         case latest, title, deadline
@@ -73,11 +72,17 @@ final class LikeViewController: BaseViewController {
         return tableView
     }()
     
+    private let emptyStateLabel = {
+        let label = UILabel()
+        label.text = "즐겨찾기한 링크가 없습니다"
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
+    
     // MARK: - Configuration
     override func bind() {
-        // Mock 데이터 생성
-        createMockData()
-        
         // 정렬 버튼 탭 이벤트
         latestButton.rx.tap
             .map { SortType.latest }
@@ -101,29 +106,42 @@ final class LikeViewController: BaseViewController {
             })
             .disposed(by: disposeBag)
         
+        // LinkManager에서 즐겨찾기 링크만 필터링하고 정렬
+        let sortedFavoriteLinks = Observable.combineLatest(
+            LinkManager.shared.links,
+            sortType.asObservable()
+        )
+        .map { [weak self] (links, sortType) -> [LinkMetadata] in
+            guard let self = self else { return [] }
+            
+            // 즐겨찾기만 필터링
+            let favoriteLinks = links.filter { $0.isLiked }
+            
+            // 정렬
+            return self.sortLinks(favoriteLinks, by: sortType)
+        }
+        
+        // Empty state 처리
+        sortedFavoriteLinks
+            .map { !$0.isEmpty }
+            .bind(to: emptyStateLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        sortedFavoriteLinks
+            .map { $0.isEmpty }
+            .bind(to: tableView.rx.isHidden)
+            .disposed(by: disposeBag)
+        
         // 테이블뷰 바인딩
-        mockLinks
+        sortedFavoriteLinks
             .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, item, cell in
                 guard let self = self else { return }
                 cell.configure(with: item)
                 
                 cell.heartTapHandler = {
-                    var currentLinks = self.mockLinks.value
-                    if let index = currentLinks.firstIndex(where: { $0.url == item.url }) {
-                        var updatedItem = currentLinks[index]
-                        // LinkMetadata의 isLiked를 토글 (struct라면 새로 생성)
-                        currentLinks[index] = LinkMetadata(
-                            url: updatedItem.url,
-                            title: updatedItem.title,
-                            description: updatedItem.description,
-                            thumbnailImage: updatedItem.thumbnailImage,
-                            categories: updatedItem.categories,
-                            dueDate: updatedItem.dueDate,
-                            createdAt: updatedItem.createdAt,
-                            isLiked: !updatedItem.isLiked
-                        )
-                        self.mockLinks.accept(currentLinks)
-                    }
+                    LinkManager.shared.toggleLike(for: item.url)
+                        .subscribe()
+                        .disposed(by: cell.disposeBag)
                 }
                 
                 cell.shareTapHandler = { [weak self] in
@@ -135,7 +153,7 @@ final class LikeViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
-        [sortButtonsStackView, tableView].forEach { view.addSubview($0) }
+        [sortButtonsStackView, tableView, emptyStateLabel].forEach { view.addSubview($0) }
         
         [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
     }
@@ -151,6 +169,10 @@ final class LikeViewController: BaseViewController {
             make.top.equalTo(sortButtonsStackView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        emptyStateLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
     }
     
@@ -176,40 +198,19 @@ final class LikeViewController: BaseViewController {
         }
     }
     
-    private func createMockData() {
-        let mockData: [LinkMetadata] = [
-            LinkMetadata(
-                url: URL(string: "https://react.dev")!,
-                title: "React 공식 문서",
-                description: "React 18 새로운 기능들 학습하기",
-                thumbnailImage: nil,
-                categories: [(name: "학습", colorIndex: 2)],
-                dueDate: Date().addingTimeInterval(86400 * 20),
-                createdAt: Date(),
-                isLiked: true
-            ),
-            LinkMetadata(
-                url: URL(string: "https://developer.apple.com/swift")!,
-                title: "Swift Programming Language",
-                description: "Swift 공식 문서 및 가이드",
-                thumbnailImage: nil,
-                categories: [(name: "개발", colorIndex: 1)],
-                dueDate: Date().addingTimeInterval(86400 * 15),
-                createdAt: Date().addingTimeInterval(-86400),
-                isLiked: true
-            ),
-            LinkMetadata(
-                url: URL(string: "https://github.com")!,
-                title: "GitHub",
-                description: "코드 저장소 및 협업 플랫폼",
-                thumbnailImage: nil,
-                categories: [(name: "개발", colorIndex: 1)],
-                dueDate: Date().addingTimeInterval(86400 * 10),
-                createdAt: Date().addingTimeInterval(-86400 * 2),
-                isLiked: true
-            )
-        ]
-        
-        mockLinks.accept(mockData)
+    private func sortLinks(_ links: [LinkMetadata], by sortType: SortType) -> [LinkMetadata] {
+        switch sortType {
+        case .latest:
+            return links.sorted { $0.createdAt > $1.createdAt }
+        case .title:
+            return links.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        case .deadline:
+            return links.sorted { link1, link2 in
+                // 마감일이 없는 링크는 뒤로
+                guard let date1 = link1.dueDate else { return false }
+                guard let date2 = link2.dueDate else { return true }
+                return date1 < date2
+            }
+        }
     }
 }
