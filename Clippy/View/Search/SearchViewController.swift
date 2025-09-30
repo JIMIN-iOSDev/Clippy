@@ -130,7 +130,9 @@ final class SearchViewController: BaseViewController {
 
     private func loadLinks() {
         let categories = repository.readCategoryList()
-        let allLinksArray = categories.flatMap { $0.category.sorted(by: { $0.date > $1.date }) }
+        let allLinksArray = categories
+            .flatMap { $0.category } // 모든 링크 합치기
+            .sorted(by: { $0.date > $1.date })
         allLinks.accept(allLinksArray)
         filteredLinks.accept(Array(allLinksArray.prefix(20)))
     }
