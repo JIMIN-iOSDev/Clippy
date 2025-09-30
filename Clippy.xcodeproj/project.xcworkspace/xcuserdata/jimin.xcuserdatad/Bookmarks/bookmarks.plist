@@ -341,13 +341,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>171</string>
+					<string>174</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>170</string>
+					<string>173</string>
 					<key>Timestamp</key>
-					<string>780843371.7361259</string>
+					<string>780906909.541057</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -377,53 +377,6 @@
 			</dict>
 			<key>title</key>
 			<string>FSCalendar로 변환</string>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>0</string>
-					<key>EndingLineNumber</key>
-					<string>17</string>
-					<key>StartingColumnNumber</key>
-					<string>33</string>
-					<key>StartingLineNumber</key>
-					<string>16</string>
-					<key>Timestamp</key>
-					<string>780838854.307404</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>Clippy/View/LinkList/LinkListViewController.swift</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string>무"
-</string>
-				<key>leading</key>
-				<string>    // MARK: - Properties
-    private let disposeBag = DisposeBag()
-    var categoryName: String = "업</string>
-				<key>trailing</key>
-				<string>    
-    private let mockData: [LinkMetadata] = [
-//        LinkMetadata(
-</string>
-			</dict>
-			<key>title</key>
-			<string>DI로 변경하기</string>
 			<key>type</key>
 			<string>bookmark</string>
 		</dict>
@@ -576,13 +529,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>339</string>
+					<string>274</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>338</string>
+					<string>273</string>
 					<key>Timestamp</key>
-					<string>780900770.641953</string>
+					<string>780908449.336084</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>

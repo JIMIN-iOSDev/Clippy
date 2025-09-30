@@ -18,6 +18,9 @@ final class EditLinkViewController: BaseViewController {
     
     private let categories = BehaviorRelay<[Category]>(value: [])
     
+    var defaultCategoryName: String?
+    var onLinkCreated: (() -> Void)?
+    
     // MARK: - UI Components
     private let scrollView = {
         let scrollView = UIScrollView()
@@ -193,75 +196,6 @@ final class EditLinkViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
-        // URL 메타데이터 가져오기
-        urlTextField.rx.text.orEmpty
-            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
-            .distinctUntilChanged()
-            .flatMapLatest { urlString -> Observable<LinkMetadata?> in
-                guard !urlString.isEmpty, let url = URL(string: urlString) else { return Observable.just(nil) }
-                
-                return LinkManager.shared.fetchLinkMetadata(for: url)
-                    .map { Optional($0) }
-                    .catch { _ in Observable.just(nil) }
-            }
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] metadata in
-                guard let self = self, let metadata = metadata else { return }
-                //
-                //                // 자동으로 제목 설정 (사용자가 입력하지 않은 경우)
-                //                if self.titleTextField.text?.isEmpty == true {
-                //                    self.titleTextField.text = metadata.title
-                //                }
-            })
-            .disposed(by: disposeBag)
-        
-//        saveButton.rx.tap
-//            .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), datePicker.rx.date))
-//            .flatMapLatest { [weak self] urlString, title, memo, selectedCategories, dueDate -> Observable<[LinkMetadata]> in
-//                guard let self = self, let url = URL(string: urlString), !selectedCategories.isEmpty else {
-//                    return Observable.just([])
-//                }
-//                
-//                let finalTitle = title.isEmpty ? nil : title
-//                let finalMemo = memo.isEmpty ? nil : memo
-//                
-//                let targetCategories = selectedCategories.isEmpty ? ["일반"] : selectedCategories
-//                
-//                targetCategories.forEach { categoryName in
-//                    self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
-//                }
-//                
-//                let categoryInfos: [(name: String, colorIndex: Int)] = targetCategories.compactMap { name in
-//                    guard let category = self.repository.readCategory(name: name) else { return nil }
-//                    return (name: category.name, colorIndex: category.colorIndex)
-//                }
-//                
-//                //                // 각 카테고리마다 링크 추가 (Observable 배열)
-//                //                let observables = selectedCategories.map { categoryName -> Observable<LinkMetadata> in
-//                //                    // 1. Realm에 저장
-//                //                    self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
-//                //
-//                //                    // 2. LinkManager에도 추가 (캐시 및 UI 업데이트)
-//                //                    return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, category: categoryName, dueDate: dueDate)
-//                
-//                return LinkManager.shared.addLink(
-//                    url: url,
-//                    title: finalTitle,
-//                    descrpition: finalMemo,
-//                    categories: categoryInfos,
-//                    dueDate: dueDate
-//                )
-//            
-//        
-//        //                return Observable.zip(observables)
-//    }
-//            .observe(on: MainScheduler.instance)
-//            .bind(with: self) { owner, _ in
-//                NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-//                owner.dismiss(animated: true)
-//            }
-//            .disposed(by: disposeBag)
-        
         saveButton.rx.tap
             .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), datePicker.rx.date))
             .flatMapLatest { [weak self] urlString, title, memo, selectedCategories, dueDate -> Observable<LinkMetadata> in
@@ -294,6 +228,7 @@ final class EditLinkViewController: BaseViewController {
             .bind(with: self) { owner, _ in
                 // 링크 추가 알림 발송
                 NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                owner.onLinkCreated?()
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
@@ -493,5 +428,9 @@ final class EditLinkViewController: BaseViewController {
         super.configureView()
         navigationItem.title = "링크 추가"
         loadCategories()
+        
+        if let defaultCategoryName = defaultCategoryName {
+            selectedCategories.accept([defaultCategoryName])
+        }
     }
 }

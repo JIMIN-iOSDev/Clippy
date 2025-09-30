@@ -14,31 +14,19 @@ final class LinkListViewController: BaseViewController {
     
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    var categoryName: String = "업무"
+    private let repository = CategoryRepository()
+    private let links = BehaviorRelay<[LinkMetadata]>(value: [])
+    var categoryName: String
     
-    private let mockData: [LinkMetadata] = [
-        LinkMetadata(
-            url: URL(string: "https://notion.so")!, title: "프로젝트 관리 도구",
-            description: "팀 프로젝트 일정 관리",
-            thumbnailImage: nil, category: "업무",
-            createdAt: Date(),
-            isLiked: false
-        ),
-        LinkMetadata(
-            url: URL(string: "https://figma.com")!, title: "디자인 시스템",
-            description: "UI/UX 디자인 협업 도구",
-            thumbnailImage: nil, category: "업무",
-            createdAt: Date(),
-            isLiked: true
-        ),
-        LinkMetadata(
-            url: URL(string: "https://github.com")!, title: "개발 문서",
-            description: "프로젝트 레포지토리",
-            thumbnailImage: nil, category: "업무",
-            createdAt: Date(),
-            isLiked: false
-        )
-    ]
+    init(categoryName: String) {
+        self.categoryName = categoryName
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Components
     private let tableView = {
@@ -65,30 +53,109 @@ final class LinkListViewController: BaseViewController {
         return button
     }()
     
+    private let emptyView = {
+        let view = UIView()
+        view.isHidden = true
+        return view
+    }()
+    
+    private let emptyLabel = {
+        let label = UILabel()
+        label.text = "저장된 링크가 없습니다"
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        return label
+    }()
+    
     // MARK: - Configuration
+    private func loadLinks() {
+        guard let category = repository.readCategory(name: categoryName) else {
+            links.accept([])
+            return
+        }
+        
+        let categoryName = self.categoryName
+        let colorIndex = category.colorIndex
+        
+        let linkList = category.category
+            .sorted(by: { $0.date > $1.date }) // 최신순 정렬
+            .map { linkItem -> LinkMetadata in
+                LinkMetadata(url: URL(string: linkItem.url) ?? URL(string: "https://www.example.com")!, title: linkItem.title, description: linkItem.memo, thumbnailImage: nil, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
+            }
+        
+        links.accept(Array(linkList))
+    }
+    
     override func bind() {
         floatingAddButton.rx.tap
-            .asDriver()
-            .drive(with: self) { owner, _ in
-                owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
+            .bind(with: self) { owner, _ in
+                let editVC = EditLinkViewController()
+                editVC.defaultCategoryName = owner.categoryName
+                editVC.onLinkCreated = { [weak owner] in
+                    owner?.loadLinks()
+                }
+                owner.present(UINavigationController(rootViewController: editVC), animated: true)
             }
             .disposed(by: disposeBag)
         
-        Observable.just(mockData)
-            .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { index, item, cell in
+        links
+            .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, item, cell in
+                guard let self = self else { return }
                 cell.configure(with: item)
+                
+                cell.heartTapHandler = {
+                    LinkManager.shared.toggleLike(for: item.url)
+                        .subscribe()
+                        .disposed(by: self.disposeBag)
+                }
+                
+                cell.shareTapHandler = { [weak self] in
+                    let activityViewController = UIActivityViewController(activityItems: [item.url], applicationActivities: nil)
+                    self?.present(activityViewController, animated: true)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        // 빈 상태 처리
+        links
+            .map { !$0.isEmpty }
+            .bind(to: emptyView.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        // 링크 선택 시 Safari에서 열기
+        tableView.rx.itemSelected
+            .do(onNext: { [weak self] indexPath in
+                self?.tableView.deselectRow(at: indexPath, animated: true)
+            })
+            .withLatestFrom(links) { indexPath, links in
+                links[indexPath.row]
+            }
+            .bind(with: self) { owner, link in
+                if UIApplication.shared.canOpenURL(link.url) {
+                    UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
+                }
             }
             .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
-        [tableView, floatingAddButton].forEach { view.addSubview($0) }
+        [tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+        emptyView.addSubview(emptyLabel)
     }
     
     override func configureLayout() {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.bottom.equalToSuperview()
+        }
+        
+        emptyView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalToSuperview()
+        }
+        
+        emptyLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         
         floatingAddButton.snp.makeConstraints { make in
@@ -101,5 +168,7 @@ final class LinkListViewController: BaseViewController {
     override func configureView() {
         super.configureView()
         navigationItem.title = categoryName
+        navigationController?.navigationBar.tintColor = .black
+        loadLinks()
     }
 }

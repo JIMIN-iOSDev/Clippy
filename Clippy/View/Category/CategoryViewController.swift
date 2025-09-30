@@ -231,11 +231,16 @@ final class CategoryViewController: BaseViewController {
                 owner.loadCategories()
             }
             .disposed(by: disposeBag)
-        
+    
         categoryCollectionView.rx.itemSelected
-            .asDriver()
-            .drive(with: self) { owner, indexPath in
-                // TODO: 해당 카테고리 링크 화면으로 전환
+            .withLatestFrom(categories) { indexPath, categories in
+                categories[indexPath.row]
+            }
+            .asDriver(onErrorJustReturn: CategoryItem(title: "", count: 0, iconName: "", iconColor: .clear, backgroundColor: .clear))
+            .drive(with: self) { owner, category in
+                let linkListVC = LinkListViewController(categoryName: category.title)
+                owner.navigationController?.pushViewController(linkListVC, animated: true)
+                owner.navigationItem.backButtonTitle = ""
             }
             .disposed(by: disposeBag)
         
