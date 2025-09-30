@@ -33,7 +33,7 @@ final class LikeViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("최근 추가순", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = .systemRed
+        button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 18
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
@@ -181,13 +181,12 @@ final class LikeViewController: BaseViewController {
         title = "즐겨찾기"
     }
     
-    // MARK: - Private Methods
     private func updateSortButtonStyles(selectedType: SortType) {
         let buttons: [(UIButton, SortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline)]
         
         buttons.forEach { button, type in
             if type == selectedType {
-                button.backgroundColor = .systemRed
+                button.backgroundColor = .systemBlue
                 button.setTitleColor(.white, for: .normal)
                 button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
             } else {

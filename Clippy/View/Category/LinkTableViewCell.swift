@@ -215,7 +215,7 @@ final class LinkTableViewCell: UITableViewCell {
         if let dueDate = link.dueDate {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M월 d일"
-            dateLabel.text = dateFormatter.string(from: link.createdAt)
+            dateLabel.text = dateFormatter.string(from: dueDate)
         } else {
             dateLabel.text = "마감일 없음"
         }

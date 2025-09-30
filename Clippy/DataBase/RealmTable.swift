@@ -50,7 +50,9 @@ class LinkList: Object {
         self.url = url
         self.memo = memo
         self.likeStatus = likeStatus
+        self.deadline = deadline
         self.date = Date()
+        self.isOpened = isOpened
         self.openCount = openCount
     }
 }
