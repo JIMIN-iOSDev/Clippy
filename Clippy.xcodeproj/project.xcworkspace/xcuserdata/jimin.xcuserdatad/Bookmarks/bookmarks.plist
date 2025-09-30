@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>40</string>
+					<string>43</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>39</string>
+					<string>42</string>
 					<key>Timestamp</key>
-					<string>780659504.320732</string>
+					<string>780850093.8973809</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -59,13 +59,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>50</string>
+					<string>53</string>
 					<key>StartingColumnNumber</key>
-					<string>37</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>49</string>
+					<string>52</string>
 					<key>Timestamp</key>
-					<string>780659781.620695</string>
+					<string>780850093.898188</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -81,12 +81,12 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>    var isLoading: Observable&lt;Bool&gt; {
 </string>
 				<key>leading</key>
 				<string>    }
     
-    var isLoading: Observable&lt;Bool&gt; {</string>
+</string>
 				<key>trailing</key>
 				<string>        return isLoadingSubject.asObservable()
     }
@@ -106,13 +106,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>171</string>
+					<string>207</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>170</string>
+					<string>206</string>
 					<key>Timestamp</key>
-					<string>780665438.735907</string>
+					<string>780900175.137985</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -153,13 +153,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>84</string>
+					<string>120</string>
 					<key>StartingColumnNumber</key>
-					<string>64</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>83</string>
+					<string>119</string>
 					<key>Timestamp</key>
-					<string>780664967.096192</string>
+					<string>780900175.136851</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -175,12 +175,12 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>    func toggleLike(for url: URL) -&gt; Observable&lt;LinkMetadata?&gt; {
 </string>
 				<key>leading</key>
 				<string>    }
     
-    func toggleLike(for url: URL) -&gt; Observable&lt;LinkMetadata?&gt; {</string>
+</string>
 				<key>trailing</key>
 				<string>        let cacheKey = url.absoluteString
         
@@ -200,13 +200,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>104</string>
+					<string>140</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>103</string>
+					<string>139</string>
 					<key>Timestamp</key>
-					<string>780665105.290776</string>
+					<string>780900175.137857</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -247,13 +247,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>154</string>
+					<string>190</string>
 					<key>StartingColumnNumber</key>
-					<string>186</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>153</string>
+					<string>189</string>
 					<key>Timestamp</key>
-					<string>780665487.569692</string>
+					<string>780900175.138283</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -269,12 +269,12 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: nil)
 </string>
 				<key>leading</key>
 				<string>                    }
                 } else {
-                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: nil)</string>
+</string>
 				<key>trailing</key>
 				<string>                    observer.onNext(linkMetadata)
                     observer.onCompleted()
@@ -294,13 +294,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>182</string>
+					<string>218</string>
 					<key>StartingColumnNumber</key>
-					<string>23</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>181</string>
+					<string>217</string>
 					<key>Timestamp</key>
-					<string>780673332.421537</string>
+					<string>780900175.138401</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -316,12 +316,12 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>    func clearCache() {
 </string>
 				<key>leading</key>
 				<string>    }
     
-    func clearCache() {</string>
+</string>
 				<key>trailing</key>
 				<string>        linkCache.removeAll()
         linksSubject.accept([])
@@ -341,60 +341,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>18</string>
+					<string>171</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>17</string>
-					<key>Timestamp</key>
-					<string>780749307.7727129</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>Clippy/View/EditLink/EditLinkViewController.swift</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string>    private let dummyCategories = ["업무업무업무업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타", "업무", "공부", "취미", "기타"]
-</string>
-				<key>leading</key>
-				<string>    private let selectedCategories = BehaviorRelay&lt;[String]&gt;(value: [])
-    
-</string>
-				<key>trailing</key>
-				<string>    
-    // MARK: - UI Components
-    private let scrollView = {
-</string>
-			</dict>
-			<key>title</key>
-			<string>삭제</string>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>0</string>
-					<key>EndingLineNumber</key>
 					<string>170</string>
-					<key>StartingColumnNumber</key>
-					<string>0</string>
-					<key>StartingLineNumber</key>
-					<string>169</string>
 					<key>Timestamp</key>
-					<string>780749307.772738</string>
+					<string>780843371.7361259</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -466,7 +419,7 @@
 				<key>trailing</key>
 				<string>    
     private let mockData: [LinkMetadata] = [
-        LinkMetadata(
+//        LinkMetadata(
 </string>
 			</dict>
 			<key>title</key>
@@ -558,9 +511,9 @@
                 
                 guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {</string>
 				<key>trailing</key>
-				<string>                    let alert = UIAlertController(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다", preferredStyle: .alert)
-                    let ok = UIAlertAction(title: "확인", style: .default)
-                    alert.addAction(ok)
+				<string>                    owner.showAlert(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다")
+                    return
+                }
 </string>
 			</dict>
 			<key>title</key>
@@ -576,13 +529,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>201</string>
+					<string>183</string>
 					<key>StartingColumnNumber</key>
-					<string>86</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>200</string>
+					<string>182</string>
 					<key>Timestamp</key>
-					<string>780842849.699596</string>
+					<string>780847506.380487</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -598,20 +551,114 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>        createButton.rx.tap
 </string>
 				<key>leading</key>
-				<string>                owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
-                
-                NotificationCenter.default.post(name: .categoryDidCreate, object: nil)</string>
+				<string>            .disposed(by: disposeBag)
+        
+</string>
 				<key>trailing</key>
-				<string>                
-                owner.dismiss(animated: true)
-            }
+				<string>            .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, descriptionTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
+            .bind(with: self) { owner, value in
+                let (name, memo, colorIndex, iconIndex) = value
 </string>
 			</dict>
 			<key>title</key>
 			<string>설명 글자 수 제한</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>339</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>338</string>
+					<key>Timestamp</key>
+					<string>780900770.641953</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/View/EditLink/EditLinkViewController.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>        // 새로운 버튼 생성
+</string>
+				<key>leading</key>
+				<string>        categoryTagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() } // 기존 버튼 제거
+        
+</string>
+				<key>trailing</key>
+				<string>        categories.forEach { category in
+            let button = UIButton(type: .system)
+            button.setTitle(category.name, for: .normal)
+</string>
+			</dict>
+			<key>title</key>
+			<string>매번 기존을 제거하고 생성하는 게 맞나?</string>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>51</string>
+					<key>StartingColumnNumber</key>
+					<string>68</string>
+					<key>StartingLineNumber</key>
+					<string>50</string>
+					<key>Timestamp</key>
+					<string>780849755.454021</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>Clippy/DataBase/CategoryRepository.swift</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>
+</string>
+				<key>leading</key>
+				<string>    
+    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?) {
+        guard let category = readCategory(name: categoryName) else {</string>
+				<key>trailing</key>
+				<string>            print("\(categoryName) 없음")
+            return
+        }
+</string>
+			</dict>
+			<key>title</key>
+			<string>옵션 중에 선택하게 해서 쓸 일이 없을지도?</string>
 			<key>type</key>
 			<string>bookmark</string>
 		</dict>

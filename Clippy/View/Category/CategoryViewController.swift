@@ -285,6 +285,13 @@ final class CategoryViewController: BaseViewController {
                 }
             })
             .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.linkDidCreate)
+            .bind(with: self) { owner, _ in
+                owner.loadCategories()
+            }
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

@@ -51,19 +51,15 @@ final class LinkTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let categoryTag = {
-        let view = UIView()
-        view.backgroundColor = .systemGreen.withAlphaComponent(0.1)
-        view.layer.cornerRadius = 12
-        return view
+    private let categoryTagsStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.distribution = .fillProportionally
+        return stackView
     }()
-    
-    private let categoryLabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .systemGreen
-        return label
-    }()
+
     
     private let dateLabel = {
         let label = UILabel()
@@ -123,9 +119,8 @@ final class LinkTableViewCell: UITableViewCell {
         backgroundColor = .clear
         
         contentView.addSubview(containerView)
-        categoryTag.addSubview(categoryLabel)
         
-        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, categoryTag, dateLabel, arrowIcon, heartButton, shareButton]
+        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, heartButton, shareButton, categoryTagsStackView]
             .forEach { containerView.addSubview($0) }
         
         containerView.snp.makeConstraints { make in
@@ -168,15 +163,10 @@ final class LinkTableViewCell: UITableViewCell {
             make.trailing.equalTo(heartButton.snp.leading).offset(-16)
         }
         
-        categoryTag.snp.makeConstraints { make in
+        categoryTagsStackView.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-16)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(16)
-            make.height.equalTo(24)
-        }
-        
-        categoryLabel.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(8)
-            make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(dateLabel.snp.leading).offset(-8)
         }
         
         dateLabel.snp.makeConstraints { make in
@@ -203,27 +193,70 @@ final class LinkTableViewCell: UITableViewCell {
     
     func configure(with link: LinkMetadata) {
         titleLabel.text = link.title
-        urlLabel.text = link.url.absoluteString
-        descriptionLabel.text = link.description ?? ""
-        categoryLabel.text = link.category ?? "일반"
+        urlLabel.text = link.url.host ?? link.url.absoluteString
         
+        // 메모: 사용자가 설정한 메모가 없으면 메타데이터의 description 사용
+        if let description = link.description, !description.isEmpty {
+            descriptionLabel.text = description
+            descriptionLabel.isHidden = false
+        } else {
+            descriptionLabel.isHidden = true
+        }
+        
+        // 생성일
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M월 d일"
         dateLabel.text = dateFormatter.string(from: link.createdAt)
         
+        // 썸네일 이미지
         if let thumbnailImage = link.thumbnailImage {
             thumbnailImageView.image = thumbnailImage
             thumbnailImageView.backgroundColor = .clear
+            thumbnailImageView.contentMode = .scaleAspectFill
         } else {
             let config = UIImage.SymbolConfiguration(pointSize: 40, weight: .medium)
             thumbnailImageView.image = UIImage(systemName: "link", withConfiguration: config)
             thumbnailImageView.backgroundColor = .systemBlue
-            thumbnailImageView.tintColor = .systemCyan
+            thumbnailImageView.tintColor = .white
+            thumbnailImageView.contentMode = .center
         }
         
+        // 즐겨찾기
         let heartImageName = link.isLiked ? "heart.fill" : "heart"
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         heartButton.setImage(UIImage(systemName: heartImageName, withConfiguration: config), for: .normal)
         heartButton.tintColor = link.isLiked ? .systemPink : .systemGray3
+        
+        // 카테고리 태그들 (여러 개 표시)
+        categoryTagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        if let categories = link.categories, !categories.isEmpty {
+            categories.forEach { categoryInfo in
+                let tagView = createCategoryTag(name: categoryInfo.name, color: CategoryColor.color(index: categoryInfo.colorIndex))
+                categoryTagsStackView.addArrangedSubview(tagView)
+            }
+        } else {
+            // 카테고리 정보 설정 안하면 "일반"
+            let tagView = createCategoryTag(name: "일반", color: CategoryColor.color(index: 0))
+            categoryTagsStackView.addArrangedSubview(tagView)
+        }
+    }
+
+    private func createCategoryTag(name: String, color: UIColor) -> UIView {
+        let containerView = UIView()
+        containerView.backgroundColor = color.withAlphaComponent(0.15)
+        containerView.layer.cornerRadius = 8
+        
+        let label = UILabel()
+        label.text = name
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = color
+        
+        containerView.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8))
+        }
+        
+        return containerView
     }
 }

@@ -13,10 +13,13 @@ import LinkPresentation
 final class LinkManager {
     
     static let shared = LinkManager()
-    private init() {}
+    private init() {
+        loadLinksFromRealm()
+    }
     
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private let repository = CategoryRepository()
     
     private var linkCache: [String: LinkMetadata] = [:] // 캐시
     
@@ -52,7 +55,40 @@ final class LinkManager {
     }
     
     // MARK: - Methods
-    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, category: String? = nil, dueDate: Date? = nil) -> Observable<LinkMetadata> {
+    private func loadLinksFromRealm() {
+        let categories = repository.readCategoryList()
+        var allLinks: [LinkMetadata] = []
+        var urlToCategories: [String : [(name: String, colorIndex: Int)]] = [:]
+        
+        categories.forEach { category in
+            category.category.forEach { linkList in
+                let urlString = linkList.url
+                if urlToCategories[urlString] == nil {
+                    urlToCategories[urlString] = []
+                }
+                urlToCategories[urlString]?.append((name: category.name, colorIndex: category.colorIndex))
+            }
+        }
+        
+        categories.forEach { category in
+            category.category.forEach { linkList in
+                // 중복 방지: 이미 추가된 URL은 스킵
+                if allLinks.contains(where: { $0.url.absoluteString == linkList.url }) { return }
+                
+                guard let url = URL(string: linkList.url),
+                      let categoryInfos = urlToCategories[linkList.url] else { return }
+                
+                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: nil, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                
+                allLinks.append(metadata)
+                linkCache[linkList.url] = metadata
+            }
+        }
+        
+        linksSubject.accept(allLinks)
+    }
+    
+    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil) -> Observable<LinkMetadata> {
         
         let cacheKey = url.absoluteString
         
@@ -60,7 +96,7 @@ final class LinkManager {
         if let cachedLink = linkCache[cacheKey] {
             var updatedLink = cachedLink
             if let title = title, !title.isEmpty {
-                updatedLink = LinkMetadata(url: updatedLink.url, title: title, description: updatedLink.description, thumbnailImage: updatedLink.thumbnailImage, category: category ?? updatedLink.category, dueDate: dueDate ?? updatedLink.dueDate, createdAt: updatedLink.createdAt, isLiked: updatedLink.isLiked)
+                updatedLink = LinkMetadata(url: updatedLink.url, title: title, description: updatedLink.description, thumbnailImage: updatedLink.thumbnailImage, categories: categories ?? updatedLink.categories, dueDate: dueDate ?? updatedLink.dueDate, createdAt: updatedLink.createdAt, isLiked: updatedLink.isLiked)
                 linkCache[cacheKey] = updatedLink
             }
             
@@ -73,7 +109,7 @@ final class LinkManager {
             .do(onNext: { [weak self] metadata in
                 guard let self = self else { return }
                 
-                let linkMetadata = LinkMetadata(url: url, title: title ?? metadata.title, description: descrpition ?? metadata.description, thumbnailImage: metadata.thumbnailImage, category: category, dueDate: dueDate, createdAt: Date(), isLiked: false)
+                let linkMetadata = LinkMetadata(url: url, title: title ?? metadata.title, description: descrpition ?? metadata.description, thumbnailImage: metadata.thumbnailImage, categories: categories, dueDate: dueDate, createdAt: Date(), isLiked: false)
                 
                 // 캐시에 저장
                 self.linkCache[cacheKey] = linkMetadata
@@ -88,7 +124,7 @@ final class LinkManager {
             return Observable.just(nil)
         }
         
-        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, category: linkMetadata.category, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked)
+        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked)
         
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)
@@ -107,11 +143,11 @@ final class LinkManager {
         return Observable.just(true)
     }
     
-    func getLinksBy(category: String) -> Observable<[LinkMetadata]> {
-        return links.map { links in
-            links.filter { $0.category == category }
-        }
-    }
+//    func getLinksBy(category: String) -> Observable<[LinkMetadata]> {
+//        return links.map { links in
+//            links.filter { $0.categories == category }
+//        }
+//    }
     
     func fetchLinkMetadata(for url: URL) -> Observable<LinkMetadata> {
         return Observable.create { [weak self] observer in
