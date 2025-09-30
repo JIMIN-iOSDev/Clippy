@@ -205,8 +205,13 @@ final class EditLinkViewController: BaseViewController {
         saveButton.rx.tap
             .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), datePicker.rx.date))
             .flatMapLatest { [weak self] urlString, title, memo, selectedCategories, dueDate -> Observable<LinkMetadata> in
-                guard let self = self,
-                      let url = URL(string: urlString) else {
+                guard let self = self else { return Observable.empty() }
+                
+                let trimmedURL = urlString.trimmingCharacters(in: .whitespaces)
+                guard !trimmedURL.isEmpty, let url = URL(string: trimmedURL) else {
+                    let alert = UIAlertController(title: "URL 입력", message: "링크 URL은 필수값입니다", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
                     return Observable.empty()
                 }
                 
