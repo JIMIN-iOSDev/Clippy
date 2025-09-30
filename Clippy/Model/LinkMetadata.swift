@@ -13,11 +13,11 @@ struct LinkMetadata {
     let description: String?
     let thumbnailImage: UIImage?
     let categories: [(name: String, colorIndex: Int)]?
-    let dueDate: Date?
+    let dueDate: Date?  
     let createdAt: Date
     let isLiked: Bool
     
-    init(url: URL, title: String = "", description: String? = nil, thumbnailImage: UIImage? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, createdAt: Date = Date(), isLiked: Bool = false) {
+    init(url: URL, title: String, description: String? = nil, thumbnailImage: UIImage? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, createdAt: Date = Date(), isLiked: Bool = false) {
         self.url = url
         self.title = title.isEmpty ? url.absoluteString : title
         self.description = description

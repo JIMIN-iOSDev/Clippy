@@ -193,9 +193,8 @@ final class LinkTableViewCell: UITableViewCell {
     
     func configure(with link: LinkMetadata) {
         titleLabel.text = link.title
-        urlLabel.text = link.url.host ?? link.url.absoluteString
+        urlLabel.text = link.url.absoluteString
         
-        // 메모: 사용자가 설정한 메모가 없으면 메타데이터의 description 사용
         if let description = link.description, !description.isEmpty {
             descriptionLabel.text = description
             descriptionLabel.isHidden = false
@@ -203,10 +202,14 @@ final class LinkTableViewCell: UITableViewCell {
             descriptionLabel.isHidden = true
         }
         
-        // 생성일
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "M월 d일"
-        dateLabel.text = dateFormatter.string(from: link.createdAt)
+        // 마감일
+        if let dueDate = link.dueDate {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "M월 d일"
+            dateLabel.text = dateFormatter.string(from: link.createdAt)
+        } else {
+            dateLabel.text = "마감일 없음"
+        }
         
         // 썸네일 이미지
         if let thumbnailImage = link.thumbnailImage {

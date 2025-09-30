@@ -184,6 +184,12 @@ final class CategoryViewController: BaseViewController {
         return button
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        LinkManager.shared.reloadFromRealm()
+        loadCategories()
+    }
+    
     // MARK: - Configuration    
     private func loadCategories() {
         let realmCategories = repository.readCategoryList()

@@ -20,6 +20,7 @@ final class EditLinkViewController: BaseViewController {
     
     var defaultCategoryName: String?
     var onLinkCreated: (() -> Void)?
+    private var selectedDueDate: Date? = nil
     
     // MARK: - UI Components
     private let scrollView = {
@@ -177,6 +178,11 @@ final class EditLinkViewController: BaseViewController {
     
     // MARK: - Configuration
     override func bind() {
+        memoTextView.rx.text.orEmpty
+            .map { !$0.isEmpty }
+            .bind(to: memoPlaceholderLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
         categories
             .bind(with: self) { owner, categories in
                 owner.createCategoryButtons(categories)
@@ -210,18 +216,18 @@ final class EditLinkViewController: BaseViewController {
                 // 카테고리 선택 안했으면 "일반"에 저장
                 let targetCategories = selectedCategories.isEmpty ? ["일반"] : selectedCategories
                 
-                // 각 카테고리마다 Realm에 저장
-                targetCategories.forEach { categoryName in
-                    self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
-                }
-                
                 // 카테고리 정보 가져오기 (색상 포함)
                 let categoryInfos: [(name: String, colorIndex: Int)] = targetCategories.compactMap { name in
                     guard let category = self.repository.readCategory(name: name) else { return nil }
                     return (name: category.name, colorIndex: category.colorIndex)
                 }
                 
-                // LinkManager에 추가 (여러 카테고리 정보 포함)
+                // 먼저 Realm에 저장 (썸네일 없이)
+                targetCategories.forEach { categoryName in
+                    self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
+                }
+                
+                // LinkManager에 추가 (메타데이터 fetch 및 캐시)
                 return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
             }
             .observe(on: MainScheduler.instance)
@@ -432,5 +438,35 @@ final class EditLinkViewController: BaseViewController {
         if let defaultCategoryName = defaultCategoryName {
             selectedCategories.accept([defaultCategoryName])
         }
+        
+        let tapGesture = UITapGestureRecognizer()
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+        
+        tapGesture.rx.event
+            .bind(with: self) { owner, _ in
+                owner.view.endEditing(true)
+            }
+            .disposed(by: disposeBag)
+        
+        linkIconImageView.isUserInteractionEnabled = true
+        let linkTap = UITapGestureRecognizer()
+        linkIconImageView.addGestureRecognizer(linkTap)
+        
+        linkTap.rx.event
+            .bind(with: self) { owner, _ in
+                owner.urlTextField.becomeFirstResponder()
+            }
+            .disposed(by: disposeBag)
+        
+        calendarIconImageView.isUserInteractionEnabled = true
+        let calendarTap = UITapGestureRecognizer()
+        calendarIconImageView.addGestureRecognizer(calendarTap)
+        
+        calendarTap.rx.event
+            .bind(with: self) { owner, _ in
+                owner.dueDateTextField.becomeFirstResponder()
+            }
+            .disposed(by: disposeBag)
     }
 }

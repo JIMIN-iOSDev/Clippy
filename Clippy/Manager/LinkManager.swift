@@ -40,12 +40,14 @@ final class LinkManager {
         return links.map { $0.count }
     }
     
-    var expiredLinksCount: Observable<Int> {
+    var expiredLinksCount: Observable<Int> {    // 마감 3일 남은 거부터 임박
         return links.map { links in
             let now = Date()
+            let threeDaysLater = Calendar.current.date(byAdding: .day, value: 3, to: now)!
+            
             return links.filter { link in
                 guard let dueDate = link.dueDate else { return false }
-                return dueDate < now
+                return dueDate >= now && dueDate <= threeDaysLater
             }.count
         }
     }
@@ -72,7 +74,7 @@ final class LinkManager {
         
         categories.forEach { category in
             category.category.forEach { linkList in
-                // 중복 방지: 이미 추가된 URL은 스킵
+                // 이미 추가된 URL 중복 방지
                 if allLinks.contains(where: { $0.url.absoluteString == linkList.url }) { return }
                 
                 guard let url = URL(string: linkList.url),
@@ -82,6 +84,17 @@ final class LinkManager {
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
+                
+                // 백그라운드에서 썸네일 로드
+                fetchLinkMetadata(for: url)
+                    .bind(with: self) { owner, fetchedMetadata in
+                        // 썸네일만 업데이트
+                        let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                        
+                        owner.linkCache[linkList.url] = updatedMetadata
+                        owner.updateLinksArray(with: updatedMetadata)
+                    }
+                    .disposed(by: disposeBag)
             }
         }
         
@@ -124,6 +137,8 @@ final class LinkManager {
             return Observable.just(nil)
         }
         
+        repository.toggleLikeStatus(url: cacheKey)
+        
         let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked)
         
         linkCache[cacheKey] = updatedLink
@@ -142,12 +157,6 @@ final class LinkManager {
         
         return Observable.just(true)
     }
-    
-//    func getLinksBy(category: String) -> Observable<[LinkMetadata]> {
-//        return links.map { links in
-//            links.filter { $0.categories == category }
-//        }
-//    }
     
     func fetchLinkMetadata(for url: URL) -> Observable<LinkMetadata> {
         return Observable.create { [weak self] observer in
@@ -200,6 +209,11 @@ final class LinkManager {
         .observe(on: MainScheduler.instance)
     }
     
+    func reloadFromRealm() {
+        linkCache.removeAll()
+        loadLinksFromRealm()
+    }
+    
     private func updateLinksArray(with linkMetadata: LinkMetadata) {
         var currentLinks = linksSubject.value
         
@@ -213,22 +227,5 @@ final class LinkManager {
         // 날짜순으로 정렬
         currentLinks.sort { $0.createdAt > $1.createdAt }
         linksSubject.accept(currentLinks)
-    }
-    
-    func clearCache() {
-        linkCache.removeAll()
-        linksSubject.accept([])
-    }
-    
-    func getCacheSize() -> Int {
-        return linkCache.count
-    }
-    
-    func preloadLinks(urls: [URL]) -> Observable<[LinkMetadata]> {
-        let observables = urls.map { url in
-            addLink(url: url)
-        }
-        
-        return Observable.combineLatest(observables)
     }
 }

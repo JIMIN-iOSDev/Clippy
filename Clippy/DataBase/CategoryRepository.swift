@@ -53,7 +53,13 @@ final class CategoryRepository {
             return
         }
         
-        let link = LinkList(title: title, url: url, memo: description, likeStatus: false, deadline: deadline, isOpened: false, openCount: 0)
+        let existingLink = category.category.first { $0.url == url }    // url 중복 체크
+        if existingLink != nil {
+            print("이미 존재하는 링크 \(url)")
+            return
+        }
+        
+        let link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: false, deadline: deadline, isOpened: false, openCount: 0)
         
         do {
             try realm.write {
@@ -72,5 +78,22 @@ final class CategoryRepository {
     /// - Returns: 전체 카테고리 수
     func readCategoryCount() -> Int {
         return realm.objects(Category.self).count
+    }
+    
+    // 즐겨찾기 토글
+    func toggleLikeStatus(url: String) {
+        let categories = realm.objects(Category.self)
+        
+        do {
+            try realm.write {
+                for category in categories {
+                    if let link = category.category.first(where: { $0.url == url }) {
+                        link.likeStatus.toggle()
+                    }
+                }
+            }
+        } catch {
+            print("즐겨찾기 토글 실패: \(error)")
+        }
     }
 }

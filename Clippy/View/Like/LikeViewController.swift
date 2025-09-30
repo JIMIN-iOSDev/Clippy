@@ -7,23 +7,25 @@
 
 import UIKit
 
-class LikeViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+final class LikeViewController: BaseViewController {
+    // MARK: - Properties
+    
+    // MARK: - UI Components
+    
+    // MARK: - Configuration
+    override func bind() {
+        
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func configureHierarchy() {
+        
     }
-    */
-
+    
+    override func configureLayout() {
+        
+    }
+    
+    override func configureView() {
+        super.configureView()
+    }
 }

@@ -109,7 +109,7 @@ final class SearchViewController: BaseViewController {
     override func configureLayout() {
         searchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.horizontalEdges.equalToSuperview()
+            make.horizontalEdges.equalToSuperview().inset(10)
             make.height.equalTo(60)
         }
 

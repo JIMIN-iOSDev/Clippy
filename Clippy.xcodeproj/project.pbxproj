@@ -9,9 +9,24 @@
 /* Begin PBXBuildFile section */
 		EC5368642E8417C200B411DB /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368632E8417C200B411DB /* RxCocoa */; };
 		EC5368662E8417C200B411DB /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368652E8417C200B411DB /* RxSwift */; };
+		EC536EBE2E8BFE1500B411DB /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = ECB793952E826D3800C44AF0 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		ECB793962E826D3800C44AF0 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = ECB793952E826D3800C44AF0 /* RealmSwift */; };
 		ECB793992E826D4E00C44AF0 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECB793982E826D4E00C44AF0 /* SnapKit */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EC536EBF2E8BFE1500B411DB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EC536EBE2E8BFE1500B411DB /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		ECB792702E82215900C44AF0 /* Clippy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clippy.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +94,7 @@
 				ECB7926C2E82215900C44AF0 /* Sources */,
 				ECB7926D2E82215900C44AF0 /* Frameworks */,
 				ECB7926E2E82215900C44AF0 /* Resources */,
+				EC536EBF2E8BFE1500B411DB /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -165,6 +181,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Clippy/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clippy;
@@ -197,6 +214,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Clippy/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clippy;
