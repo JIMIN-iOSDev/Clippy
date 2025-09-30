@@ -67,6 +67,11 @@ final class LinkListViewController: BaseViewController {
         return label
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadLinks()
+    }
+    
     // MARK: - Configuration
     private func loadLinks() {
         guard let category = repository.readCategory(name: categoryName) else {
@@ -77,13 +82,35 @@ final class LinkListViewController: BaseViewController {
         let categoryName = self.categoryName
         let colorIndex = category.colorIndex
         
-        let linkList = category.category
-            .sorted(by: { $0.date > $1.date }) // 최신순 정렬
-            .map { linkItem -> LinkMetadata in
-                LinkMetadata(url: URL(string: linkItem.url) ?? URL(string: "https://www.example.com")!, title: linkItem.title, description: linkItem.memo, thumbnailImage: nil, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
-            }
+        let sortedLinks = category.category.sorted(by: { $0.date > $1.date })
         
-        links.accept(Array(linkList))
+        // 먼저 썸네일 없는 버전으로 초기화
+        var linkMetadataList: [LinkMetadata] = []
+        
+        for linkItem in sortedLinks {
+            guard let url = URL(string: linkItem.url) else { continue }
+            
+            let metadata = LinkMetadata(url: url, title: linkItem.title, description: linkItem.memo, thumbnailImage: nil, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
+            
+            linkMetadataList.append(metadata)
+            
+            // 백그라운드에서 썸네일 로드
+            LinkManager.shared.fetchLinkMetadata(for: url)
+                .subscribe(onNext: { [weak self] fetchedMetadata in
+                    guard let self = self else { return }
+                    
+                    let updatedMetadata = LinkMetadata(url: url, title: linkItem.title, description: linkItem.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
+                    
+                    var currentLinks = self.links.value
+                    if let index = currentLinks.firstIndex(where: { $0.url == url }) {
+                        currentLinks[index] = updatedMetadata
+                        self.links.accept(currentLinks)
+                    }
+                })
+                .disposed(by: disposeBag)
+        }
+        
+        links.accept(linkMetadataList)
     }
     
     override func bind() {
@@ -105,8 +132,17 @@ final class LinkListViewController: BaseViewController {
                 
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: item.url)
-                        .subscribe()
-                        .disposed(by: self.disposeBag)
+                        .bind(with: self) { owner, _ in
+                            var currentLinks = owner.links.value
+                            if let index = currentLinks.firstIndex(where: { $0.url == item.url }) {
+                                // 좋아요 상태만 토글
+                                let updatedItem = currentLinks[index]
+                                let newMetadata = LinkMetadata(url: updatedItem.url, title: updatedItem.title, description: updatedItem.description, thumbnailImage: updatedItem.thumbnailImage, categories: updatedItem.categories, dueDate: updatedItem.dueDate, createdAt: updatedItem.createdAt, isLiked: !updatedItem.isLiked)
+                                currentLinks[index] = newMetadata
+                                owner.links.accept(currentLinks)
+                            }
+                        }
+                        .disposed(by: cell.disposeBag)
                 }
                 
                 cell.shareTapHandler = { [weak self] in
@@ -134,6 +170,14 @@ final class LinkListViewController: BaseViewController {
                 if UIApplication.shared.canOpenURL(link.url) {
                     UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        // 링크 생성 알림 받기
+        NotificationCenter.default.rx
+            .notification(.linkDidCreate)
+            .bind(with: self) { owner, _ in
+                owner.loadLinks()
             }
             .disposed(by: disposeBag)
     }

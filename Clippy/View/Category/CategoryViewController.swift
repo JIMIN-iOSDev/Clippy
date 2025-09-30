@@ -258,7 +258,7 @@ final class CategoryViewController: BaseViewController {
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: link.url)
                         .subscribe()
-                        .disposed(by: self?.disposeBag ?? DisposeBag())
+                        .disposed(by: cell.disposeBag)
                 }
                 
                 cell.shareTapHandler = { [weak self] in

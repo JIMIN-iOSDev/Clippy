@@ -7,8 +7,12 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class LinkTableViewCell: UITableViewCell {
+    
+    var disposeBag = DisposeBag()
     
     private let containerView = {
         let view = UIView()
@@ -112,6 +116,11 @@ final class LinkTableViewCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
     }
     
     private func configureUI() {
