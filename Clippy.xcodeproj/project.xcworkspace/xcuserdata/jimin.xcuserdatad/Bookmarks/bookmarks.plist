@@ -292,13 +292,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>171</string>
+					<string>174</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>171</string>
+					<string>173</string>
 					<key>Timestamp</key>
-					<string>780941061.469372</string>
+					<string>780969112.434763</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -314,15 +314,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string></string>
+				<string>    private let datePicker = {
+</string>
 				<key>leading</key>
 				<string>    }()
     
 </string>
 				<key>trailing</key>
-				<string>    private let datePicker = {
-        let picker = UIDatePicker()
+				<string>        let picker = UIDatePicker()
         picker.datePickerMode = .date
+        picker.preferredDatePickerStyle = .inline
 </string>
 			</dict>
 			<key>title</key>
@@ -479,13 +480,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>285</string>
+					<string>314</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>284</string>
+					<string>313</string>
 					<key>Timestamp</key>
-					<string>780941389.2967581</string>
+					<string>780971303.5952311</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>

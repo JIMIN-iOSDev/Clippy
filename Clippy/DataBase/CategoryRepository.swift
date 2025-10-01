@@ -70,6 +70,27 @@ final class CategoryRepository {
         }
     }
     
+    func deleteLink(url: String) {
+        let categories = realm.objects(Category.self)
+        
+        do {
+            try realm.write {
+                for category in categories {
+                    if let link = category.category.first(where: { $0.url == url }) {
+                        // List에서 삭제
+                        if let index = category.category.index(of: link) {
+                            category.category.remove(at: index)
+                        }
+                        // 객체 자체도 삭제
+                        realm.delete(link)
+                    }
+                }
+            }
+        } catch {
+            print("링크 삭제 실패: \(error)")
+        }
+    }
+    
     func readCategoryList() -> [Category] {
         return Array(realm.objects(Category.self))
     }

@@ -24,6 +24,7 @@ final class CategoryViewController: BaseViewController {
     private let repository = CategoryRepository()
     
     private let categories = BehaviorRelay<[CategoryItem]>(value: [])
+    private let recentLinks = BehaviorRelay<[LinkMetadata]>(value: [])
     
     // MARK: - UI Components
     private let scrollView = {
@@ -201,6 +202,9 @@ final class CategoryViewController: BaseViewController {
     }
     
     override func bind() {
+        linksTableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
         addCategoryButton.rx.tap
             .asDriver()
             .drive(with: self) { owner, _ in
@@ -250,8 +254,11 @@ final class CategoryViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
-        // 링크 테이블뷰 바인딩
         LinkManager.shared.recentLinks
+            .bind(to: recentLinks) // 먼저 로컬에 저장
+            .disposed(by: disposeBag)
+
+        recentLinks
             .bind(to: linksTableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, link, cell in
                 cell.configure(with: link)
                 
@@ -267,24 +274,23 @@ final class CategoryViewController: BaseViewController {
                 }
             }
             .disposed(by: disposeBag)
-        
+
         linksTableView.rx.itemSelected
             .do(onNext: { [weak self] indexPath in
                 self?.linksTableView.deselectRow(at: indexPath, animated: true)
             })
-            .withLatestFrom(LinkManager.shared.recentLinks) { indexPath, links in
+            .withLatestFrom(recentLinks) { indexPath, links in
                 links[indexPath.row]
             }
             .subscribe(onNext: { link in
                 if UIApplication.shared.canOpenURL(link.url) {
-                    // 사파리에서 창 띄우기
                     UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
                 }
             })
             .disposed(by: disposeBag)
-        
+
         // 테이블뷰 높이 자동 업데이트
-        LinkManager.shared.recentLinks
+        recentLinks
             .map { CGFloat($0.count * 156) }
             .distinctUntilChanged()
             .subscribe(onNext: { [weak self] height in
@@ -437,3 +443,47 @@ final class CategoryViewController: BaseViewController {
     }
 }
 
+extension CategoryViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            let link = self.recentLinks.value[indexPath.row] // 변경된 부분
+            
+            let alert = UIAlertController(title: "링크 삭제", message: "이 링크를 삭제하시겠습니까?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "취소", style: .cancel) { _ in
+                completionHandler(false)
+            })
+            alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                self.repository.deleteLink(url: link.url.absoluteString)
+                LinkManager.shared.deleteLink(url: link.url)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+                completionHandler(true)
+            })
+            self.present(alert, animated: true)
+        }
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            let link = self.recentLinks.value[indexPath.row] // 변경된 부분
+            
+            let editVC = EditLinkViewController()
+            editVC.editingLink = link
+            editVC.onLinkUpdated = { [weak self] in
+                LinkManager.shared.reloadFromRealm()
+            }
+            self.present(UINavigationController(rootViewController: editVC), animated: true)
+            
+            completionHandler(true)
+        }
+        editAction.backgroundColor = .systemBlue
+        
+        return UISwipeActionsConfiguration(actions: [editAction])
+    }
+}

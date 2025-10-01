@@ -21,6 +21,8 @@ final class EditLinkViewController: BaseViewController {
     var defaultCategoryName: String?
     var onLinkCreated: (() -> Void)?
     private var selectedDueDate: Date? = nil
+    var editingLink: LinkMetadata? // 수정 모드일 때 사용
+    var onLinkUpdated: (() -> Void)? // 수정 완료 콜백
     
     // MARK: - UI Components
     private let scrollView = {
@@ -227,19 +229,46 @@ final class EditLinkViewController: BaseViewController {
                     return (name: category.name, colorIndex: category.colorIndex)
                 }
                 
-                // 먼저 Realm에 저장 (썸네일 없이)
-                targetCategories.forEach { categoryName in
-                    self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
+                // 수정 모드인 경우
+                if let editingLink = self.editingLink {
+                    // 기존 링크 삭제 후 재생성
+                    targetCategories.forEach { categoryName in
+                        // 기존 카테고리에서 삭제
+                        self.repository.deleteLink(url: editingLink.url.absoluteString)
+                    }
+                    
+                    // 먼저 Realm에 저장 (썸네일 없이)
+                    targetCategories.forEach { categoryName in
+                        self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
+                    }
+                    
+                    // LinkManager 캐시 업데이트
+                    LinkManager.shared.deleteLink(url: editingLink.url)
+                        .subscribe()
+                        .disposed(by: self.disposeBag)
+                    
+                    // LinkManager에 추가 (메타데이터 fetch 및 캐시)
+                    return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
+                } else {
+                    // 추가 모드 (기존 로직)
+                    targetCategories.forEach { categoryName in
+                        self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
+                    }
+                    
+                    return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
                 }
-                
-                // LinkManager에 추가 (메타데이터 fetch 및 캐시)
-                return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
             }
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, _ in
-                // 링크 추가 알림 발송
-                NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                owner.onLinkCreated?()
+                if owner.editingLink != nil {
+                    // 수정 모드
+                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                    owner.onLinkUpdated?()
+                } else {
+                    // 추가 모드
+                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                    owner.onLinkCreated?()
+                }
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
@@ -437,13 +466,48 @@ final class EditLinkViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
-        navigationItem.title = "링크 추가"
+        
+        // 수정 모드인지 확인
+        if let link = editingLink {
+            navigationItem.title = "링크 수정"
+            saveButton.setTitle("수정하기", for: .normal)
+            
+            // 기존 데이터 채우기
+            urlTextField.text = link.url.absoluteString
+            titleTextField.text = link.title
+            memoTextView.text = link.description
+            
+            // 마감일 설정
+            if let dueDate = link.dueDate {
+                datePicker.date = dueDate
+                dueDateTextField.text = DateFormatter.displayFormatter.string(from: dueDate)
+            }
+            
+            // 카테고리 선택
+            if let categories = link.categories {
+                let categoryNames = categories.map { $0.name }
+                selectedCategories.accept(categoryNames)
+            }
+            
+            // URL 필드 비활성화 (수정 시 URL 변경 불가)
+            urlTextField.isEnabled = false
+            urlTextField.textColor = .secondaryLabel
+        } else {
+            navigationItem.title = "링크 추가"
+            saveButton.setTitle("저장하기", for: .normal)
+            
+            if let defaultCategoryName = defaultCategoryName {
+                selectedCategories.accept([defaultCategoryName])
+            }
+        }
+        
         loadCategories()
         
         if let defaultCategoryName = defaultCategoryName {
             selectedCategories.accept([defaultCategoryName])
         }
         
+        // 화면 클릭 시 키보드 내려감
         let tapGesture = UITapGestureRecognizer()
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
@@ -454,6 +518,7 @@ final class EditLinkViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
+        // 링크 이미지 클릭 시에도 텍스트필드 선택
         linkIconImageView.isUserInteractionEnabled = true
         let linkTap = UITapGestureRecognizer()
         linkIconImageView.addGestureRecognizer(linkTap)
@@ -464,6 +529,7 @@ final class EditLinkViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
+        // 캘린더 이미지 클릭 시에도 캘린더 띄워주기
         calendarIconImageView.isUserInteractionEnabled = true
         let calendarTap = UITapGestureRecognizer()
         calendarIconImageView.addGestureRecognizer(calendarTap)
