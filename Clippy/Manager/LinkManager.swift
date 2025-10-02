@@ -44,12 +44,16 @@ final class LinkManager {
     
     var expiredLinksCount: Observable<Int> {    // 마감 3일 남은 거부터 임박
         return links.map { links in
+            let calendar = Calendar.current
             let now = Date()
-            let threeDaysLater = Calendar.current.date(byAdding: .day, value: 3, to: now)!
+            let startOfToday = calendar.startOfDay(for: now)
+            let threeDaysLater = calendar.date(byAdding: .day, value: 3, to: startOfToday)!
             
             return links.filter { link in
                 guard let dueDate = link.dueDate else { return false }
-                return dueDate >= now && dueDate <= threeDaysLater
+                let startOfDueDate = calendar.startOfDay(for: dueDate)
+                // 오늘부터 3일 후까지 포함
+                return startOfDueDate >= startOfToday && startOfDueDate <= threeDaysLater
             }.count
         }
     }

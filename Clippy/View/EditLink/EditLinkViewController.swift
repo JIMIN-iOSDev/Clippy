@@ -20,7 +20,7 @@ final class EditLinkViewController: BaseViewController {
     
     var defaultCategoryName: String?
     var onLinkCreated: (() -> Void)?
-    private var selectedDueDate: Date? = nil
+    private let selectedDueDate = BehaviorRelay<Date?>(value: nil)
     var editingLink: LinkMetadata? // 수정 모드일 때 사용
     var onLinkUpdated: (() -> Void)? // 수정 완료 콜백
     
@@ -205,7 +205,7 @@ final class EditLinkViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         saveButton.rx.tap
-            .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), datePicker.rx.date))
+            .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), selectedDueDate.asObservable()))
             .flatMapLatest { [weak self] urlString, title, memo, selectedCategories, dueDate -> Observable<LinkMetadata> in
                 guard let self = self else { return Observable.empty() }
                 
@@ -282,23 +282,43 @@ final class EditLinkViewController: BaseViewController {
         // 선택된 마감일 TextField에 바인딩
         dueDateTextField.inputView = datePicker
         
-        datePicker.rx.date
-            .map { DateFormatter.displayFormatter.string(from: $0) }
-            .bind(to: dueDateTextField.rx.text)
-            .disposed(by: disposeBag)
-        
         // 완료 버튼 툴바
         let toolbar = UIToolbar()
         toolbar.sizeToFit()
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let clearButton = UIBarButtonItem(title: "지우기", style: .plain, target: nil, action: nil)
         let doneButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
-        toolbar.setItems([doneButton], animated: true)
+        toolbar.setItems([clearButton, flexSpace, doneButton], animated: true)
         dueDateTextField.inputAccessoryView = toolbar
         
-        // 완료 버튼 탭 -> 키보드 닫기
-        doneButton.rx.tap
+        // 지우기 버튼 탭
+        clearButton.rx.tap
             .bind(with: self) { owner, _ in
+                owner.selectedDueDate.accept(nil)
+                owner.dueDateTextField.text = nil
                 owner.dueDateTextField.resignFirstResponder()
             }
+            .disposed(by: disposeBag)
+        
+        // 완료 버튼 탭 -> 날짜 선택 확정
+        doneButton.rx.tap
+            .bind(with: self) { owner, _ in
+                owner.selectedDueDate.accept(owner.datePicker.date)
+                owner.dueDateTextField.text = DateFormatter.displayFormatter.string(from: owner.datePicker.date)
+                owner.dueDateTextField.resignFirstResponder()
+            }
+            .disposed(by: disposeBag)
+        
+        // 선택된 날짜를 TextField에 표시
+        selectedDueDate
+            .map { date in
+                if let date = date {
+                    return DateFormatter.displayFormatter.string(from: date)
+                } else {
+                    return nil
+                }
+            }
+            .bind(to: dueDateTextField.rx.text)
             .disposed(by: disposeBag)
     }
     
@@ -479,6 +499,7 @@ final class EditLinkViewController: BaseViewController {
             
             // 마감일 설정
             if let dueDate = link.dueDate {
+                selectedDueDate.accept(dueDate)
                 datePicker.date = dueDate
                 dueDateTextField.text = DateFormatter.displayFormatter.string(from: dueDate)
             }
