@@ -14,6 +14,7 @@ final class LinkListViewController: BaseViewController {
     
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private var loadDisposeBag = DisposeBag()
     private let repository = CategoryRepository()
     private let links = BehaviorRelay<[LinkMetadata]>(value: [])
     var categoryName: String
@@ -74,6 +75,9 @@ final class LinkListViewController: BaseViewController {
     
     // MARK: - Configuration
     private func loadLinks() {
+        // 기존 구독 정리
+        loadDisposeBag = DisposeBag()
+        
         guard let category = repository.readCategory(name: categoryName) else {
             links.accept([])
             return
@@ -84,22 +88,40 @@ final class LinkListViewController: BaseViewController {
         
         let sortedLinks = category.category.sorted(by: { $0.date > $1.date })
         
-        // 먼저 썸네일 없는 버전으로 초기화
         var linkMetadataList: [LinkMetadata] = []
         
         for linkItem in sortedLinks {
             guard let url = URL(string: linkItem.url) else { continue }
             
-            let metadata = LinkMetadata(url: url, title: linkItem.title, description: linkItem.memo, thumbnailImage: nil, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
-            
+            // 일단 기본 메타데이터 추가
+            let metadata = LinkMetadata(
+                url: url,
+                title: linkItem.title,
+                description: linkItem.memo,
+                thumbnailImage: nil,
+                categories: [(name: categoryName, colorIndex: colorIndex)],
+                dueDate: linkItem.deadline,
+                createdAt: linkItem.date,
+                isLiked: linkItem.likeStatus
+            )
             linkMetadataList.append(metadata)
             
-            // 백그라운드에서 썸네일 로드
+            // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
             LinkManager.shared.fetchLinkMetadata(for: url)
+                .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] fetchedMetadata in
                     guard let self = self else { return }
                     
-                    let updatedMetadata = LinkMetadata(url: url, title: linkItem.title, description: linkItem.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: [(name: categoryName, colorIndex: colorIndex)], dueDate: linkItem.deadline, createdAt: linkItem.date, isLiked: linkItem.likeStatus)
+                    let updatedMetadata = LinkMetadata(
+                        url: url,
+                        title: linkItem.title,
+                        description: linkItem.memo,
+                        thumbnailImage: fetchedMetadata.thumbnailImage,
+                        categories: [(name: categoryName, colorIndex: colorIndex)],
+                        dueDate: linkItem.deadline,
+                        createdAt: linkItem.date,
+                        isLiked: linkItem.likeStatus
+                    )
                     
                     var currentLinks = self.links.value
                     if let index = currentLinks.firstIndex(where: { $0.url == url }) {
@@ -107,7 +129,7 @@ final class LinkListViewController: BaseViewController {
                         self.links.accept(currentLinks)
                     }
                 })
-                .disposed(by: disposeBag)
+                .disposed(by: loadDisposeBag)
         }
         
         links.accept(linkMetadataList)

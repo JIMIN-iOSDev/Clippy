@@ -37,10 +37,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>마감 임박 체크</string>
@@ -80,10 +83,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>로딩 상태 어디 쓰지</string>
@@ -123,10 +129,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>같은 url인데 마지막 / 하나만 차이나는 경우엔 어케할거?</string>
@@ -166,10 +175,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>/ 하나 차이나는 같은 url은?</string>
@@ -209,10 +221,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>이미지 안들어올 때 로고 이미지 넣어주기</string>
@@ -252,10 +267,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>캐시 관련 다시 보기</string>
@@ -577,10 +595,13 @@
 				<string></string>
 				<key>leading</key>
 				<string>    }
-}
+    
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+</string>
 			</dict>
 			<key>title</key>
 			<string>로딩 구현</string>

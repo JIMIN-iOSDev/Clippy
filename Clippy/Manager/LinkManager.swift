@@ -22,6 +22,8 @@ final class LinkManager {
     private let repository = CategoryRepository()
     
     private var linkCache: [String: LinkMetadata] = [:] // 캐시
+    private var imageCache: [String: UIImage] = [:] // 이미지 캐시
+    private let imageCacheQueue = DispatchQueue(label: "com.clippy.imageCache", attributes: .concurrent)
     
     private let linksSubject = BehaviorRelay<[LinkMetadata]>(value: []) // 링크 목록
     private let isLoadingSubject = BehaviorRelay<Bool>(value: false)    // 로딩 상태
@@ -80,21 +82,25 @@ final class LinkManager {
                 guard let url = URL(string: linkList.url),
                       let categoryInfos = urlToCategories[linkList.url] else { return }
                 
-                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: nil, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                // 캐시된 이미지가 있으면 바로 사용
+                let cachedImage = getCachedImage(for: linkList.url)
+                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: cachedImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
                 
-                // 백그라운드에서 썸네일 로드
-                fetchLinkMetadata(for: url)
-                    .bind(with: self) { owner, fetchedMetadata in
-                        // 썸네일만 업데이트
-                        let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
-                        
-                        owner.linkCache[linkList.url] = updatedMetadata
-                        owner.updateLinksArray(with: updatedMetadata)
-                    }
-                    .disposed(by: disposeBag)
+                // 캐시된 이미지가 없으면 백그라운드에서 썸네일 로드
+                if cachedImage == nil {
+                    fetchLinkMetadata(for: url)
+                        .bind(with: self) { owner, fetchedMetadata in
+                            // 썸네일만 업데이트
+                            let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                            
+                            owner.linkCache[linkList.url] = updatedMetadata
+                            owner.updateLinksArray(with: updatedMetadata)
+                        }
+                        .disposed(by: disposeBag)
+                }
             }
         }
         
@@ -159,8 +165,18 @@ final class LinkManager {
     }
     
     func fetchLinkMetadata(for url: URL) -> Observable<LinkMetadata> {
+        let urlString = url.absoluteString
+        
         return Observable.create { [weak self] observer in
             guard let self = self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            // 이미지 캐시 확인
+            if let cachedImage = self.getCachedImage(for: urlString) {
+                let cachedMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: cachedImage)
+                observer.onNext(cachedMetadata)
                 observer.onCompleted()
                 return Disposables.create()
             }
@@ -191,6 +207,10 @@ final class LinkManager {
                 // 이미지 로드
                 if let imageProvider = metadata.imageProvider {
                     imageProvider.loadObject(ofClass: UIImage.self) { image, _ in
+                        if let image = image as? UIImage {
+                            // 이미지 캐시에 저장
+                            self.cacheImage(image, for: urlString)
+                        }
                         let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: image as? UIImage)
                         observer.onNext(linkMetadata)
                         observer.onCompleted()
@@ -203,10 +223,25 @@ final class LinkManager {
             }
             
             return Disposables.create {
-                // provider 작업 취소 로직 (필요시)
+                provider.cancel()
             }
         }
         .observe(on: MainScheduler.instance)
+    }
+    
+    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
+    }
+    
+    private func getCachedImage(for urlString: String) -> UIImage? {
+        var cachedImage: UIImage?
+        imageCacheQueue.sync {
+            cachedImage = imageCache[urlString]
+        }
+        return cachedImage
     }
     
     func reloadFromRealm() {

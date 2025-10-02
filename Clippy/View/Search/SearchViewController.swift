@@ -148,7 +148,7 @@ final class SearchViewController: BaseViewController {
             
             let categories = Array(linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) })
             
-            // 먼저 썸네일 없는 버전으로 초기화
+            // 일단 기본 메타데이터 추가
             let metadata = LinkMetadata(
                 url: url,
                 title: linkItem.title,
@@ -159,10 +159,9 @@ final class SearchViewController: BaseViewController {
                 createdAt: linkItem.date,
                 isLiked: linkItem.likeStatus
             )
-            
             linkMetadataList.append(metadata)
             
-            // 백그라운드에서 썸네일 로드
+            // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
             LinkManager.shared.fetchLinkMetadata(for: url)
                 .subscribe(onNext: { [weak self] fetchedMetadata in
                     guard let self = self else { return }
