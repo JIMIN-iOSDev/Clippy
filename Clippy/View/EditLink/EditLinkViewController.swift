@@ -24,6 +24,16 @@ final class EditLinkViewController: BaseViewController {
     var editingLink: LinkMetadata? // 수정 모드일 때 사용
     var onLinkUpdated: (() -> Void)? // 수정 완료 콜백
     
+    // URL 검증 관련
+    private let urlValidationState = BehaviorRelay<URLValidationState>(value: .none)
+    
+    enum URLValidationState {
+        case none
+        case validating
+        case valid
+        case invalid
+    }
+    
     // MARK: - UI Components
     private let scrollView = {
         let scrollView = UIScrollView()
@@ -62,6 +72,13 @@ final class EditLinkViewController: BaseViewController {
         imageView.image = UIImage(systemName: "link", withConfiguration: config)
         imageView.tintColor = .systemGray3
         return imageView
+    }()
+    
+    private let urlValidationLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.isHidden = true
+        return label
     }()
     
     private let titleSectionLabel = {
@@ -183,6 +200,23 @@ final class EditLinkViewController: BaseViewController {
         memoTextView.rx.text.orEmpty
             .map { !$0.isEmpty }
             .bind(to: memoPlaceholderLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        // URL 유효성 검사
+        urlTextField.rx.text.orEmpty
+            .distinctUntilChanged()
+            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] urlString in
+                self?.validateURL(urlString)
+            })
+            .disposed(by: disposeBag)
+        
+        // URL 검증 상태에 따른 UI 업데이트
+        urlValidationState
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] state in
+                self?.updateURLValidationUI(state: state)
+            })
             .disposed(by: disposeBag)
         
         categories
@@ -376,7 +410,7 @@ final class EditLinkViewController: BaseViewController {
         
         scrollView.addSubview(contentView)
         
-        [urlLabel, urlTextField, titleSectionLabel, titleTextField, memoLabel, memoTextView, categoryLabel, categoryTagsScrollView, dueDateLabel, dueDateTextField].forEach { contentView.addSubview($0) }
+        [urlLabel, urlTextField, urlValidationLabel, titleSectionLabel, titleTextField, memoLabel, memoTextView, categoryLabel, categoryTagsScrollView, dueDateLabel, dueDateTextField].forEach { contentView.addSubview($0) }
         
         urlTextField.addSubview(linkIconImageView)
         
@@ -410,13 +444,18 @@ final class EditLinkViewController: BaseViewController {
             make.height.equalTo(48)
         }
         
+        urlValidationLabel.snp.makeConstraints { make in
+            make.top.equalTo(urlTextField.snp.bottom).offset(4)
+            make.leading.equalTo(urlTextField)
+        }
+        
         linkIconImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-16)
             make.centerY.equalToSuperview()
         }
         
         titleSectionLabel.snp.makeConstraints { make in
-            make.top.equalTo(urlTextField.snp.bottom).offset(32)
+            make.top.equalTo(urlValidationLabel.snp.bottom).offset(20)
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         
@@ -558,5 +597,78 @@ final class EditLinkViewController: BaseViewController {
                 owner.dueDateTextField.becomeFirstResponder()
             }
             .disposed(by: disposeBag)
+    }
+    
+    // MARK: - URL Validation
+    private func validateURL(_ urlString: String) {
+        let trimmedURL = urlString.trimmingCharacters(in: .whitespaces)
+        
+        // 빈 문자열이면 검증 안함
+        guard !trimmedURL.isEmpty else {
+            urlValidationState.accept(.none)
+            return
+        }
+        
+        // 기본 형식 검사
+        guard let url = URL(string: trimmedURL),
+              let scheme = url.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              url.host != nil else {
+            urlValidationState.accept(.invalid)
+            return
+        }
+        
+        // 검증 중 상태로 변경
+        urlValidationState.accept(.validating)
+        
+        // 실제 연결 가능 여부 검사
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        request.timeoutInterval = 10.0
+        
+        URLSession.shared.dataTask(with: request) { [weak self] _, response, error in
+            DispatchQueue.main.async {
+                if let httpResponse = response as? HTTPURLResponse {
+                    // 200-399 범위면 유효한 URL
+                    let isValid = 200...399 ~= httpResponse.statusCode
+                    self?.urlValidationState.accept(isValid ? .valid : .invalid)
+                } else {
+                    self?.urlValidationState.accept(.invalid)
+                }
+            }
+        }.resume()
+    }
+    
+    private func updateURLValidationUI(state: URLValidationState) {
+        switch state {
+        case .none:
+            urlTextField.layer.borderWidth = 0
+            urlValidationLabel.isHidden = true
+            linkIconImageView.tintColor = .systemGray3
+            
+        case .validating:
+            urlTextField.layer.borderWidth = 1
+            urlTextField.layer.borderColor = UIColor.systemYellow.cgColor
+            urlValidationLabel.text = "검증 중..."
+            urlValidationLabel.textColor = .systemYellow
+            urlValidationLabel.isHidden = false
+            linkIconImageView.tintColor = .systemYellow
+            
+        case .valid:
+            urlTextField.layer.borderWidth = 1
+            urlTextField.layer.borderColor = UIColor.systemGreen.cgColor
+            urlValidationLabel.text = "유효한 URL"
+            urlValidationLabel.textColor = .systemGreen
+            urlValidationLabel.isHidden = false
+            linkIconImageView.tintColor = .systemGreen
+            
+        case .invalid:
+            urlTextField.layer.borderWidth = 1
+            urlTextField.layer.borderColor = UIColor.systemRed.cgColor
+            urlValidationLabel.text = "유효하지 않은 URL"
+            urlValidationLabel.textColor = .systemRed
+            urlValidationLabel.isHidden = false
+            linkIconImageView.tintColor = .systemRed
+        }
     }
 }
