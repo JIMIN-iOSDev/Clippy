@@ -101,6 +101,14 @@ final class SearchViewController: BaseViewController {
                 owner.searchBar.resignFirstResponder()
             }
             .disposed(by: disposeBag)
+        
+        // 링크 추가/수정 알림 받기
+        NotificationCenter.default.rx
+            .notification(.linkDidCreate)
+            .bind(with: self) { owner, _ in
+                owner.loadLinks()
+            }
+            .disposed(by: disposeBag)
 
         loadLinks()
     }

@@ -55,6 +55,13 @@ final class LinkTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let categoryTagsScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
+    
     private let categoryTagsStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -129,8 +136,10 @@ final class LinkTableViewCell: UITableViewCell {
         
         contentView.addSubview(containerView)
         
-        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, heartButton, shareButton, categoryTagsStackView]
+        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, heartButton, shareButton, categoryTagsScrollView]
             .forEach { containerView.addSubview($0) }
+        
+        categoryTagsScrollView.addSubview(categoryTagsStackView)
         
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20))
@@ -172,20 +181,34 @@ final class LinkTableViewCell: UITableViewCell {
             make.trailing.equalTo(heartButton.snp.leading).offset(-16)
         }
         
-        categoryTagsStackView.snp.makeConstraints { make in
+        // 카테고리 태그 ScrollView는 남은 공간에만 표시
+        categoryTagsScrollView.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-16)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(16)
-            make.trailing.lessThanOrEqualTo(dateLabel.snp.leading).offset(-8)
+            make.height.equalTo(24)
         }
         
+        // 마감일과 화살표를 먼저 배치하고 centerY를 카테고리와 맞춤
         dateLabel.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-16)
+            make.centerY.equalTo(categoryTagsScrollView)
+            make.leading.greaterThanOrEqualTo(categoryTagsScrollView.snp.trailing).offset(8)
             make.trailing.equalTo(arrowIcon.snp.leading).offset(-8)
         }
         
         arrowIcon.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-16)
+            make.centerY.equalTo(categoryTagsScrollView)
             make.trailing.equalToSuperview().offset(-16)
+            make.width.equalTo(16)
+        }
+        
+        // ScrollView의 trailing을 dateLabel 기준으로 설정
+        categoryTagsScrollView.snp.makeConstraints { make in
+            make.trailing.equalTo(dateLabel.snp.leading).offset(-8)
+        }
+        
+        categoryTagsStackView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.height.equalToSuperview()
         }
         
         heartButton.addTarget(self, action: #selector(heartButtonTapped), for: .touchUpInside)
