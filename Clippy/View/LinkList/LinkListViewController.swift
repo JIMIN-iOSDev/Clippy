@@ -379,6 +379,12 @@ final class LinkListViewController: BaseViewController {
     }
     
     override func bind() {
+        // allLinks 모드일 때만 테이블뷰 delegate 설정 (스와이프 액션)
+        if case .allLinks = mode {
+            tableView.rx.setDelegate(self)
+                .disposed(by: disposeBag)
+        }
+        
         // allLinks 모드일 때만 정렬 버튼 바인딩
         if case .allLinks = mode {
             latestButton.rx.tap
@@ -531,5 +537,60 @@ final class LinkListViewController: BaseViewController {
         navigationItem.title = categoryName
         navigationController?.navigationBar.tintColor = .black
         loadLinks()
+    }
+}
+
+// MARK: - UITableViewDelegate (스와이프 액션)
+extension LinkListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // allLinks 모드일 때만 스와이프 액션 제공
+        guard case .allLinks = mode else { return nil }
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            let link = self.links.value[indexPath.row]
+            
+            let alert = UIAlertController(title: "링크 삭제", message: "이 링크를 삭제하시겠습니까?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "취소", style: .cancel) { _ in
+                completionHandler(false)
+            })
+            alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                self.repository.deleteLink(url: link.url.absoluteString)
+                LinkManager.shared.deleteLink(url: link.url)
+                    .subscribe(onNext: { [weak self] _ in
+                        self?.loadLinks()
+                    })
+                    .disposed(by: self.disposeBag)
+                completionHandler(true)
+            })
+            self.present(alert, animated: true)
+        }
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // allLinks 모드일 때만 스와이프 액션 제공
+        guard case .allLinks = mode else { return nil }
+        
+        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            let link = self.links.value[indexPath.row]
+            
+            let editVC = EditLinkViewController()
+            editVC.editingLink = link
+            editVC.onLinkUpdated = { [weak self] in
+                LinkManager.shared.reloadFromRealm()
+                self?.loadLinks()
+            }
+            self.present(UINavigationController(rootViewController: editVC), animated: true)
+            
+            completionHandler(true)
+        }
+        editAction.backgroundColor = .systemBlue
+        
+        return UISwipeActionsConfiguration(actions: [editAction])
     }
 }
