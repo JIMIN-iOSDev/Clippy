@@ -37,6 +37,8 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         label.textAlignment = .center
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -80,6 +82,7 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         
         titleLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(8)
             make.top.equalTo(iconBackgroundView.snp.bottom).offset(12)
         }
         

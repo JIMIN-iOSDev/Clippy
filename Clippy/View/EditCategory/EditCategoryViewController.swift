@@ -36,7 +36,7 @@ final class EditCategoryViewController: BaseViewController {
     
     private let categoryNameTextField = {
         let textField = UITextField()
-        textField.placeholder = "예) 공부, 업무, 취미"
+        textField.placeholder = "10자 이내로 입력 (예: 취미, 맛집)"
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.borderStyle = .none
         textField.backgroundColor = UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
@@ -133,6 +133,17 @@ final class EditCategoryViewController: BaseViewController {
     
     // MARK: - Configuration
     override func bind() {
+        // 카테고리 이름 글자수 제한 (10자)
+        categoryNameTextField.rx.text.orEmpty
+            .map { text in
+                if text.count > 10 {
+                    return String(text.prefix(10))
+                }
+                return text
+            }
+            .bind(to: categoryNameTextField.rx.text)
+            .disposed(by: disposeBag)
+        
         // 색상 선택
         for (index, view) in colorStackView.arrangedSubviews.enumerated() {
             guard let button = view as? UIButton else { continue }
