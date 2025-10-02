@@ -18,7 +18,7 @@ final class SearchViewController: BaseViewController {
     private let repository = CategoryRepository()
 
     private let allLinks = BehaviorRelay<[LinkList]>(value: []) // 전체 링크 데이터
-    private let filteredLinks = BehaviorRelay<[LinkList]>(value: []) // 검색 결과
+    private let filteredLinks = BehaviorRelay<[LinkMetadata]>(value: []) // 검색 결과
 
     // MARK: - UI Components
     private let searchBar = {
@@ -61,25 +61,28 @@ final class SearchViewController: BaseViewController {
                 .prefix(20)
                 .map { $0 }
             }
-            .bind(to: filteredLinks)
+            .subscribe(onNext: { [weak self] linkListItems in
+                guard let self = self else { return }
+                self.convertToLinkMetadata(linkListItems: linkListItems)
+            })
             .disposed(by: disposeBag)
 
         // 테이블뷰에 데이터 바인딩
         filteredLinks
             .observe(on: MainScheduler.instance)
-            .bind(to: tableView.rx.items(cellIdentifier: "LinkTableViewCell", cellType: LinkTableViewCell.self)) { [weak self] row, link, cell in
+            .bind(to: tableView.rx.items(cellIdentifier: "LinkTableViewCell", cellType: LinkTableViewCell.self)) { [weak self] row, linkMetadata, cell in
                 guard let self = self else { return }
 
-                cell.configure(with: LinkMetadata(url: URL(string: link.url) ?? URL(string: "https://example.com")!, title: link.title, description: link.memo, thumbnailImage: nil, categories: link.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) }, createdAt: link.date, isLiked: link.likeStatus))
+                cell.configure(with: linkMetadata)
 
                 // 즐겨찾기 버튼
                 cell.heartTapHandler = {
-                    self.toggleLikeStatus(link: link)
+                    self.toggleLikeStatus(url: linkMetadata.url.absoluteString)
                 }
 
                 // 공유 버튼
                 cell.shareTapHandler = {
-                    self.shareLink(link: link)
+                    self.shareLink(url: linkMetadata.url)
                 }
             }
             .disposed(by: disposeBag)
@@ -134,23 +137,82 @@ final class SearchViewController: BaseViewController {
             .flatMap { $0.category } // 모든 링크 합치기
             .sorted(by: { $0.date > $1.date })
         allLinks.accept(allLinksArray)
-        filteredLinks.accept(Array(allLinksArray.prefix(20)))
+        convertToLinkMetadata(linkListItems: Array(allLinksArray.prefix(20)))
+    }
+    
+    private func convertToLinkMetadata(linkListItems: [LinkList]) {
+        var linkMetadataList: [LinkMetadata] = []
+        
+        for linkItem in linkListItems {
+            guard let url = URL(string: linkItem.url) else { continue }
+            
+            let categories = Array(linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) })
+            
+            // 먼저 썸네일 없는 버전으로 초기화
+            let metadata = LinkMetadata(
+                url: url,
+                title: linkItem.title,
+                description: linkItem.memo,
+                thumbnailImage: nil,
+                categories: categories,
+                dueDate: linkItem.deadline,
+                createdAt: linkItem.date,
+                isLiked: linkItem.likeStatus
+            )
+            
+            linkMetadataList.append(metadata)
+            
+            // 백그라운드에서 썸네일 로드
+            LinkManager.shared.fetchLinkMetadata(for: url)
+                .subscribe(onNext: { [weak self] fetchedMetadata in
+                    guard let self = self else { return }
+                    
+                    let updatedMetadata = LinkMetadata(
+                        url: url,
+                        title: linkItem.title,
+                        description: linkItem.memo,
+                        thumbnailImage: fetchedMetadata.thumbnailImage,
+                        categories: categories,
+                        dueDate: linkItem.deadline,
+                        createdAt: linkItem.date,
+                        isLiked: linkItem.likeStatus
+                    )
+                    
+                    var currentLinks = self.filteredLinks.value
+                    if let index = currentLinks.firstIndex(where: { $0.url == url }) {
+                        currentLinks[index] = updatedMetadata
+                        self.filteredLinks.accept(currentLinks)
+                    }
+                })
+                .disposed(by: disposeBag)
+        }
+        
+        filteredLinks.accept(linkMetadataList)
     }
 
-    private func toggleLikeStatus(link: LinkList) {
+    private func toggleLikeStatus(url: String) {
+        guard let linkItem = allLinks.value.first(where: { $0.url == url }) else { return }
+        
         do {
             let realm = try Realm()
             try realm.write {
-                link.likeStatus.toggle()
+                linkItem.likeStatus.toggle()
             }
-            loadLinks() // 변경 반영
+            
+            // 현재 필터링된 결과 업데이트
+            var currentFiltered = filteredLinks.value
+            if let index = currentFiltered.firstIndex(where: { $0.url.absoluteString == url }) {
+                let oldMetadata = currentFiltered[index]
+                let updatedMetadata = LinkMetadata(url: oldMetadata.url, title: oldMetadata.title, description: oldMetadata.description, thumbnailImage: oldMetadata.thumbnailImage, categories: oldMetadata.categories, dueDate: oldMetadata.dueDate, createdAt: oldMetadata.createdAt, isLiked: !oldMetadata.isLiked)
+                currentFiltered[index] = updatedMetadata
+                filteredLinks.accept(currentFiltered)
+            }
         } catch {
             print("즐겨찾기 상태 변경 실패: \(error.localizedDescription)")
         }
     }
 
-    private func shareLink(link: LinkList) {
-        guard let url = URL(string: link.url) else { return }
+    private func shareLink(url: URL) {
         let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
         activityVC.popoverPresentationController?.sourceView = view
         present(activityVC, animated: true)

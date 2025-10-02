@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>43</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>42</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780933338.896697</string>
+					<string>781075825.167467</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -34,17 +34,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>    var expiredLinksCount: Observable&lt;Int&gt; {    // 마감 3일 남은 거부터 임박
-</string>
+				<string></string>
 				<key>leading</key>
 				<string>    }
-    
+}
 </string>
 				<key>trailing</key>
-				<string>        return links.map { links in
-            let now = Date()
-            let threeDaysLater = Calendar.current.date(byAdding: .day, value: 3, to: now)!
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>마감 임박 체크</string>
@@ -59,13 +55,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>55</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>54</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.761035</string>
+					<string>781075825.16745</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -81,17 +77,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>    var isLoading: Observable&lt;Bool&gt; {
-</string>
+				<string></string>
 				<key>leading</key>
 				<string>    }
-    
+}
 </string>
 				<key>trailing</key>
-				<string>        return isLoadingSubject.asObservable()
-    }
-    
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>로딩 상태 어디 쓰지</string>
@@ -106,13 +98,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>221</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>220</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.7610461</string>
+					<string>781075825.1674629</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -128,17 +120,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        if let index = currentLinks.firstIndex(where: { $0.url.absoluteString == linkMetadata.url.absoluteString }) {
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>        
-        // 기존 링크 업데이트 또는 새 링크 추가
+				<string>    }
+}
 </string>
 				<key>trailing</key>
-				<string>            currentLinks[index] = linkMetadata
-        } else {
-            currentLinks.append(linkMetadata)
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>같은 url인데 마지막 / 하나만 차이나는 경우엔 어케할거?</string>
@@ -153,13 +141,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>155</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>154</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.761053</string>
+					<string>781075825.167457</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -175,17 +163,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        currentLinks.removeAll { $0.url.absoluteString == cacheKey }
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>        
-        var currentLinks = linksSubject.value
+				<string>    }
+}
 </string>
 				<key>trailing</key>
-				<string>        linksSubject.accept(currentLinks)
-        
-        return Observable.just(true)
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>/ 하나 차이나는 같은 url은?</string>
@@ -200,13 +184,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>199</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>198</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.7609921</string>
+					<string>781075825.167416</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -222,17 +206,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: nil)
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>                    }
-                } else {
+				<string>    }
+}
 </string>
 				<key>trailing</key>
-				<string>                    observer.onNext(linkMetadata)
-                    observer.onCompleted()
-                }
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>이미지 안들어올 때 로고 이미지 넣어주기</string>
@@ -247,13 +227,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>230</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>229</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.761023</string>
+					<string>781075825.16747</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -269,15 +249,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>    }
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>        currentLinks.sort { $0.createdAt &gt; $1.createdAt }
-        linksSubject.accept(currentLinks)
+				<string>    }
+}
 </string>
 				<key>trailing</key>
-				<string>}
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>캐시 관련 다시 보기</string>
@@ -574,13 +552,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>168</string>
+					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>167</string>
+					<string>231</string>
 					<key>Timestamp</key>
-					<string>780939523.761072</string>
+					<string>781075825.167444</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -596,17 +574,13 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>            self.isLoadingSubject.accept(true)
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>            }
-            
+				<string>    }
+}
 </string>
 				<key>trailing</key>
-				<string>            
-            let provider = LPMetadataProvider()
-            provider.startFetchingMetadata(for: url) { metadata, error in
-</string>
+				<string></string>
 			</dict>
 			<key>title</key>
 			<string>로딩 구현</string>
@@ -643,16 +617,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string> 링크 \(url)")
+				<string> nil {
 </string>
 				<key>leading</key>
-				<string>        let existingLink = category.category.first { $0.url == url }    // url 중복 체크
-        if existingLink != nil {
-            print("이미 존재하는</string>
+				<string>        // 해당 카테고리 내에서만 중복 체크
+        let existingLink = category.category.first { $0.url == url }
+        if existingLink !=</string>
 				<key>trailing</key>
-				<string>            return
+				<string>            print("이미 \(categoryName) 카테고리에 존재하는 링크 \(url)")
+            return
         }
-        
 </string>
 			</dict>
 			<key>title</key>
