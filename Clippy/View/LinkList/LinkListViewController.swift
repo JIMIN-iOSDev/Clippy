@@ -15,6 +15,11 @@ final class LinkListViewController: BaseViewController {
     enum Mode {
         case category(String)
         case expiring
+        case allLinks
+    }
+    
+    enum SortType {
+        case latest, title, deadline
     }
     
     // MARK: - Properties
@@ -22,6 +27,8 @@ final class LinkListViewController: BaseViewController {
     private var loadDisposeBag = DisposeBag()
     private let repository = CategoryRepository()
     private let links = BehaviorRelay<[LinkMetadata]>(value: [])
+    private let allLinksCache = BehaviorRelay<[LinkMetadata]>(value: [])
+    private let sortType = BehaviorRelay<SortType>(value: .latest)
     var categoryName: String
     private let mode: Mode
     
@@ -37,6 +44,8 @@ final class LinkListViewController: BaseViewController {
             self.categoryName = name
         case .expiring:
             self.categoryName = "마감 임박"
+        case .allLinks:
+            self.categoryName = "저장된 링크"
         }
         self.mode = mode
         super.init(nibName: nil, bundle: nil)
@@ -48,6 +57,48 @@ final class LinkListViewController: BaseViewController {
     }
     
     // MARK: - UI Components
+    private let sortButtonsStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .center
+        stackView.distribution = .fillProportionally
+        return stackView
+    }()
+    
+    private let latestButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("최근 추가순", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
+    private let titleSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("제목순", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
+    private let deadlineSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("마감일순", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
     private let tableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.backgroundColor = .clear
@@ -101,6 +152,8 @@ final class LinkListViewController: BaseViewController {
             loadCategoryLinks(categoryName: categoryName)
         case .expiring:
             loadExpiringLinks()
+        case .allLinks:
+            loadAllLinks()
         }
     }
     
@@ -236,7 +289,130 @@ final class LinkListViewController: BaseViewController {
         links.accept(linkMetadataList)
     }
     
+    private func loadAllLinks() {
+        let categories = repository.readCategoryList()
+        var linkMetadataList: [LinkMetadata] = []
+        var processedURLs = Set<String>()
+        
+        for category in categories {
+            for linkItem in category.category {
+                guard let url = URL(string: linkItem.url),
+                      !processedURLs.contains(linkItem.url) else { continue }
+                
+                processedURLs.insert(linkItem.url)
+                
+                let categoryInfos = linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) }
+                
+                // 일단 기본 메타데이터 추가
+                let metadata = LinkMetadata(
+                    url: url,
+                    title: linkItem.title,
+                    description: linkItem.memo,
+                    thumbnailImage: nil,
+                    categories: Array(categoryInfos),
+                    dueDate: linkItem.deadline,
+                    createdAt: linkItem.date,
+                    isLiked: linkItem.likeStatus
+                )
+                linkMetadataList.append(metadata)
+                
+                // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
+                LinkManager.shared.fetchLinkMetadata(for: url)
+                    .observe(on: MainScheduler.instance)
+                    .subscribe(onNext: { [weak self] fetchedMetadata in
+                        guard let self = self else { return }
+                        
+                        let updatedMetadata = LinkMetadata(
+                            url: url,
+                            title: linkItem.title,
+                            description: linkItem.memo,
+                            thumbnailImage: fetchedMetadata.thumbnailImage,
+                            categories: Array(categoryInfos),
+                            dueDate: linkItem.deadline,
+                            createdAt: linkItem.date,
+                            isLiked: linkItem.likeStatus
+                        )
+                        
+                        var currentLinks = self.allLinksCache.value
+                        if let index = currentLinks.firstIndex(where: { $0.url == url }) {
+                            currentLinks[index] = updatedMetadata
+                            self.allLinksCache.accept(currentLinks)
+                        }
+                    })
+                    .disposed(by: loadDisposeBag)
+            }
+        }
+        
+        allLinksCache.accept(linkMetadataList)
+    }
+    
+    private func sortLinks(_ links: [LinkMetadata], by sortType: SortType) -> [LinkMetadata] {
+        switch sortType {
+        case .latest:
+            return links.sorted { $0.createdAt > $1.createdAt }
+        case .title:
+            return links.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        case .deadline:
+            return links.sorted { link1, link2 in
+                // 마감일이 없는 링크는 뒤로
+                guard let date1 = link1.dueDate else { return false }
+                guard let date2 = link2.dueDate else { return true }
+                return date1 < date2
+            }
+        }
+    }
+    
+    private func updateSortButtonStyles(selectedType: SortType) {
+        let buttons: [(UIButton, SortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline)]
+        
+        buttons.forEach { button, type in
+            if type == selectedType {
+                button.backgroundColor = .systemBlue
+                button.setTitleColor(.white, for: .normal)
+                button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            } else {
+                button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+                button.setTitleColor(.label, for: .normal)
+                button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+            }
+        }
+    }
+    
     override func bind() {
+        // allLinks 모드일 때만 정렬 버튼 바인딩
+        if case .allLinks = mode {
+            latestButton.rx.tap
+                .map { SortType.latest }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            titleSortButton.rx.tap
+                .map { SortType.title }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            deadlineSortButton.rx.tap
+                .map { SortType.deadline }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            // 정렬 타입에 따른 버튼 스타일 변경
+            sortType
+                .subscribe(onNext: { [weak self] type in
+                    self?.updateSortButtonStyles(selectedType: type)
+                })
+                .disposed(by: disposeBag)
+            
+            // 정렬 적용
+            Observable.combineLatest(allLinksCache, sortType)
+                .map { [weak self] (links, sortType) -> [LinkMetadata] in
+                    guard let self = self else { return [] }
+                    return self.sortLinks(links, by: sortType)
+                }
+                .bind(to: links)
+                .disposed(by: disposeBag)
+        }
+        
         floatingAddButton.rx.tap
             .bind(with: self) { owner, _ in
                 let editVC = EditLinkViewController()
@@ -306,14 +482,32 @@ final class LinkListViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
-        [tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+        if case .allLinks = mode {
+            [sortButtonsStackView, tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+            [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+        } else {
+            [tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+        }
         emptyView.addSubview(emptyLabel)
     }
     
     override func configureLayout() {
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.horizontalEdges.bottom.equalToSuperview()
+        if case .allLinks = mode {
+            sortButtonsStackView.snp.makeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+                make.leading.equalToSuperview().offset(20)
+                make.height.equalTo(36)
+            }
+            
+            tableView.snp.makeConstraints { make in
+                make.top.equalTo(sortButtonsStackView.snp.bottom).offset(16)
+                make.horizontalEdges.bottom.equalToSuperview()
+            }
+        } else {
+            tableView.snp.makeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide)
+                make.horizontalEdges.bottom.equalToSuperview()
+            }
         }
         
         emptyView.snp.makeConstraints { make in
