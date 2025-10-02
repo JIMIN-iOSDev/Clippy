@@ -218,6 +218,19 @@ final class CategoryViewController: BaseViewController {
                 owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
             }
             .disposed(by: disposeBag)
+        
+        // 마감 임박 카드 탭
+        let expiredTapGesture = UITapGestureRecognizer()
+        expiredLinksView.addGestureRecognizer(expiredTapGesture)
+        expiredLinksView.isUserInteractionEnabled = true
+        
+        expiredTapGesture.rx.event
+            .bind(with: self) { owner, _ in
+                let linkListVC = LinkListViewController(mode: .expiring)
+                owner.navigationController?.pushViewController(linkListVC, animated: true)
+                owner.navigationItem.backButtonTitle = ""
+            }
+            .disposed(by: disposeBag)
 
         LinkManager.shared.savedLinksCount
             .map { "\($0)" }

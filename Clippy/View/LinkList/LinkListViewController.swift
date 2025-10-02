@@ -12,15 +12,33 @@ import RxCocoa
 
 final class LinkListViewController: BaseViewController {
     
+    enum Mode {
+        case category(String)
+        case expiring
+    }
+    
     // MARK: - Properties
     private let disposeBag = DisposeBag()
     private var loadDisposeBag = DisposeBag()
     private let repository = CategoryRepository()
     private let links = BehaviorRelay<[LinkMetadata]>(value: [])
     var categoryName: String
+    private let mode: Mode
     
     init(categoryName: String) {
         self.categoryName = categoryName
+        self.mode = .category(categoryName)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    init(mode: Mode) {
+        switch mode {
+        case .category(let name):
+            self.categoryName = name
+        case .expiring:
+            self.categoryName = "마감 임박"
+        }
+        self.mode = mode
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -78,14 +96,21 @@ final class LinkListViewController: BaseViewController {
         // 기존 구독 정리
         loadDisposeBag = DisposeBag()
         
+        switch mode {
+        case .category(let categoryName):
+            loadCategoryLinks(categoryName: categoryName)
+        case .expiring:
+            loadExpiringLinks()
+        }
+    }
+    
+    private func loadCategoryLinks(categoryName: String) {
         guard let category = repository.readCategory(name: categoryName) else {
             links.accept([])
             return
         }
         
-        let categoryName = self.categoryName
         let colorIndex = category.colorIndex
-        
         let sortedLinks = category.category.sorted(by: { $0.date > $1.date })
         
         var linkMetadataList: [LinkMetadata] = []
@@ -130,6 +155,82 @@ final class LinkListViewController: BaseViewController {
                     }
                 })
                 .disposed(by: loadDisposeBag)
+        }
+        
+        links.accept(linkMetadataList)
+    }
+    
+    private func loadExpiringLinks() {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfToday = calendar.startOfDay(for: now)
+        let threeDaysLater = calendar.date(byAdding: .day, value: 3, to: startOfToday)!
+        
+        let categories = repository.readCategoryList()
+        var linkMetadataList: [LinkMetadata] = []
+        var processedURLs = Set<String>()
+        
+        for category in categories {
+            for linkItem in category.category {
+                guard let url = URL(string: linkItem.url),
+                      !processedURLs.contains(linkItem.url) else { continue }
+                
+                // 마감일 필터링
+                if let deadline = linkItem.deadline {
+                    let startOfDeadline = calendar.startOfDay(for: deadline)
+                    guard startOfDeadline >= startOfToday && startOfDeadline <= threeDaysLater else { continue }
+                } else {
+                    continue // 마감일 없으면 제외
+                }
+                
+                processedURLs.insert(linkItem.url)
+                
+                let categoryInfos = linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) }
+                
+                // 일단 기본 메타데이터 추가
+                let metadata = LinkMetadata(
+                    url: url,
+                    title: linkItem.title,
+                    description: linkItem.memo,
+                    thumbnailImage: nil,
+                    categories: Array(categoryInfos),
+                    dueDate: linkItem.deadline,
+                    createdAt: linkItem.date,
+                    isLiked: linkItem.likeStatus
+                )
+                linkMetadataList.append(metadata)
+                
+                // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
+                LinkManager.shared.fetchLinkMetadata(for: url)
+                    .observe(on: MainScheduler.instance)
+                    .subscribe(onNext: { [weak self] fetchedMetadata in
+                        guard let self = self else { return }
+                        
+                        let updatedMetadata = LinkMetadata(
+                            url: url,
+                            title: linkItem.title,
+                            description: linkItem.memo,
+                            thumbnailImage: fetchedMetadata.thumbnailImage,
+                            categories: Array(categoryInfos),
+                            dueDate: linkItem.deadline,
+                            createdAt: linkItem.date,
+                            isLiked: linkItem.likeStatus
+                        )
+                        
+                        var currentLinks = self.links.value
+                        if let index = currentLinks.firstIndex(where: { $0.url == url }) {
+                            currentLinks[index] = updatedMetadata
+                            self.links.accept(currentLinks)
+                        }
+                    })
+                    .disposed(by: loadDisposeBag)
+            }
+        }
+        
+        // 마감일 빠른 순으로 정렬
+        linkMetadataList.sort { link1, link2 in
+            guard let date1 = link1.dueDate, let date2 = link2.dueDate else { return false }
+            return date1 < date2
         }
         
         links.accept(linkMetadataList)
