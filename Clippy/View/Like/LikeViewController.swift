@@ -150,6 +150,21 @@ final class LikeViewController: BaseViewController {
                 }
             }
             .disposed(by: disposeBag)
+        
+        // 셀 클릭 시 Safari에서 링크 열기
+        tableView.rx.itemSelected
+            .do(onNext: { [weak self] indexPath in
+                self?.tableView.deselectRow(at: indexPath, animated: true)
+            })
+            .withLatestFrom(sortedFavoriteLinks) { indexPath, links in
+                links[indexPath.row]
+            }
+            .subscribe(onNext: { link in
+                if UIApplication.shared.canOpenURL(link.url) {
+                    UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

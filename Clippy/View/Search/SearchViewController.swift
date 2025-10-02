@@ -93,6 +93,21 @@ final class SearchViewController: BaseViewController {
             .bind(to: emptyLabel.rx.isHidden)
             .disposed(by: disposeBag)
 
+        // 셀 클릭 시 Safari에서 링크 열기
+        tableView.rx.itemSelected
+            .do(onNext: { [weak self] indexPath in
+                self?.tableView.deselectRow(at: indexPath, animated: true)
+            })
+            .withLatestFrom(searchResults) { indexPath, links in
+                links[indexPath.row]
+            }
+            .subscribe(onNext: { link in
+                if UIApplication.shared.canOpenURL(link.url) {
+                    UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
+                }
+            })
+            .disposed(by: disposeBag)
+
         // 테이블뷰 스크롤 시 키보드 숨김
         tableView.rx.contentOffset
             .bind(with: self) { owner, _ in
