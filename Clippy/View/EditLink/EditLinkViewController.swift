@@ -229,34 +229,32 @@ final class EditLinkViewController: BaseViewController {
                     return (name: category.name, colorIndex: category.colorIndex)
                 }
                 
-                // 수정 모드인 경우
-                if let editingLink = self.editingLink {
-                    // 기존 링크 삭제 후 재생성
-                    targetCategories.forEach { categoryName in
-                        // 기존 카테고리에서 삭제
-                        self.repository.deleteLink(url: editingLink.url.absoluteString)
+                // 먼저 메타데이터 가져오기
+                return LinkManager.shared.fetchLinkMetadata(for: url)
+                    .flatMap { [weak self] fetchedMetadata -> Observable<LinkMetadata> in
+                        guard let self = self else { return Observable.empty() }
+                        
+                        // 사용자가 입력하지 않았으면 메타데이터 사용
+                        let actualTitle = finalTitle ?? fetchedMetadata.title
+                        let actualDescription = finalMemo ?? fetchedMetadata.description
+                        
+                        // 수정 모드인 경우
+                        if let editingLink = self.editingLink {
+                            // 기존 링크 삭제
+                            self.repository.deleteLink(url: editingLink.url.absoluteString)
+                            LinkManager.shared.deleteLink(url: editingLink.url)
+                                .subscribe()
+                                .disposed(by: self.disposeBag)
+                        }
+                        
+                        // Realm에 저장 (메타데이터 정보 포함)
+                        targetCategories.forEach { categoryName in
+                            self.repository.addLink(title: actualTitle, url: urlString, description: actualDescription, categoryName: categoryName, deadline: dueDate)
+                        }
+                        
+                        // LinkManager에 추가 (메타데이터 fetch 및 캐시)
+                        return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
                     }
-                    
-                    // 먼저 Realm에 저장 (썸네일 없이)
-                    targetCategories.forEach { categoryName in
-                        self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
-                    }
-                    
-                    // LinkManager 캐시 업데이트
-                    LinkManager.shared.deleteLink(url: editingLink.url)
-                        .subscribe()
-                        .disposed(by: self.disposeBag)
-                    
-                    // LinkManager에 추가 (메타데이터 fetch 및 캐시)
-                    return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
-                } else {
-                    // 추가 모드 (기존 로직)
-                    targetCategories.forEach { categoryName in
-                        self.repository.addLink(title: finalTitle ?? urlString, url: urlString, description: finalMemo, categoryName: categoryName, deadline: dueDate)
-                    }
-                    
-                    return LinkManager.shared.addLink(url: url, title: finalTitle, descrpition: finalMemo, categories: categoryInfos, dueDate: dueDate)
-                }
             }
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, _ in

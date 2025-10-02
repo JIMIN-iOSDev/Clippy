@@ -111,33 +111,27 @@ final class LinkManager {
         linksSubject.accept(allLinks)
     }
     
-    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil) -> Observable<LinkMetadata> {
+    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil) -> Observable<LinkMetadata> {
         
         let cacheKey = url.absoluteString
         
-        // 캐시에서 확인
-        if let cachedLink = linkCache[cacheKey] {
-            var updatedLink = cachedLink
-            if let title = title, !title.isEmpty {
-                updatedLink = LinkMetadata(url: updatedLink.url, title: title, description: updatedLink.description, thumbnailImage: updatedLink.thumbnailImage, categories: categories ?? updatedLink.categories, dueDate: dueDate ?? updatedLink.dueDate, createdAt: updatedLink.createdAt, isLiked: updatedLink.isLiked)
-                linkCache[cacheKey] = updatedLink
-            }
-            
-            updateLinksArray(with: updatedLink)
-            return Observable.just(updatedLink)
-        }
+        // 메타데이터 생성
+        let linkMetadata = LinkMetadata(
+            url: url,
+            title: title ?? url.absoluteString,
+            description: descrpition,
+            thumbnailImage: thumbnailImage,
+            categories: categories,
+            dueDate: dueDate,
+            createdAt: Date(),
+            isLiked: false
+        )
         
-        // 새로운 링크 메타데이터 가져오기
-        return fetchLinkMetadata(for: url)
-            .do(onNext: { [weak self] metadata in
-                guard let self = self else { return }
-                
-                let linkMetadata = LinkMetadata(url: url, title: title ?? metadata.title, description: descrpition ?? metadata.description, thumbnailImage: metadata.thumbnailImage, categories: categories, dueDate: dueDate, createdAt: Date(), isLiked: false)
-                
-                // 캐시에 저장
-                self.linkCache[cacheKey] = linkMetadata
-                self.updateLinksArray(with: linkMetadata)
-            })
+        // 캐시에 저장
+        linkCache[cacheKey] = linkMetadata
+        updateLinksArray(with: linkMetadata)
+        
+        return Observable.just(linkMetadata)
     }
     
     func toggleLike(for url: URL) -> Observable<LinkMetadata?> {

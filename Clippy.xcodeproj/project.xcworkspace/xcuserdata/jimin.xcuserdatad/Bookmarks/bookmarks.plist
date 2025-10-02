@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
@@ -498,16 +498,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>            .map { date in
+				<string>                    return DateFormatter.displayFormatter.string(from: date)
 </string>
 				<key>leading</key>
-				<string>        // 선택된 날짜를 TextField에 표시
-        selectedDueDate
+				<string>            .map { date in
+                if let date = date {
 </string>
 				<key>trailing</key>
-				<string>                if let date = date {
-                    return DateFormatter.displayFormatter.string(from: date)
-                } else {
+				<string>                } else {
+                    return nil
+                }
 </string>
 			</dict>
 			<key>title</key>
@@ -594,13 +594,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                provider.cancel()
-            }
+				<string>    // MARK: - Image Cache Methods
+    private func cacheImage(_ image: UIImage, for urlString: String) {
 </string>
 				<key>trailing</key>
-				<string>        }
-        .observe(on: MainScheduler.instance)
-    }
+				<string>        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache[urlString] = image
+        }
 </string>
 			</dict>
 			<key>title</key>
