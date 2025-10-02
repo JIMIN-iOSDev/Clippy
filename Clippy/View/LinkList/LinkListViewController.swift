@@ -158,59 +158,17 @@ final class LinkListViewController: BaseViewController {
     }
     
     private func loadCategoryLinks(categoryName: String) {
-        guard let category = repository.readCategory(name: categoryName) else {
-            links.accept([])
-            return
-        }
-        
-        let colorIndex = category.colorIndex
-        let sortedLinks = category.category.sorted(by: { $0.date > $1.date })
-        
-        var linkMetadataList: [LinkMetadata] = []
-        
-        for linkItem in sortedLinks {
-            guard let url = URL(string: linkItem.url) else { continue }
-            
-            // 일단 기본 메타데이터 추가
-            let metadata = LinkMetadata(
-                url: url,
-                title: linkItem.title,
-                description: linkItem.memo,
-                thumbnailImage: nil,
-                categories: [(name: categoryName, colorIndex: colorIndex)],
-                dueDate: linkItem.deadline,
-                createdAt: linkItem.date,
-                isLiked: linkItem.likeStatus
-            )
-            linkMetadataList.append(metadata)
-            
-            // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
-            LinkManager.shared.fetchLinkMetadata(for: url)
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] fetchedMetadata in
-                    guard let self = self else { return }
-                    
-                    let updatedMetadata = LinkMetadata(
-                        url: url,
-                        title: linkItem.title,
-                        description: linkItem.memo,
-                        thumbnailImage: fetchedMetadata.thumbnailImage,
-                        categories: [(name: categoryName, colorIndex: colorIndex)],
-                        dueDate: linkItem.deadline,
-                        createdAt: linkItem.date,
-                        isLiked: linkItem.likeStatus
-                    )
-                    
-                    var currentLinks = self.links.value
-                    if let index = currentLinks.firstIndex(where: { $0.url == url }) {
-                        currentLinks[index] = updatedMetadata
-                        self.links.accept(currentLinks)
-                    }
-                })
-                .disposed(by: loadDisposeBag)
-        }
-        
-        links.accept(linkMetadataList)
+        LinkManager.shared.links
+            .map { allLinks in
+                // 해당 카테고리에 속한 링크들만 필터링
+                return allLinks.filter { link in
+                    guard let categories = link.categories else { return false }
+                    return categories.contains { $0.name == categoryName }
+                }
+                .sorted { $0.createdAt > $1.createdAt }
+            }
+            .bind(to: links)
+            .disposed(by: loadDisposeBag)
     }
     
     private func loadExpiringLinks() {
@@ -219,131 +177,26 @@ final class LinkListViewController: BaseViewController {
         let startOfToday = calendar.startOfDay(for: now)
         let threeDaysLater = calendar.date(byAdding: .day, value: 3, to: startOfToday)!
         
-        let categories = repository.readCategoryList()
-        var linkMetadataList: [LinkMetadata] = []
-        var processedURLs = Set<String>()
-        
-        for category in categories {
-            for linkItem in category.category {
-                guard let url = URL(string: linkItem.url),
-                      !processedURLs.contains(linkItem.url) else { continue }
-                
-                // 마감일 필터링
-                if let deadline = linkItem.deadline {
-                    let startOfDeadline = calendar.startOfDay(for: deadline)
-                    guard startOfDeadline >= startOfToday && startOfDeadline <= threeDaysLater else { continue }
-                } else {
-                    continue // 마감일 없으면 제외
+        LinkManager.shared.links
+            .map { allLinks in
+                return allLinks.filter { link in
+                    guard let dueDate = link.dueDate else { return false }
+                    let startOfDueDate = calendar.startOfDay(for: dueDate)
+                    return startOfDueDate >= startOfToday && startOfDueDate <= threeDaysLater
                 }
-                
-                processedURLs.insert(linkItem.url)
-                
-                let categoryInfos = linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) }
-                
-                // 일단 기본 메타데이터 추가
-                let metadata = LinkMetadata(
-                    url: url,
-                    title: linkItem.title,
-                    description: linkItem.memo,
-                    thumbnailImage: nil,
-                    categories: Array(categoryInfos),
-                    dueDate: linkItem.deadline,
-                    createdAt: linkItem.date,
-                    isLiked: linkItem.likeStatus
-                )
-                linkMetadataList.append(metadata)
-                
-                // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
-                LinkManager.shared.fetchLinkMetadata(for: url)
-                    .observe(on: MainScheduler.instance)
-                    .subscribe(onNext: { [weak self] fetchedMetadata in
-                        guard let self = self else { return }
-                        
-                        let updatedMetadata = LinkMetadata(
-                            url: url,
-                            title: linkItem.title,
-                            description: linkItem.memo,
-                            thumbnailImage: fetchedMetadata.thumbnailImage,
-                            categories: Array(categoryInfos),
-                            dueDate: linkItem.deadline,
-                            createdAt: linkItem.date,
-                            isLiked: linkItem.likeStatus
-                        )
-                        
-                        var currentLinks = self.links.value
-                        if let index = currentLinks.firstIndex(where: { $0.url == url }) {
-                            currentLinks[index] = updatedMetadata
-                            self.links.accept(currentLinks)
-                        }
-                    })
-                    .disposed(by: loadDisposeBag)
+                .sorted { link1, link2 in
+                    guard let date1 = link1.dueDate, let date2 = link2.dueDate else { return false }
+                    return date1 < date2
+                }
             }
-        }
-        
-        // 마감일 빠른 순으로 정렬
-        linkMetadataList.sort { link1, link2 in
-            guard let date1 = link1.dueDate, let date2 = link2.dueDate else { return false }
-            return date1 < date2
-        }
-        
-        links.accept(linkMetadataList)
+            .bind(to: links)
+            .disposed(by: loadDisposeBag)
     }
     
     private func loadAllLinks() {
-        let categories = repository.readCategoryList()
-        var linkMetadataList: [LinkMetadata] = []
-        var processedURLs = Set<String>()
-        
-        for category in categories {
-            for linkItem in category.category {
-                guard let url = URL(string: linkItem.url),
-                      !processedURLs.contains(linkItem.url) else { continue }
-                
-                processedURLs.insert(linkItem.url)
-                
-                let categoryInfos = linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) }
-                
-                // 일단 기본 메타데이터 추가
-                let metadata = LinkMetadata(
-                    url: url,
-                    title: linkItem.title,
-                    description: linkItem.memo,
-                    thumbnailImage: nil,
-                    categories: Array(categoryInfos),
-                    dueDate: linkItem.deadline,
-                    createdAt: linkItem.date,
-                    isLiked: linkItem.likeStatus
-                )
-                linkMetadataList.append(metadata)
-                
-                // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
-                LinkManager.shared.fetchLinkMetadata(for: url)
-                    .observe(on: MainScheduler.instance)
-                    .subscribe(onNext: { [weak self] fetchedMetadata in
-                        guard let self = self else { return }
-                        
-                        let updatedMetadata = LinkMetadata(
-                            url: url,
-                            title: linkItem.title,
-                            description: linkItem.memo,
-                            thumbnailImage: fetchedMetadata.thumbnailImage,
-                            categories: Array(categoryInfos),
-                            dueDate: linkItem.deadline,
-                            createdAt: linkItem.date,
-                            isLiked: linkItem.likeStatus
-                        )
-                        
-                        var currentLinks = self.allLinksCache.value
-                        if let index = currentLinks.firstIndex(where: { $0.url == url }) {
-                            currentLinks[index] = updatedMetadata
-                            self.allLinksCache.accept(currentLinks)
-                        }
-                    })
-                    .disposed(by: loadDisposeBag)
-            }
-        }
-        
-        allLinksCache.accept(linkMetadataList)
+        LinkManager.shared.links
+            .bind(to: allLinksCache)
+            .disposed(by: loadDisposeBag)
     }
     
     private func sortLinks(_ links: [LinkMetadata], by sortType: SortType) -> [LinkMetadata] {
@@ -437,16 +290,7 @@ final class LinkListViewController: BaseViewController {
                 
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: item.url)
-                        .bind(with: self) { owner, _ in
-                            var currentLinks = owner.links.value
-                            if let index = currentLinks.firstIndex(where: { $0.url == item.url }) {
-                                // 좋아요 상태만 토글
-                                let updatedItem = currentLinks[index]
-                                let newMetadata = LinkMetadata(url: updatedItem.url, title: updatedItem.title, description: updatedItem.description, thumbnailImage: updatedItem.thumbnailImage, categories: updatedItem.categories, dueDate: updatedItem.dueDate, createdAt: updatedItem.createdAt, isLiked: !updatedItem.isLiked)
-                                currentLinks[index] = newMetadata
-                                owner.links.accept(currentLinks)
-                            }
-                        }
+                        .subscribe()
                         .disposed(by: cell.disposeBag)
                 }
                 

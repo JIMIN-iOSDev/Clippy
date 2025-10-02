@@ -9,16 +9,11 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
-import RealmSwift
 
 final class SearchViewController: BaseViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let repository = CategoryRepository()
-
-    private let allLinks = BehaviorRelay<[LinkList]>(value: []) // 전체 링크 데이터
-    private let filteredLinks = BehaviorRelay<[LinkMetadata]>(value: []) // 검색 결과
 
     // MARK: - UI Components
     private let searchBar = {
@@ -49,35 +44,40 @@ final class SearchViewController: BaseViewController {
 
     // MARK: - Configuration
     override func bind() {
-        // 검색어 입력 대소문자 구분 없이
-        searchBar.rx.text.orEmpty
-            .distinctUntilChanged()
-            .debounce(.milliseconds(300), scheduler: MainScheduler.instance)
-            .withLatestFrom(allLinks) { query, links -> [LinkList] in
-                guard !query.isEmpty else { return Array(links.prefix(20)) }
-                return links.filter {
-                    $0.title.range(of: query, options: .caseInsensitive) != nil || $0.url.range(of: query, options: .caseInsensitive) != nil
-                }
-                .prefix(20)
-                .map { $0 }
+        // 검색어와 LinkManager의 링크를 결합하여 실시간 검색 결과 생성
+        let searchResults = Observable.combineLatest(
+            searchBar.rx.text.orEmpty.distinctUntilChanged().debounce(.milliseconds(300), scheduler: MainScheduler.instance),
+            LinkManager.shared.links
+        )
+        .map { query, links -> [LinkMetadata] in
+            guard !query.isEmpty else { 
+                // 검색어가 없으면 최근 20개만 표시
+                return Array(links.sorted { $0.createdAt > $1.createdAt }.prefix(20))
             }
-            .subscribe(onNext: { [weak self] linkListItems in
-                guard let self = self else { return }
-                self.convertToLinkMetadata(linkListItems: linkListItems)
-            })
-            .disposed(by: disposeBag)
+            
+            // 제목, URL, 설명에서 검색 (대소문자 구분 없음)
+            return links.filter { link in
+                link.title.range(of: query, options: .caseInsensitive) != nil ||
+                link.url.absoluteString.range(of: query, options: .caseInsensitive) != nil ||
+                (link.description?.range(of: query, options: .caseInsensitive) != nil)
+            }
+            .sorted { $0.createdAt > $1.createdAt }
+            .prefix(20)
+            .map { $0 }
+        }
 
-        // 테이블뷰에 데이터 바인딩
-        filteredLinks
-            .observe(on: MainScheduler.instance)
+        // 테이블뷰에 직접 바인딩 (filteredLinks 제거)
+        searchResults
             .bind(to: tableView.rx.items(cellIdentifier: "LinkTableViewCell", cellType: LinkTableViewCell.self)) { [weak self] row, linkMetadata, cell in
                 guard let self = self else { return }
 
                 cell.configure(with: linkMetadata)
 
-                // 즐겨찾기 버튼
+                // 즐겨찾기 버튼 - LinkManager 사용
                 cell.heartTapHandler = {
-                    self.toggleLikeStatus(url: linkMetadata.url.absoluteString)
+                    LinkManager.shared.toggleLike(for: linkMetadata.url)
+                        .subscribe()
+                        .disposed(by: cell.disposeBag)
                 }
 
                 // 공유 버튼
@@ -87,12 +87,10 @@ final class SearchViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
 
-        // 검색 결과 없을 때
-        filteredLinks
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] links in
-                self?.emptyLabel.isHidden = !links.isEmpty
-            })
+        // 검색 결과 없을 때 empty state 표시
+        searchResults
+            .map { !$0.isEmpty }
+            .bind(to: emptyLabel.rx.isHidden)
             .disposed(by: disposeBag)
 
         // 테이블뷰 스크롤 시 키보드 숨김
@@ -101,16 +99,6 @@ final class SearchViewController: BaseViewController {
                 owner.searchBar.resignFirstResponder()
             }
             .disposed(by: disposeBag)
-        
-        // 링크 추가/수정 알림 받기
-        NotificationCenter.default.rx
-            .notification(.linkDidCreate)
-            .bind(with: self) { owner, _ in
-                owner.loadLinks()
-            }
-            .disposed(by: disposeBag)
-
-        loadLinks()
     }
 
     override func configureHierarchy() {
@@ -137,86 +125,7 @@ final class SearchViewController: BaseViewController {
 
     override func configureView() {
         super.configureView()
-    }
-
-    private func loadLinks() {
-        let categories = repository.readCategoryList()
-        let allLinksArray = categories
-            .flatMap { $0.category } // 모든 링크 합치기
-            .sorted(by: { $0.date > $1.date })
-        allLinks.accept(allLinksArray)
-        convertToLinkMetadata(linkListItems: Array(allLinksArray.prefix(20)))
-    }
-    
-    private func convertToLinkMetadata(linkListItems: [LinkList]) {
-        var linkMetadataList: [LinkMetadata] = []
-        
-        for linkItem in linkListItems {
-            guard let url = URL(string: linkItem.url) else { continue }
-            
-            let categories = Array(linkItem.parentCategory.map { (name: $0.name, colorIndex: $0.colorIndex) })
-            
-            // 일단 기본 메타데이터 추가
-            let metadata = LinkMetadata(
-                url: url,
-                title: linkItem.title,
-                description: linkItem.memo,
-                thumbnailImage: nil,
-                categories: categories,
-                dueDate: linkItem.deadline,
-                createdAt: linkItem.date,
-                isLiked: linkItem.likeStatus
-            )
-            linkMetadataList.append(metadata)
-            
-            // 썸네일 로드 (캐시된 이미지가 있으면 즉시 반환됨)
-            LinkManager.shared.fetchLinkMetadata(for: url)
-                .subscribe(onNext: { [weak self] fetchedMetadata in
-                    guard let self = self else { return }
-                    
-                    let updatedMetadata = LinkMetadata(
-                        url: url,
-                        title: linkItem.title,
-                        description: linkItem.memo,
-                        thumbnailImage: fetchedMetadata.thumbnailImage,
-                        categories: categories,
-                        dueDate: linkItem.deadline,
-                        createdAt: linkItem.date,
-                        isLiked: linkItem.likeStatus
-                    )
-                    
-                    var currentLinks = self.filteredLinks.value
-                    if let index = currentLinks.firstIndex(where: { $0.url == url }) {
-                        currentLinks[index] = updatedMetadata
-                        self.filteredLinks.accept(currentLinks)
-                    }
-                })
-                .disposed(by: disposeBag)
-        }
-        
-        filteredLinks.accept(linkMetadataList)
-    }
-
-    private func toggleLikeStatus(url: String) {
-        guard let linkItem = allLinks.value.first(where: { $0.url == url }) else { return }
-        
-        do {
-            let realm = try Realm()
-            try realm.write {
-                linkItem.likeStatus.toggle()
-            }
-            
-            // 현재 필터링된 결과 업데이트
-            var currentFiltered = filteredLinks.value
-            if let index = currentFiltered.firstIndex(where: { $0.url.absoluteString == url }) {
-                let oldMetadata = currentFiltered[index]
-                let updatedMetadata = LinkMetadata(url: oldMetadata.url, title: oldMetadata.title, description: oldMetadata.description, thumbnailImage: oldMetadata.thumbnailImage, categories: oldMetadata.categories, dueDate: oldMetadata.dueDate, createdAt: oldMetadata.createdAt, isLiked: !oldMetadata.isLiked)
-                currentFiltered[index] = updatedMetadata
-                filteredLinks.accept(currentFiltered)
-            }
-        } catch {
-            print("즐겨찾기 상태 변경 실패: \(error.localizedDescription)")
-        }
+        title = "검색"
     }
 
     private func shareLink(url: URL) {
