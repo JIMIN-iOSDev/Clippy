@@ -14,11 +14,11 @@ final class CategoryRepository {
     
     /// 카테고리 추가
     /// - Parameter name: 카테고리명
-    func createCategory(name: String, colorIndex: Int, iconName: String, memo: String? = nil) -> Bool {
+    func createCategory(name: String, colorIndex: Int, iconName: String) -> Bool {
         
         if readCategory(name: name) != nil { return false } // 중복 카테고리 체크
         
-        let category = Category(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo)
+        let category = Category(name: name, colorIndex: colorIndex, iconName: iconName)
         
         do {
             try realm.write {

@@ -404,16 +404,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>
+				<string>        
 </string>
 				<key>leading</key>
-				<string>            }
-            .disposed(by: disposeBag)
+				<string>                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
+                let iconName = allIcons[iconIndex]
         </string>
 				<key>trailing</key>
-				<string>        // 선택된 아이콘 업데이트
-        selectedIconIndex
-            .bind(with: self) { owner, _ in
+				<string>                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName)
+                
+                if success {
 </string>
 			</dict>
 			<key>title</key>
@@ -451,16 +451,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        selectedColorIndex
+				<string>                    return
 </string>
 				<key>leading</key>
-				<string>        
-        // 선택된 색상 업데이트
+				<string>                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    owner.showToast(message: "카테고리 이름을 입력해주세요")
 </string>
 				<key>trailing</key>
-				<string>            .bind(with: self) { owner, _ in
-                owner.updateColorButtons()
-            }
+				<string>                }
+                
+                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
 </string>
 			</dict>
 			<key>title</key>

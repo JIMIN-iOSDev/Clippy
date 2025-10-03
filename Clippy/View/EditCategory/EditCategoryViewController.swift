@@ -102,26 +102,6 @@ final class EditCategoryViewController: BaseViewController {
         return stackView
     }()
     
-    private let descriptionLabel = {
-        let label = UILabel()
-        label.text = "설명 (선택사항)"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        return label
-    }()
-    
-    private let descriptionTextField = {
-        let textField = UITextField()
-        textField.placeholder = "짧은 메모 입력 가능"
-        textField.font = UIFont.systemFont(ofSize: 16)
-        textField.borderStyle = .none
-        textField.backgroundColor = UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
-        textField.layer.cornerRadius = 12
-        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
-        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
-        textField.leftViewMode = .always
-        textField.rightViewMode = .always
-        return textField
-    }()
     
     private let createButton = {
         let button = UIButton(type: .system)
@@ -194,9 +174,9 @@ final class EditCategoryViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         createButton.rx.tap
-            .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, descriptionTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
+            .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
             .bind(with: self) { owner, value in
-                let (name, memo, colorIndex, iconIndex) = value
+                let (name, colorIndex, iconIndex) = value
                 
                 guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
                     owner.showToast(message: "카테고리 이름을 입력해주세요")
@@ -206,7 +186,7 @@ final class EditCategoryViewController: BaseViewController {
                 let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
                 let iconName = allIcons[iconIndex]
                 
-                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName, memo: memo.isEmpty ? nil : memo)
+                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName)
                 
                 if success {
                     NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
@@ -341,7 +321,7 @@ final class EditCategoryViewController: BaseViewController {
         [scrollView, createButton].forEach { view.addSubview($0) }
         scrollView.addSubview(contentView)
         
-        [categoryNameLabel, categoryNameTextField, colorSectionLabel, colorScrollView, iconSectionLabel, iconStackView, descriptionLabel, descriptionTextField].forEach { contentView.addSubview($0) }
+        [categoryNameLabel, categoryNameTextField, colorSectionLabel, colorScrollView, iconSectionLabel, iconStackView].forEach { contentView.addSubview($0) }
         
         colorScrollView.addSubview(colorStackView)
         [firstIconRowStackView, secondIconRowStackView].forEach { iconStackView.addArrangedSubview($0) }
@@ -398,17 +378,6 @@ final class EditCategoryViewController: BaseViewController {
             make.top.equalTo(iconSectionLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(96)
-        }
-        
-        descriptionLabel.snp.makeConstraints { make in
-            make.top.equalTo(iconStackView.snp.bottom).offset(32)
-            make.horizontalEdges.equalToSuperview().inset(20)
-        }
-        
-        descriptionTextField.snp.makeConstraints { make in
-            make.top.equalTo(descriptionLabel.snp.bottom).offset(8)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(48)
             make.bottom.equalToSuperview().offset(-20)
         }
         

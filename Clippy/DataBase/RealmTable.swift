@@ -13,17 +13,15 @@ class Category: Object {
     @Persisted var name: String // 카테고리명
     @Persisted var colorIndex: Int  // 색상
     @Persisted var iconName: String // 아이콘명
-    @Persisted var memo: String? // 설명
     @Persisted var createdAt: Date  // 카테고리 생성일
     @Persisted var updatedAt: Date  // 카테고리 수정일
     @Persisted var category: List<LinkList> // 하나의 카테고리가 여러 링크를 가짐
     
-    convenience init(name: String, colorIndex: Int, iconName: String, memo: String? = nil) {
+    convenience init(name: String, colorIndex: Int, iconName: String) {
         self.init()
         self.name = name
         self.colorIndex = colorIndex
         self.iconName = iconName
-        self.memo = memo
         self.createdAt = Date()
         self.updatedAt = Date()
     }
