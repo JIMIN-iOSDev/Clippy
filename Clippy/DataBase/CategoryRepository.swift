@@ -140,4 +140,72 @@ final class CategoryRepository {
             print("즐겨찾기 토글 실패: \(error)")
         }
     }
+    
+    /// 카테고리 수정
+    /// - Parameters:
+    ///   - oldName: 기존 카테고리명
+    ///   - newName: 새로운 카테고리명
+    ///   - colorIndex: 색상 인덱스
+    ///   - iconName: 아이콘명
+    func updateCategory(oldName: String, newName: String, colorIndex: Int, iconName: String) -> Bool {
+        guard let category = readCategory(name: oldName) else {
+            print("카테고리 없음: \(oldName)")
+            return false
+        }
+        
+        // 새 이름이 이미 존재하는지 확인 (자기 자신 제외)
+        if oldName != newName && readCategory(name: newName) != nil {
+            print("이미 존재하는 카테고리명: \(newName)")
+            return false
+        }
+        
+        do {
+            try realm.write {
+                category.name = newName
+                category.colorIndex = colorIndex
+                category.iconName = iconName
+                category.updatedAt = Date()
+            }
+            print("카테고리 수정 성공: \(oldName) -> \(newName)")
+            return true
+        } catch {
+            print("카테고리 수정 실패: \(error)")
+            return false
+        }
+    }
+    
+    /// 카테고리 삭제 (해당 카테고리의 링크들을 일반 카테고리로 이동)
+    /// - Parameter name: 삭제할 카테고리명
+    func deleteCategory(name: String) -> Bool {
+        // "일반" 카테고리는 삭제 불가
+        if name == "일반" {
+            print("일반 카테고리는 삭제할 수 없습니다")
+            return false
+        }
+        
+        guard let category = readCategory(name: name) else {
+            print("카테고리 없음: \(name)")
+            return false
+        }
+        
+        do {
+            try realm.write {
+                // 해당 카테고리의 모든 링크를 일반 카테고리로 이동
+                if let generalCategory = readCategory(name: "일반") {
+                    let linksToMove = Array(category.category)
+                    linksToMove.forEach { link in
+                        generalCategory.category.append(link)
+                    }
+                }
+                
+                // 카테고리 삭제
+                realm.delete(category)
+            }
+            print("카테고리 삭제 성공: \(name)")
+            return true
+        } catch {
+            print("카테고리 삭제 실패: \(error)")
+            return false
+        }
+    }
 }

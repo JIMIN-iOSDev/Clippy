@@ -19,6 +19,11 @@ final class EditCategoryViewController: BaseViewController {
     private let selectedIconIndex = BehaviorRelay<Int>(value: 0)
     
     var onCategoryCreated: (() -> Void)?
+    var onCategoryUpdated: (() -> Void)?
+    
+    // 편집 모드를 위한 프로퍼티
+    var editingCategory: Category? = nil
+    var isEditMode: Bool { editingCategory != nil }
     
     // MARK: - UI Components
     private let scrollView = {
@@ -103,7 +108,7 @@ final class EditCategoryViewController: BaseViewController {
     }()
     
     
-    private let createButton = {
+    private let actionButton = {
         let button = UIButton(type: .system)
         button.setTitle("카테고리 만들기", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
@@ -173,7 +178,7 @@ final class EditCategoryViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
-        createButton.rx.tap
+        actionButton.rx.tap
             .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
             .bind(with: self) { owner, value in
                 let (name, colorIndex, iconIndex) = value
@@ -186,14 +191,36 @@ final class EditCategoryViewController: BaseViewController {
                 let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
                 let iconName = allIcons[iconIndex]
                 
-                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName)
-                
-                if success {
-                    NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
-                    owner.onCategoryCreated?()
-                    owner.dismiss(animated: true)
+                var success = false
+                if owner.isEditMode {
+                    // 편집 모드
+                    if let editingCategory = owner.editingCategory {
+                        success = owner.repository.updateCategory(
+                            oldName: editingCategory.name,
+                            newName: name,
+                            colorIndex: colorIndex,
+                            iconName: iconName
+                        )
+                    }
+                    
+                    if success {
+                        NotificationCenter.default.post(name: .categoryDidUpdate, object: nil)
+                        owner.onCategoryUpdated?()
+                        owner.dismiss(animated: true)
+                    } else {
+                        owner.showToast(message: "카테고리 수정에 실패했습니다")
+                    }
                 } else {
-                    owner.showToast(message: "이미 존재하는 카테고리 이름입니다")
+                    // 생성 모드
+                    success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName)
+                    
+                    if success {
+                        NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
+                        owner.onCategoryCreated?()
+                        owner.dismiss(animated: true)
+                    } else {
+                        owner.showToast(message: "이미 존재하는 카테고리 이름입니다")
+                    }
                 }
             }
             .disposed(by: disposeBag)
@@ -318,7 +345,7 @@ final class EditCategoryViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
-        [scrollView, createButton].forEach { view.addSubview($0) }
+        [scrollView, actionButton].forEach { view.addSubview($0) }
         scrollView.addSubview(contentView)
         
         [categoryNameLabel, categoryNameTextField, colorSectionLabel, colorScrollView, iconSectionLabel, iconStackView].forEach { contentView.addSubview($0) }
@@ -334,7 +361,7 @@ final class EditCategoryViewController: BaseViewController {
         scrollView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(createButton.snp.top).offset(-20)
+            make.bottom.equalTo(actionButton.snp.top).offset(-20)
         }
         
         contentView.snp.makeConstraints { make in
@@ -381,7 +408,7 @@ final class EditCategoryViewController: BaseViewController {
             make.bottom.equalToSuperview().offset(-20)
         }
         
-        createButton.snp.makeConstraints { make in
+        actionButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(52)
@@ -390,12 +417,40 @@ final class EditCategoryViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
-        navigationItem.title = "카테고리 추가"
+        
+        updateUIForMode()
         
         // 화면 탭 시 키보드 숨기기
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
+    }
+    
+    /// 편집할 카테고리 정보로 UI 설정
+    func setupEditMode(with category: Category) {
+        editingCategory = category
+        updateUIForMode()
+        
+        // 기존 정보로 필드 채우기
+        categoryNameTextField.text = category.name
+        selectedColorIndex.accept(category.colorIndex)
+        
+        // 아이콘 인덱스 찾기
+        let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
+        if let iconIndex = allIcons.firstIndex(of: category.iconName) {
+            selectedIconIndex.accept(iconIndex)
+        }
+    }
+    
+    /// 모드에 따라 UI 업데이트
+    private func updateUIForMode() {
+        if isEditMode {
+            navigationItem.title = "카테고리 수정"
+            actionButton.setTitle("카테고리 수정하기", for: .normal)
+        } else {
+            navigationItem.title = "카테고리 추가"
+            actionButton.setTitle("카테고리 만들기", for: .normal)
+        }
     }
     
     @objc private func dismissKeyboard() {

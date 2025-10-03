@@ -533,13 +533,9 @@ final class CategoryViewController: BaseViewController {
             self?.editCategory(at: index)
         }
         
-        // 삭제 액션 (카테고리에 링크가 없을 때만)
+        // 삭제 액션 (링크가 있어도 일반 카테고리로 이동시키고 삭제)
         let deleteAction = UIAlertAction(title: "카테고리 삭제", style: .destructive) { [weak self] _ in
-            if category.count > 0 {
-                self?.showDeleteWarning(for: category.title)
-            } else {
-                self?.deleteCategory(at: index)
-            }
+            self?.deleteCategory(at: index)
         }
         
         // 취소 액션
@@ -561,25 +557,41 @@ final class CategoryViewController: BaseViewController {
     }
     
     private func editCategory(at index: Int) {
-        // TODO: 카테고리 수정 기능 구현
-        print("카테고리 수정: \(index)")
+        guard index < categories.value.count else { return }
+        let categoryItem = categories.value[index]
+        
+        // 해당 카테고리의 Realm 객체 가져오기
+        guard let realmCategory = repository.readCategory(name: categoryItem.title) else {
+            print("카테고리 없음: \(categoryItem.title)")
+            return
+        }
+        
+        let editVC = EditCategoryViewController()
+        editVC.setupEditMode(with: realmCategory)
+        editVC.onCategoryUpdated = { [weak self] in
+            self?.loadCategories()
+        }
+        
+        let navController = UINavigationController(rootViewController: editVC)
+        present(navController, animated: true)
     }
     
-    private func showDeleteWarning(for categoryTitle: String) {
-        let alert = UIAlertController(title: "카테고리 삭제", 
-                                     message: "이 카테고리에는 링크가 포함되어 있어 삭제할 수 없습니다.\n모든 링크를 다른 카테고리로 이동한 후 삭제해주세요.", 
-                                     preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
     
     private func deleteCategory(at index: Int) {
+        guard index < categories.value.count else { return }
+        let categoryItem = categories.value[index]
+        
+        guard categoryItem.title != "일반" else {
+            showToast(message: "일반 카테고리는 삭제할 수 없습니다")
+            return
+        }
+        
         let alert = UIAlertController(title: "카테고리 삭제", 
-                                     message: "이 카테고리를 정말 삭제하시겠습니까?", 
+                                     message: "'\(categoryItem.title)' 카테고리를 삭제하시겠습니까?\n\n해당 카테고리의 모든 링크는\n'일반' 카테고리로 이동됩니다.", 
                                      preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
-            self?.performCategoryDeletion(at: index)
+            self?.performCategoryDeletion(for: categoryItem.title, at: index)
         })
         
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
@@ -587,10 +599,50 @@ final class CategoryViewController: BaseViewController {
         present(alert, animated: true)
     }
     
-    private func performCategoryDeletion(at index: Int) {
-        // TODO: 실제 카테고리 삭제 로직 구현
-        print("카테고리 삭제 진행: \(index)")
-        loadCategories()
+    private func performCategoryDeletion(for categoryName: String, at index: Int) {
+        let success = repository.deleteCategory(name: categoryName)
+        
+        if success {
+            NotificationCenter.default.post(name: .categoryDidDelete, object: nil)
+            loadCategories()
+            showToast(message: "'\(categoryName)' 카테고리가 삭제되었습니다")
+        } else {
+            showToast(message: "카테고리 삭제에 실패했습니다")
+        }
+    }
+    
+    // MARK: - Toast Message
+    private func showToast(message: String) {
+        let toast = UILabel()
+        toast.text = message
+        toast.textAlignment = .center
+        toast.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        toast.textColor = .white
+        toast.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toast.layer.cornerRadius = 8
+        toast.clipsToBounds = true
+        toast.alpha = 0
+        
+        view.addSubview(toast)
+        view.bringSubviewToFront(toast)
+        toast.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
+            make.height.equalTo(36)
+            make.width.greaterThanOrEqualTo(message.count * 12 + 40)
+        }
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            toast.alpha = 1
+        }) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                UIView.animate(withDuration: 0.3, animations: {
+                    toast.alpha = 0
+                }) { _ in
+                    toast.removeFromSuperview()
+                }
+            }
+        }
     }
 }
 
