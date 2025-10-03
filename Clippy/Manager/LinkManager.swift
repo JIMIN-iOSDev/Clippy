@@ -226,7 +226,7 @@ final class LinkManager {
         return renderer.image { context in
             // 그라데이션 배경
             let colors = [
-                UIColor.systemBlue.cgColor,
+                UIColor.clippyBlue.cgColor,
                 UIColor.systemPurple.cgColor
             ]
             

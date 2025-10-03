@@ -29,7 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 탭바를 3개로 변경 (카테고리, 검색, 즐겨찾기)
         tabBarController.viewControllers = [categoryVC, searchVC, likeVC]
-        tabBarController.tabBar.tintColor = .systemBlue
+        tabBarController.tabBar.tintColor = .clippyBlue
         tabBarController.tabBar.unselectedItemTintColor = .systemGray
         
         // 탭바 불투명하게 설정

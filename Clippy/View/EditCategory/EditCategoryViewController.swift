@@ -112,7 +112,7 @@ final class EditCategoryViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("카테고리 만들기", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .clippyBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         return button
@@ -280,8 +280,8 @@ final class EditCategoryViewController: BaseViewController {
         for (index, view) in firstIconRowStackView.arrangedSubviews.enumerated() {
             if let button = view as? UIButton {
                 let isSelected = index == selectedIconIndex.value
-                button.backgroundColor = isSelected ? UIColor.systemBlue.withAlphaComponent(0.15) : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
-                button.layer.borderColor = isSelected ? UIColor.systemBlue.cgColor : UIColor.clear.cgColor
+                button.backgroundColor = isSelected ? UIColor.clippyBlue.withAlphaComponent(0.15) : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+                button.layer.borderColor = isSelected ? UIColor.clippyBlue.cgColor : UIColor.clear.cgColor
                 button.layer.borderWidth = isSelected ? 2 : 0
             }
         }
@@ -290,8 +290,8 @@ final class EditCategoryViewController: BaseViewController {
             if let button = view as? UIButton {
                 let globalIndex = index + 6
                 let isSelected = globalIndex == selectedIconIndex.value
-                button.backgroundColor = isSelected ? UIColor.systemBlue.withAlphaComponent(0.15) : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
-                button.layer.borderColor = isSelected ? UIColor.systemBlue.cgColor : UIColor.clear.cgColor
+                button.backgroundColor = isSelected ? UIColor.clippyBlue.withAlphaComponent(0.15) : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+                button.layer.borderColor = isSelected ? UIColor.clippyBlue.cgColor : UIColor.clear.cgColor
                 button.layer.borderWidth = isSelected ? 2 : 0
             }
         }

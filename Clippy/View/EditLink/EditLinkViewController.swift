@@ -131,7 +131,7 @@ final class EditLinkViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("+ 추가", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(.clippyBlue, for: .normal)
         return button
     }()
     
@@ -183,7 +183,7 @@ final class EditLinkViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("저장하기", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .clippyBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         return button
@@ -414,9 +414,9 @@ final class EditLinkViewController: BaseViewController {
             let category = categories.value[index]
             let isSelected = selected.contains(category.name)
             
-            button.backgroundColor = isSelected ? .systemBlue : .systemGray6
+            button.backgroundColor = isSelected ? .clippyBlue : .systemGray6
             button.setTitleColor(isSelected ? .white : .label, for: .normal)
-            button.layer.borderColor = (isSelected ? UIColor.systemBlue : UIColor.systemGray4).cgColor
+            button.layer.borderColor = (isSelected ? UIColor.clippyBlue : UIColor.systemGray4).cgColor
         }
     }
     

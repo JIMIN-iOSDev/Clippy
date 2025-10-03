@@ -357,7 +357,7 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>            return .systemBlue
+				<string>            return .clippyBlue
 </string>
 				<key>leading</key>
 				<string>    static func color(index: Int) -&gt; UIColor {
@@ -404,16 +404,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        
+				<string>            return
 </string>
 				<key>leading</key>
-				<string>                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
-                let iconName = allIcons[iconIndex]
+				<string>                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    owner.showToast(message: "카테고리 이름을 입력해주세요")
         </string>
 				<key>trailing</key>
-				<string>                let success = owner.repository.createCategory(name: name, colorIndex: colorIndex, iconName: iconName)
+				<string>                }
                 
-                if success {
+                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
 </string>
 			</dict>
 			<key>title</key>
@@ -451,16 +451,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>                    return
+				<string>            .bind(with: self) { owner, value in
 </string>
 				<key>leading</key>
-				<string>                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-                    owner.showToast(message: "카테고리 이름을 입력해주세요")
+				<string>        actionButton.rx.tap
+            .withLatestFrom(Observable.combineLatest(categoryNameTextField.rx.text.orEmpty, selectedColorIndex.asObservable(), selectedIconIndex.asObservable()))
 </string>
 				<key>trailing</key>
-				<string>                }
+				<string>                let (name, colorIndex, iconIndex) = value
                 
-                let allIcons = ["folder", "book", "heart", "cart", "star", "tag", "music.note", "photo", "car", "house", "gamecontroller", "paintbrush"]
+                guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
 </string>
 			</dict>
 			<key>title</key>

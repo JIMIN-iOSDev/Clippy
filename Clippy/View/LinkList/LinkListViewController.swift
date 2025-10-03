@@ -70,7 +70,7 @@ final class LinkListViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("최근 추가순", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .clippyBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 18
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
@@ -206,7 +206,7 @@ final class LinkListViewController: BaseViewController {
         
         buttons.forEach { button, type in
             if type == selectedType {
-                button.backgroundColor = .systemBlue
+                button.backgroundColor = .clippyBlue
                 button.setTitleColor(.white, for: .normal)
                 button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
             } else {
@@ -356,7 +356,7 @@ final class LinkListViewController: BaseViewController {
         switch mode {
         case .category(_), .allLinks:
             let button = UIButton(type: .system)
-            button.backgroundColor = .systemBlue
+            button.backgroundColor = .clippyBlue
             button.layer.cornerRadius = 18 // 네비게이션바에서 알맞은 크기
             button.layer.shadowColor = UIColor.black.cgColor
             button.layer.shadowOffset = CGSize(width: 0, height: 1)
@@ -433,7 +433,7 @@ extension LinkListViewController: UITableViewDelegate {
             
             completionHandler(true)
         }
-        editAction.backgroundColor = .systemBlue
+        editAction.backgroundColor = .clippyBlue
         
         return UISwipeActionsConfiguration(actions: [editAction])
     }

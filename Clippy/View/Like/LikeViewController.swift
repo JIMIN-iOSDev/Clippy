@@ -34,7 +34,7 @@ final class LikeViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("최근 추가순", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .clippyBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 18
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
@@ -208,7 +208,7 @@ final class LikeViewController: BaseViewController {
         
         buttons.forEach { button, type in
             if type == selectedType {
-                button.backgroundColor = .systemBlue
+                button.backgroundColor = .clippyBlue
                 button.setTitleColor(.white, for: .normal)
                 button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
             } else {
@@ -313,7 +313,7 @@ extension LikeViewController: UITableViewDelegate {
             
             completionHandler(true)
         }
-        editAction.backgroundColor = .systemBlue
+        editAction.backgroundColor = .clippyBlue
         
         return UISwipeActionsConfiguration(actions: [editAction])
     }

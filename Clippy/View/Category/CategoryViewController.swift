@@ -48,14 +48,14 @@ final class CategoryViewController: BaseViewController {
 
     let savedLinksView = {
         let view = UIView()
-        view.backgroundColor = .systemBlue.withAlphaComponent(0.1)
+        view.backgroundColor = .clippyBlue.withAlphaComponent(0.1)
         view.layer.cornerRadius = 16
         return view
     }()
 
     private let savedLinksIconView = {
         let view = UIView()
-        view.backgroundColor = .systemBlue.withAlphaComponent(0.2)
+        view.backgroundColor = .clippyBlue.withAlphaComponent(0.2)
         view.layer.cornerRadius = 20
         return view
     }()
@@ -64,7 +64,7 @@ final class CategoryViewController: BaseViewController {
         let imageView = UIImageView()
         let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
         imageView.image = UIImage(systemName: "link", withConfiguration: config)
-        imageView.tintColor = .systemBlue
+        imageView.tintColor = .clippyBlue
         return imageView
     }()
 
@@ -131,7 +131,7 @@ final class CategoryViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("+ 추가", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.tintColor = .systemBlue
+        button.tintColor = .clippyBlue
         return button
     }()
 
@@ -474,7 +474,7 @@ final class CategoryViewController: BaseViewController {
         
         // 네비게이션바 오른쪽에 + 버튼 추가
         let button = UIButton(type: .system)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .clippyBlue
         button.layer.cornerRadius = 18
         button.layer.shadowColor = UIColor.black.cgColor
         button.layer.shadowOffset = CGSize(width: 0, height: 1)
@@ -711,7 +711,7 @@ extension CategoryViewController: UITableViewDelegate {
             
             completionHandler(true)
         }
-        editAction.backgroundColor = .systemBlue
+        editAction.backgroundColor = .clippyBlue
         
         return UISwipeActionsConfiguration(actions: [editAction])
     }
