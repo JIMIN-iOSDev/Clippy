@@ -112,11 +112,27 @@ final class EditLinkViewController: BaseViewController {
         return label
     }()
     
+    private let categorySectionStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .center
+        return stackView
+    }()
+    
     private let categoryLabel = {
         let label = UILabel()
         label.text = "카테고리"
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         return label
+    }()
+    
+    private let addCategoryButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("+ 추가", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.setTitleColor(.systemBlue, for: .normal)
+        return button
     }()
     
     private let categoryTagsStackView = {
@@ -187,6 +203,17 @@ final class EditLinkViewController: BaseViewController {
             .bind(to: memoPlaceholderLabel.rx.isHidden)
             .disposed(by: disposeBag)
         
+        
+        // 카테고리 추가 버튼
+        addCategoryButton.rx.tap
+            .bind(with: self) { owner, _ in
+                let editCategoryVC = EditCategoryViewController()
+                editCategoryVC.onCategoryCreated = { [weak owner] in
+                    owner?.loadCategories()
+                }
+                owner.present(UINavigationController(rootViewController: editCategoryVC), animated: true)
+            }
+            .disposed(by: disposeBag)
         
         categories
             .bind(with: self) { owner, categories in
@@ -386,13 +413,16 @@ final class EditLinkViewController: BaseViewController {
         
         scrollView.addSubview(contentView)
         
-        [urlLabel, urlTextField, titleSectionLabel, titleTextField, memoLabel, memoTextView, categoryLabel, categoryTagsScrollView, dueDateLabel, dueDateTextField].forEach { contentView.addSubview($0) }
+        [urlLabel, urlTextField, titleSectionLabel, titleTextField, memoLabel, memoTextView, categorySectionStackView, categoryTagsScrollView, dueDateLabel, dueDateTextField].forEach { contentView.addSubview($0) }
         
         urlTextField.addSubview(linkIconImageView)
         
         memoTextView.addSubview(memoPlaceholderLabel)
         
         categoryTagsScrollView.addSubview(categoryTagsStackView)
+        
+        categorySectionStackView.addArrangedSubview(categoryLabel)
+        categorySectionStackView.addArrangedSubview(addCategoryButton)
         
         dueDateTextField.addSubview(calendarIconImageView)
     }
@@ -452,13 +482,13 @@ final class EditLinkViewController: BaseViewController {
             make.leading.equalToSuperview().offset(16)
         }
         
-        categoryLabel.snp.makeConstraints { make in
+        categorySectionStackView.snp.makeConstraints { make in
             make.top.equalTo(memoTextView.snp.bottom).offset(32)
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         
         categoryTagsScrollView.snp.makeConstraints { make in
-            make.top.equalTo(categoryLabel.snp.bottom).offset(12)
+            make.top.equalTo(categorySectionStackView.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(32)
         }

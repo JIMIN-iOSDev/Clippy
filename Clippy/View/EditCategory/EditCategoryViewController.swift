@@ -18,6 +18,8 @@ final class EditCategoryViewController: BaseViewController {
     private let selectedColorIndex = BehaviorRelay<Int>(value: 0)
     private let selectedIconIndex = BehaviorRelay<Int>(value: 0)
     
+    var onCategoryCreated: (() -> Void)?
+    
     // MARK: - UI Components
     private let scrollView = {
         let scrollView = UIScrollView()
@@ -208,6 +210,7 @@ final class EditCategoryViewController: BaseViewController {
                 
                 if success {
                     NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
+                    owner.onCategoryCreated?()
                     owner.dismiss(animated: true)
                 } else {
                     owner.showToast(message: "이미 존재하는 카테고리 이름입니다")

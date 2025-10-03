@@ -310,16 +310,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>    }()
+				<string>    private let calendarIconImageView = {
 </string>
 				<key>leading</key>
-				<string>        button.layer.cornerRadius = 12
-        return button
+				<string>    }()
+    
 </string>
 				<key>trailing</key>
-				<string>    
-    private let datePicker = {
-        let picker = UIDatePicker()
+				<string>        let imageView = UIImageView()
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+        imageView.image = UIImage(systemName: "calendar", withConfiguration: config)
 </string>
 			</dict>
 			<key>title</key>
@@ -384,11 +384,11 @@
 					<key>EndingLineNumber</key>
 					<string>188</string>
 					<key>StartingColumnNumber</key>
-					<string>25</string>
+					<string>8</string>
 					<key>StartingLineNumber</key>
 					<string>187</string>
 					<key>Timestamp</key>
-					<string>781081057.943009</string>
+					<string>781142834.78291</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -407,13 +407,13 @@
 				<string>
 </string>
 				<key>leading</key>
-				<string>        
-        // 선택된 아이콘 업데이트
-        selectedIconIndex</string>
+				<string>            }
+            .disposed(by: disposeBag)
+        </string>
 				<key>trailing</key>
-				<string>            .bind(with: self) { owner, _ in
-                owner.updateIconButtons()
-            }
+				<string>        // 선택된 아이콘 업데이트
+        selectedIconIndex
+            .bind(with: self) { owner, _ in
 </string>
 			</dict>
 			<key>title</key>
@@ -451,16 +451,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>                owner.updateColorButtons()
+				<string>        selectedColorIndex
 </string>
 				<key>leading</key>
-				<string>        selectedColorIndex
-            .bind(with: self) { owner, _ in
+				<string>        
+        // 선택된 색상 업데이트
 </string>
 				<key>trailing</key>
-				<string>            }
-            .disposed(by: disposeBag)
-        
+				<string>            .bind(with: self) { owner, _ in
+                owner.updateColorButtons()
+            }
 </string>
 			</dict>
 			<key>title</key>
@@ -498,16 +498,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>                owner.selectedDueDate.accept(owner.datePicker.date)
+				<string>            .bind(to: saveButton.rx.isEnabled)
 </string>
 				<key>leading</key>
-				<string>        doneButton.rx.tap
-            .bind(with: self) { owner, _ in
+				<string>        LinkManager.shared.isLoading
+            .map { !$0 }
 </string>
 				<key>trailing</key>
-				<string>                owner.dueDateTextField.text = DateFormatter.displayFormatter.string(from: owner.datePicker.date)
-                owner.dueDateTextField.resignFirstResponder()
-            }
+				<string>            .disposed(by: disposeBag)
+        
+        // 선택된 마감일 TextField에 바인딩
 </string>
 			</dict>
 			<key>title</key>
