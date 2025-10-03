@@ -65,8 +65,8 @@ class TooltipManager {
         currentViewController = viewController
         currentTooltipIndex = 0
         
-        // 잠깐 후에 첫 번째 툴팁 시작
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        // 즉시 첫 번째 툴팁 시작 (딜레이 없음)
+        DispatchQueue.main.async {
             self.showCurrentSequentialTooltip()
         }
     }

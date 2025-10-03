@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
+import UserNotifications
 
 struct CategoryItem {
     let title: String
@@ -396,9 +397,8 @@ final class CategoryViewController: BaseViewController {
             make.height.equalTo(24)
         }
         
-        // 순차 툴팁 시작 (더미링크는 스와이프 안내 시점에 생성)
-        
-        TooltipManager.shared.startSequentialTooltips(in: self)
+        // 알림 권한 요청 후 안내 시작
+        requestNotificationPermissionAndStartGuide()
         
         categoryTitleLabel.snp.makeConstraints { make in
             make.leading.centerY.equalToSuperview()
@@ -477,6 +477,39 @@ final class CategoryViewController: BaseViewController {
                 owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
             }
             .disposed(by: disposeBag)
+    }
+    
+    // MARK: - Notification Permission & Guide
+    
+    private func requestNotificationPermissionAndStartGuide() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] granted, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("❌ 알림 권한 요청 실패: \(error.localizedDescription)")
+                    // 권한 요청 실패해도 안내는 시작
+                    self?.startTooltipsAfterPermission()
+                    return
+                }
+                
+                if granted {
+                    print("✅ 알림 권한 허용됨")
+                    // 백그라운드에서 알림 설정 (딜레이 없이)
+                    DispatchQueue.global(qos: .background).async {
+                        NotificationManager.shared.setupNotificationsForAllLinks()
+                    }
+                } else {
+                    print("❌ 알림 권한 거부됨")
+                }
+                
+                // 딜레이 없이 즉시 안내 시작
+                self?.startTooltipsAfterPermission()
+            }
+        }
+    }
+    
+    private func startTooltipsAfterPermission() {
+        // 툴팁 시작
+        TooltipManager.shared.startSequentialTooltips(in: self)
     }
 }
 

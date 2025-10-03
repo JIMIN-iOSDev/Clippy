@@ -12,6 +12,7 @@ class TooltipView: UIView {
     private var arrowDirection: TooltipDirection = .top
     
     // MARK: - UI Components
+    private let overlayView = UIView() // 말풍선 주변 터치 차단용 (반투명하지 않음)
     private let bubbleView = UIView()
     private let messageLabel = UILabel()
     private let closeButton = UIButton(type: .system)
@@ -32,11 +33,18 @@ class TooltipView: UIView {
     
     // MARK: - Setup UI
     private func setupUI() {
+        setupOverlayView()
         setupBubbleView()
         setupMessageLabel()
         setupCloseButton()
         setupArrowView()
         setupLayout()
+    }
+    
+    private func setupOverlayView() {
+        overlayView.backgroundColor = UIColor.clear // 투명하게 설정
+        overlayView.isUserInteractionEnabled = true
+        addSubview(overlayView)
     }
     
     private func setupBubbleView() {
@@ -72,6 +80,11 @@ class TooltipView: UIView {
     }
     
     private func setupLayout() {
+        // 오버레이 전체 화면 덮기 (투명)
+        overlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         // 말풍선 크기 설정 (너비 동적, 높이 동적)
         bubbleView.snp.makeConstraints { make in
             make.center.equalToSuperview()
@@ -151,8 +164,13 @@ class TooltipView: UIView {
             make.edges.equalToSuperview()
         }
         
-        // 말풍선은 터치 가능하게 설정
+        // 오버레이는 터치 차단, 말풍선은 터치 가능하게 설정
+        overlayView.isUserInteractionEnabled = true
         bubbleView.isUserInteractionEnabled = true
+        
+        // 말풍선과 화살표를 오버레이 위로 올리기
+        bringSubviewToFront(bubbleView)
+        bringSubviewToFront(arrowView)
         
         // 타겟 뷰 근처에 위치시키기
         if let targetView = targetView {

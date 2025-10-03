@@ -12,7 +12,7 @@ final class NotificationManager {
     static let shared = NotificationManager()
     
     private init() {
-        requestNotificationPermission()
+        // 권한 요청은 사용자가 앱에 진입한 후에 하도록 수동으로 호출
     }
     
     // MARK: - Permission Request
@@ -40,15 +40,19 @@ final class NotificationManager {
     
     /// 링크의 마감일 하루 전 알림을 등록합니다
     func scheduleNotificationForLink(title: String, dueDate: Date, linkId: String) {
-        // 마감일이 이미 지났거나 오늘인 경우 알림 등록하지 않음
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        guard dueDate > tomorrow else {
-            print("⚠️ 마감일이 내일 이전이므로 알림 등록하지 않음: \(title)")
+        let calendar = Calendar.current
+        let now = Date()
+        let todayStart = calendar.startOfDay(for: now)
+        let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: todayStart) ?? Date()
+        
+        // 마감일이 오늘 이전인 경우에만 알림 등록하지 않음
+        // 내일 마감인 경우도 오늘 6시 이전에 추가되었다면 알림 등록
+        guard dueDate >= tomorrowStart else {
+            print("⚠️ 마감일이 오늘 이전이므로 알림 등록하지 않음: \(title)")
             return
         }
         
         // 알림 시간: 마감일 하루 전 오후 6시
-        let calendar = Calendar.current
         let notificationDate = calendar.date(byAdding: .day, value: -1, to: dueDate) ?? dueDate
         
         // 하루 전 날짜의 오후 6시로 설정
@@ -63,7 +67,7 @@ final class NotificationManager {
         let truncatedTitle = title.count > 30 ? String(title.prefix(30)) + "..." : title
         content.body = "\(truncatedTitle) - 마감일이 내일입니다!"
         content.sound = .default
-        content.badge = 1
+        // 뱃지 제거
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
         let request = UNNotificationRequest(identifier: linkId, content: content, trigger: trigger)
