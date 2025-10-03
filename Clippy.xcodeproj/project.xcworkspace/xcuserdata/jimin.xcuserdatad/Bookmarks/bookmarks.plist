@@ -498,16 +498,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>            .bind(to: saveButton.rx.isEnabled)
+				<string>                } else {
 </string>
 				<key>leading</key>
-				<string>        LinkManager.shared.isLoading
-            .map { !$0 }
+				<string>                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                    owner.onLinkUpdated?()
 </string>
 				<key>trailing</key>
-				<string>            .disposed(by: disposeBag)
-        
-        // 선택된 마감일 TextField에 바인딩
+				<string>                    // 추가 모드
+                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                    owner.onLinkCreated?()
 </string>
 			</dict>
 			<key>title</key>
@@ -549,7 +549,7 @@
 </string>
 				<key>leading</key>
 				<string>    
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?) {
+    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false) {
         guard let category = readCategory(name: categoryName) else {</string>
 				<key>trailing</key>
 				<string>            print("\(categoryName) 없음")
@@ -638,16 +638,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string> nil {
+				<string> 링크 \(url)")
 </string>
 				<key>leading</key>
-				<string>        // 해당 카테고리 내에서만 중복 체크
-        let existingLink = category.category.first { $0.url == url }
-        if existingLink !=</string>
+				<string>        let existingLink = category.category.first { $0.url == url }    // url 중복 체크
+        if existingLink != nil {
+            print("이미 존재하는</string>
 				<key>trailing</key>
-				<string>            print("이미 \(categoryName) 카테고리에 존재하는 링크 \(url)")
-            return
+				<string>            return
         }
+        
 </string>
 			</dict>
 			<key>title</key>

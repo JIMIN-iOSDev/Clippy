@@ -47,7 +47,7 @@ final class CategoryRepository {
         return category
     }
     
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?) {
+    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false) {
         guard let category = readCategory(name: categoryName) else {
             print("\(categoryName) 없음")
             return
@@ -59,7 +59,7 @@ final class CategoryRepository {
             return
         }
         
-        let link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: false, deadline: deadline, isOpened: false, openCount: 0)
+        let link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: false, openCount: 0)
         
         do {
             try realm.write {
@@ -67,6 +67,29 @@ final class CategoryRepository {
             }
         } catch {
             print("링크 저장 실패")
+        }
+    }
+    
+    func updateLink(url: String, title: String, description: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false) {
+        let categories = realm.objects(Category.self)
+        
+        // 기존 링크의 즐겨찾기 상태 보존
+        var preservedLikeStatus = false
+        if preserveLikeStatus {
+            for category in categories {
+                if let existingLink = category.category.first(where: { $0.url == url }) {
+                    preservedLikeStatus = existingLink.likeStatus
+                    break
+                }
+            }
+        }
+        
+        // 기존 링크 삭제
+        deleteLink(url: url)
+        
+        // 새 카테고리에 링크 추가 (즐겨찾기 상태 보존)
+        categoryNames.forEach { categoryName in
+            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus)
         }
     }
     

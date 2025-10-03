@@ -278,19 +278,31 @@ final class EditLinkViewController: BaseViewController {
                         // 수정 모드인 경우
                         if let editingLink = self.editingLink {
                             // 기존 링크 삭제
-                            self.repository.deleteLink(url: editingLink.url.absoluteString)
                             LinkManager.shared.deleteLink(url: editingLink.url)
                                 .subscribe()
                                 .disposed(by: self.disposeBag)
+                            
+                            // CategoryRepository에서 따로 업데이트 (즐겨찾기 상태 보존)
+                            self.repository.updateLink(
+                                url: urlString,
+                                title: actualTitle,
+                                description: actualDescription,
+                                categoryNames: targetCategories,
+                                deadline: dueDate,
+                                preserveLikeStatus: true
+                            )
+                            
+                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 즐겨찾기 상태 복원)
+                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage, isLiked: editingLink.isLiked)
+                        } else {
+                            // 새 링크 추가 모드
+                            targetCategories.forEach { categoryName in
+                                self.repository.addLink(title: actualTitle, url: urlString, description: actualDescription, categoryName: categoryName, deadline: dueDate)
+                            }
+                            
+                            // LinkManager에 추가 (메타데이터 fetch 및 캐시)
+                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
                         }
-                        
-                        // Realm에 저장 (메타데이터 정보 포함)
-                        targetCategories.forEach { categoryName in
-                            self.repository.addLink(title: actualTitle, url: urlString, description: actualDescription, categoryName: categoryName, deadline: dueDate)
-                        }
-                        
-                        // LinkManager에 추가 (메타데이터 fetch 및 캐시)
-                        return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
                     }
             }
             .observe(on: MainScheduler.instance)
