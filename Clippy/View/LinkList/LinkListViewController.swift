@@ -347,6 +347,8 @@ final class LinkListViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
+        
+        
         navigationItem.title = categoryName
         navigationController?.navigationBar.tintColor = .black
         

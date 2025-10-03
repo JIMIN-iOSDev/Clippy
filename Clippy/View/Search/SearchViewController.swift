@@ -45,6 +45,8 @@ final class SearchViewController: BaseViewController {
     // MARK: - Configuration
     override func configureView() {
         super.configureView()
+        
+        
         title = "검색"
         
         // 화면 탭 시 키보드 숨김을 위한 탭 제스처 추가

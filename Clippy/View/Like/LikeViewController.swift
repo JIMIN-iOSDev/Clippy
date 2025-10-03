@@ -198,6 +198,8 @@ final class LikeViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
+        
+        
         title = "즐겨찾기"
     }
     

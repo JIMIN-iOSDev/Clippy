@@ -237,6 +237,14 @@ final class LinkTableViewCell: UITableViewCell {
         }
     }
     
+    func removeShadow() {
+        containerView.layer.shadowOpacity = 0
+    }
+    
+    func restoreShadow() {
+        containerView.layer.shadowOpacity = 0.1
+    }
+    
     func configure(with link: LinkMetadata) {
         titleLabel.text = link.title
         urlLabel.text = link.url.absoluteString

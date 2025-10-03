@@ -136,8 +136,7 @@ final class CategoryViewController: BaseViewController {
 
     private let categoryContainerView = {
         let view = UIView()
-        view.backgroundColor = .systemGray6
-        view.layer.cornerRadius = 16
+        view.backgroundColor = .clear
         return view
     }()
 
@@ -270,6 +269,7 @@ final class CategoryViewController: BaseViewController {
         recentLinks
             .bind(to: linksTableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, link, cell in
                 cell.configure(with: link)
+                cell.removeShadow() // 최근 링크 셀의 그림자 제거
                 
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: link.url)
@@ -409,9 +409,9 @@ final class CategoryViewController: BaseViewController {
         }
         
         categoryContainerView.snp.makeConstraints { make in
-            make.top.equalTo(categoryHeaderView.snp.bottom).offset(16)
+            make.top.equalTo(categoryHeaderView.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(280)
+            make.height.equalTo(340)
         }
         
         categoryCollectionView.snp.makeConstraints { make in
@@ -419,7 +419,7 @@ final class CategoryViewController: BaseViewController {
         }
         
         recentLinksLabel.snp.makeConstraints { make in
-            make.top.equalTo(categoryContainerView.snp.bottom).offset(32)
+            make.top.equalTo(categoryContainerView.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
@@ -434,6 +434,9 @@ final class CategoryViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
+        
+        // 홈화면만 옅은 회색 배경으로 설정
+        view.backgroundColor = .systemGray6
         
         repository.createDefaultCategory()  // "일반" 카테고리 기본 제공
         loadCategories()
