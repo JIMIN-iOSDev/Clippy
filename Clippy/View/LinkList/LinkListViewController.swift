@@ -109,20 +109,6 @@ final class LinkListViewController: BaseViewController {
         return tableView
     }()
     
-    private let floatingAddButton = {
-        let button = UIButton(type: .system)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 28
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.shadowOpacity = 0.3
-        button.layer.shadowRadius = 8
-        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
-        button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
-        button.tintColor = .white
-        return button
-    }()
-    
     private let emptyView = {
         let view = UIView()
         view.isHidden = true
@@ -270,16 +256,6 @@ final class LinkListViewController: BaseViewController {
                 .disposed(by: disposeBag)
         }
         
-        floatingAddButton.rx.tap
-            .bind(with: self) { owner, _ in
-                let editVC = EditLinkViewController()
-                editVC.defaultCategoryName = owner.categoryName
-                editVC.onLinkCreated = { [weak owner] in
-                    owner?.loadLinks()
-                }
-                owner.present(UINavigationController(rootViewController: editVC), animated: true)
-            }
-            .disposed(by: disposeBag)
         
         links
             .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, item, cell in
@@ -331,10 +307,10 @@ final class LinkListViewController: BaseViewController {
     
     override func configureHierarchy() {
         if case .allLinks = mode {
-            [sortButtonsStackView, tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+            [sortButtonsStackView, tableView, emptyView].forEach { view.addSubview($0) }
             [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
         } else {
-            [tableView, emptyView, floatingAddButton].forEach { view.addSubview($0) }
+            [tableView, emptyView].forEach { view.addSubview($0) }
         }
         emptyView.addSubview(emptyLabel)
     }
@@ -367,17 +343,47 @@ final class LinkListViewController: BaseViewController {
             make.center.equalToSuperview()
         }
         
-        floatingAddButton.snp.makeConstraints { make in
-            make.size.equalTo(56)
-            make.trailing.equalToSuperview().offset(-26)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-38)
-        }
     }
     
     override func configureView() {
         super.configureView()
         navigationItem.title = categoryName
         navigationController?.navigationBar.tintColor = .black
+        
+        // 네비게이션바 오른쪽에 + 버튼 추가 (카테고리 모드와 전체 링크 모드에만)
+        switch mode {
+        case .category(_), .allLinks:
+            let button = UIButton(type: .system)
+            button.backgroundColor = .systemBlue
+            button.layer.cornerRadius = 18 // 네비게이션바에서 알맞은 크기
+            button.layer.shadowColor = UIColor.black.cgColor
+            button.layer.shadowOffset = CGSize(width: 0, height: 1)
+            button.layer.shadowOpacity = 0.2
+            button.layer.shadowRadius = 3
+            let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+            button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
+            button.tintColor = .white
+            button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+            
+            let addButton = UIBarButtonItem(customView: button)
+            navigationItem.rightBarButtonItem = addButton
+            
+            button.rx.tap
+                .bind(with: self) { owner, _ in
+                    let editVC = EditLinkViewController()
+                    if case .category(let categoryName) = owner.mode {
+                        editVC.defaultCategoryName = categoryName
+                    }
+                    editVC.onLinkCreated = { [weak owner] in
+                        owner?.loadLinks()
+                    }
+                    owner.present(UINavigationController(rootViewController: editVC), animated: true)
+                }
+                .disposed(by: disposeBag)
+        case .expiring:
+            break
+        }
+        
         loadLinks()
     }
 }

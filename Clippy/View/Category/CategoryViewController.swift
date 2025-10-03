@@ -171,19 +171,6 @@ final class CategoryViewController: BaseViewController {
         return tableView
     }()
 
-    private let floatingAddButton = {
-        let button = UIButton(type: .system)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 28
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.shadowOpacity = 0.3
-        button.layer.shadowRadius = 8
-        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
-        button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
-        button.tintColor = .white
-        return button
-    }()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -212,12 +199,6 @@ final class CategoryViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
 
-        floatingAddButton.rx.tap
-            .asDriver()
-            .drive(with: self) { owner, _ in
-                owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
-            }
-            .disposed(by: disposeBag)
         
         // 저장된 링크 카드 탭
         let savedTapGesture = UITapGestureRecognizer()
@@ -338,7 +319,7 @@ final class CategoryViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
-        [scrollView, floatingAddButton].forEach { view.addSubview($0) }
+        [scrollView].forEach { view.addSubview($0) }
         scrollView.addSubview(contentView)
         [statsStackView, categoryHeaderView, categoryContainerView, recentLinksLabel, linksTableView].forEach { contentView.addSubview($0) }
         [savedLinksView, expiredLinksView].forEach { statsStackView.addArrangedSubview($0) }
@@ -442,11 +423,6 @@ final class CategoryViewController: BaseViewController {
             make.bottom.equalToSuperview().offset(-100)
         }
         
-        floatingAddButton.snp.makeConstraints { make in
-            make.size.equalTo(56)
-            make.trailing.equalToSuperview().offset(-26)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-38)
-        }
     }
     
     override func configureView() {
@@ -466,6 +442,28 @@ final class CategoryViewController: BaseViewController {
         
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        
+        // 네비게이션바 오른쪽에 + 버튼 추가
+        let button = UIButton(type: .system)
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 18
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 1)
+        button.layer.shadowOpacity = 0.2
+        button.layer.shadowRadius = 3
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
+        button.tintColor = .white
+        button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+        
+        let addButton = UIBarButtonItem(customView: button)
+        navigationItem.rightBarButtonItem = addButton
+        
+        button.rx.tap
+            .bind(with: self) { owner, _ in
+                owner.present(UINavigationController(rootViewController: EditLinkViewController()), animated: true)
+            }
+            .disposed(by: disposeBag)
     }
 }
 
