@@ -239,8 +239,13 @@ final class CategoryViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         categories
-            .bind(to: categoryCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.identifier, cellType: CategoryCollectionViewCell.self)) { _, category, cell in
+            .bind(to: categoryCollectionView.rx.items(cellIdentifier: CategoryCollectionViewCell.identifier, cellType: CategoryCollectionViewCell.self)) { [weak self] index, category, cell in
                 cell.configure(with: category)
+                
+                // 편집 버튼 콜백 설정
+                cell.onEditTapped = {
+                    self?.showCategoryEditMenu(for: category, at: index)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -510,6 +515,82 @@ final class CategoryViewController: BaseViewController {
     private func startTooltipsAfterPermission() {
         // 툴팁 시작
         TooltipManager.shared.startSequentialTooltips(in: self)
+    }
+    
+    // MARK: - Category Edit Menu
+    
+    private func showCategoryEditMenu(for category: CategoryItem, at index: Int) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        // 카테고리명을 커스텀 제목으로 설정
+        alert.setValue(NSAttributedString(string: category.title, attributes: [
+            .font: UIFont.systemFont(ofSize: 18, weight: .bold),
+            .foregroundColor: UIColor.label
+        ]), forKey: "attributedTitle")
+        
+        // 수정 액션
+        let editAction = UIAlertAction(title: "카테고리 수정", style: .default) { [weak self] _ in
+            self?.editCategory(at: index)
+        }
+        
+        // 삭제 액션 (카테고리에 링크가 없을 때만)
+        let deleteAction = UIAlertAction(title: "카테고리 삭제", style: .destructive) { [weak self] _ in
+            if category.count > 0 {
+                self?.showDeleteWarning(for: category.title)
+            } else {
+                self?.deleteCategory(at: index)
+            }
+        }
+        
+        // 취소 액션
+        let cancelAction = UIAlertAction(title: "취소", style: .cancel)
+        
+        alert.addAction(editAction)
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        // iPad 지원
+        if let popover = alert.popoverPresentationController {
+            if let cell = categoryCollectionView.cellForItem(at: IndexPath(row: index, section: 0)) {
+                popover.sourceView = cell
+                popover.sourceRect = cell.bounds
+            }
+        }
+        
+        present(alert, animated: true)
+    }
+    
+    private func editCategory(at index: Int) {
+        // TODO: 카테고리 수정 기능 구현
+        print("카테고리 수정: \(index)")
+    }
+    
+    private func showDeleteWarning(for categoryTitle: String) {
+        let alert = UIAlertController(title: "카테고리 삭제", 
+                                     message: "이 카테고리에는 링크가 포함되어 있어 삭제할 수 없습니다.\n모든 링크를 다른 카테고리로 이동한 후 삭제해주세요.", 
+                                     preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func deleteCategory(at index: Int) {
+        let alert = UIAlertController(title: "카테고리 삭제", 
+                                     message: "이 카테고리를 정말 삭제하시겠습니까?", 
+                                     preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.performCategoryDeletion(at: index)
+        })
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
+    private func performCategoryDeletion(at index: Int) {
+        // TODO: 실제 카테고리 삭제 로직 구현
+        print("카테고리 삭제 진행: \(index)")
+        loadCategories()
     }
 }
 

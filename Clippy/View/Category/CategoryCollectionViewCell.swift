@@ -10,6 +10,9 @@ import SnapKit
 
 final class CategoryCollectionViewCell: UICollectionViewCell {
     
+    // MARK: - Callback
+    var onEditTapped: (() -> Void)?
+    
     private let containerView = {
         let view = UIView()
         view.backgroundColor = .systemBackground
@@ -50,6 +53,14 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    private let editButton = {
+        let button = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        button.setImage(UIImage(systemName: "ellipsis", withConfiguration: config), for: .normal)
+        button.tintColor = .secondaryLabel
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureUI()
@@ -63,7 +74,10 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
     private func configureUI() {
         contentView.addSubview(containerView)
         iconBackgroundView.addSubview(iconImageView)
-        [iconBackgroundView, titleLabel, countLabel].forEach { containerView.addSubview($0) }
+        [iconBackgroundView, titleLabel, countLabel, editButton].forEach { containerView.addSubview($0) }
+        
+        // 버튼 액션 설정
+        editButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
         
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -91,6 +105,12 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
             make.bottom.lessThanOrEqualToSuperview().offset(-16)
         }
+        
+        editButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(4)
+            make.trailing.equalToSuperview().offset(-4)
+            make.size.equalTo(28)
+        }
     }
     
     func configure(with item: CategoryItem) {
@@ -101,5 +121,14 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
         iconImageView.image = UIImage(systemName: item.iconName, withConfiguration: config)
         iconImageView.tintColor = item.iconColor
+        
+        // 일반 카테고리는 편집 불가
+        editButton.isHidden = (item.title == "일반")
+    }
+    
+    // MARK: - Actions
+    @objc private func editButtonTapped() {
+        print("🔧 편집 버튼 탭됨!")
+        onEditTapped?()
     }
 }
