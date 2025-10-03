@@ -43,6 +43,20 @@ final class SearchViewController: BaseViewController {
     }()
 
     // MARK: - Configuration
+    override func configureView() {
+        super.configureView()
+        title = "검색"
+        
+        // 화면 탭 시 키보드 숨김을 위한 탭 제스처 추가
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false // 다른 뷰의 터치 이벤트를 방해하지 않도록
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func dismissKeyboard() {
+        searchBar.resignFirstResponder()
+    }
+    
     override func bind() {
         // 검색어와 LinkManager의 링크를 결합하여 실시간 검색 결과 생성
         let searchResults = Observable.combineLatest(
@@ -114,6 +128,13 @@ final class SearchViewController: BaseViewController {
                 owner.searchBar.resignFirstResponder()
             }
             .disposed(by: disposeBag)
+        
+        // 검색 버튼 탭 시 키보드 숨김
+        searchBar.rx.searchButtonClicked
+            .bind(with: self) { owner, _ in
+                owner.searchBar.resignFirstResponder()
+            }
+            .disposed(by: disposeBag)
     }
 
     override func configureHierarchy() {
@@ -138,10 +159,6 @@ final class SearchViewController: BaseViewController {
         }
     }
 
-    override func configureView() {
-        super.configureView()
-        title = "검색"
-    }
 
     private func shareLink(url: URL) {
         let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
