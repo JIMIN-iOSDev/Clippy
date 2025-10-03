@@ -391,5 +391,14 @@ final class EditCategoryViewController: BaseViewController {
     override func configureView() {
         super.configureView()
         navigationItem.title = "카테고리 추가"
+        
+        // 화면 탭 시 키보드 숨기기
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
 }
