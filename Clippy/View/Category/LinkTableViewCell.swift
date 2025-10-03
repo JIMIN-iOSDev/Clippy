@@ -223,6 +223,20 @@ final class LinkTableViewCell: UITableViewCell {
         shareTapHandler?()
     }
     
+    // MARK: - Animation and Tooltip Methods
+    
+    func showSwipeHint() {
+        // 왼쪽으로 천천히 슬라이드하는 애니메이션
+        UIView.animate(withDuration: 1.0, delay: 0, options: [.curveEaseInOut], animations: {
+            self.transform = CGAffineTransform(translationX: -50, y: 0)
+        }) { _ in
+            // 원위치로 돌아오기
+            UIView.animate(withDuration: 0.5) {
+                self.transform = .identity
+            }
+        }
+    }
+    
     func configure(with link: LinkMetadata) {
         titleLabel.text = link.title
         urlLabel.text = link.url.absoluteString

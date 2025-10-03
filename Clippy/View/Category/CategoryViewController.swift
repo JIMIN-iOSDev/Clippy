@@ -27,6 +27,8 @@ final class CategoryViewController: BaseViewController {
     private let recentLinks = BehaviorRelay<[LinkMetadata]>(value: [])
     
     // MARK: - UI Components
+    internal var addButton: UIButton? // 툴팁에서 접근하기 위해 internal로 변경
+    
     private let scrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
@@ -43,7 +45,7 @@ final class CategoryViewController: BaseViewController {
         return stackView
     }()
 
-    private let savedLinksView = {
+    let savedLinksView = {
         let view = UIView()
         view.backgroundColor = .systemBlue.withAlphaComponent(0.1)
         view.layer.cornerRadius = 16
@@ -79,7 +81,7 @@ final class CategoryViewController: BaseViewController {
         return label
     }()
 
-    private let expiredLinksView = {
+    let expiredLinksView = {
         let view = UIView()
         view.backgroundColor = .systemOrange.withAlphaComponent(0.1)
         view.layer.cornerRadius = 16
@@ -117,7 +119,7 @@ final class CategoryViewController: BaseViewController {
 
     private let categoryHeaderView = UIView()
 
-    private let categoryTitleLabel = {
+    let categoryTitleLabel = {
         let label = UILabel()
         label.text = "카테고리"
         label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
@@ -161,7 +163,7 @@ final class CategoryViewController: BaseViewController {
         return label
     }()
 
-    private let linksTableView = {
+    let linksTableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
@@ -318,6 +320,7 @@ final class CategoryViewController: BaseViewController {
             .disposed(by: disposeBag)
     }
     
+
     override func configureHierarchy() {
         [scrollView].forEach { view.addSubview($0) }
         scrollView.addSubview(contentView)
@@ -393,6 +396,10 @@ final class CategoryViewController: BaseViewController {
             make.height.equalTo(24)
         }
         
+        // 순차 툴팁 시작 (더미링크는 스와이프 안내 시점에 생성)
+        
+        TooltipManager.shared.startSequentialTooltips(in: self)
+        
         categoryTitleLabel.snp.makeConstraints { make in
             make.leading.centerY.equalToSuperview()
         }
@@ -456,6 +463,9 @@ final class CategoryViewController: BaseViewController {
         button.tintColor = .white
         button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
         
+        // 툴팁에서 접근할 수 있도록 저장
+        self.addButton = button
+        
         let addButton = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = addButton
         
@@ -469,10 +479,17 @@ final class CategoryViewController: BaseViewController {
 
 extension CategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let link = self.recentLinks.value[indexPath.row]
+        
         let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             
-            let link = self.recentLinks.value[indexPath.row] // 변경된 부분
+            // 더미링크인 경우 그냥 삭제 가능
+            if link.url.absoluteString == "https://clippy.dummy.swipe.guide" {
+                LinkManager.shared.deleteDummyLinkForSwipeGuide()
+                completionHandler(true)
+                return
+            }
             
             let alert = UIAlertController(title: "링크 삭제", message: "이 링크를 삭제하시겠습니까?", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "취소", style: .cancel) { _ in
@@ -492,10 +509,15 @@ extension CategoryViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let link = self.recentLinks.value[indexPath.row]
+        
+        // 더미링크인 경우 수정 액션 없음
+        if link.url.absoluteString == "https://clippy.dummy.swipe.guide" {
+            return UISwipeActionsConfiguration(actions: [])
+        }
+        
         let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
             guard let self = self else { return }
-            
-            let link = self.recentLinks.value[indexPath.row] // 변경된 부분
             
             let editVC = EditLinkViewController()
             editVC.editingLink = link

@@ -32,6 +32,10 @@ final class LinkManager {
         return linksSubject.asObservable()
     }
     
+    var currentLinks: [LinkMetadata] {
+        return linksSubject.value
+    }
+    
     var recentLinks: Observable<[LinkMetadata]> {
         return links.map { links in
             Array(links.sorted { $0.createdAt > $1.createdAt }.prefix(10))
@@ -160,6 +164,83 @@ final class LinkManager {
         linksSubject.accept(currentLinks)
         
         return Observable.just(true)
+    }
+    
+    // MARK: - 더미링크 관리 (스와이프 안내용)
+    func createDummyLinkForSwipeGuide() -> Observable<LinkMetadata> {
+        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
+        
+        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
+            title: "📝 스와이프 가이드",
+            description: "좌우 스와이프 기능",
+            thumbnailImage: dummyImage,
+            categories: [("일반", 0)],
+            dueDate: nil,
+            createdAt: Date(),
+            isLiked: false
+        )
+        
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
+        
+        return Observable.just(dummyLink)
+    }
+    
+    func deleteDummyLinkForSwipeGuide() {
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
+        
+        linkCache.removeValue(forKey: cacheKey)
+        
+        var currentLinks = linksSubject.value
+        currentLinks.removeAll { $0.url.absoluteString == cacheKey }
+        linksSubject.accept(currentLinks)
+    }
+    
+    private func createDummyThumbnail() -> UIImage {
+        let size = CGSize(width: 80, height: 80)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        
+        return renderer.image { context in
+            // 그라데이션 배경
+            let colors = [
+                UIColor.systemBlue.cgColor,
+                UIColor.systemPurple.cgColor
+            ]
+            
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            let gradient = CGGradient(
+                colorsSpace: colorSpace,
+                colors: colors as CFArray,
+                locations: [0.0, 1.0]
+            )!
+            
+            context.cgContext.drawLinearGradient(
+                gradient,
+                start: CGPoint(x: 0, y: 0),
+                end: CGPoint(x: size.width, y: size.height),
+                options: []
+            )
+            
+            // 클립 아이콘 추가
+            let clipIcon = UIImage(systemName: "paperclip")!
+            let iconSize = CGSize(width: 30, height: 30)
+            let iconRect = CGRect(
+                x: (size.width - iconSize.width) / 2,
+                y: (size.height - iconSize.height) / 2,
+                width: iconSize.width,
+                height: iconSize.height
+            )
+            
+            clipIcon.draw(in: iconRect)
+        }
     }
     
     func fetchLinkMetadata(for url: URL) -> Observable<LinkMetadata> {
