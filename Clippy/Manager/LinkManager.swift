@@ -315,6 +315,7 @@ final class LinkManager {
         }
     }
     
+    
     private func getCachedImage(for urlString: String) -> UIImage? {
         var cachedImage: UIImage?
         imageCacheQueue.sync {

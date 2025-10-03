@@ -27,7 +27,7 @@ final class LinkTableViewCell: UITableViewCell {
     
     private let thumbnailImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .systemBlue
+        imageView.backgroundColor = .clear
         imageView.layer.cornerRadius = 12
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
@@ -265,17 +265,15 @@ final class LinkTableViewCell: UITableViewCell {
             dateLabel.text = "마감일 없음"
         }
         
-        // 썸네일 이미지
+        // 썸네일 이미지 - 이미지가 있을 때만 표시
         if let thumbnailImage = link.thumbnailImage {
             thumbnailImageView.image = thumbnailImage
             thumbnailImageView.backgroundColor = .clear
             thumbnailImageView.contentMode = .scaleAspectFill
         } else {
-            let config = UIImage.SymbolConfiguration(pointSize: 40, weight: .medium)
-            thumbnailImageView.image = UIImage(systemName: "link", withConfiguration: config)
-            thumbnailImageView.backgroundColor = .systemBlue
-            thumbnailImageView.tintColor = .white
-            thumbnailImageView.contentMode = .center
+            // 이미지가 없으면 아예 비워둠 (아이콘도 없음)
+            thumbnailImageView.image = nil
+            thumbnailImageView.backgroundColor = .clear
         }
         
         // 즐겨찾기
