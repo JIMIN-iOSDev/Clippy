@@ -197,7 +197,7 @@ final class EditCategoryViewController: BaseViewController {
                 let (name, memo, colorIndex, iconIndex) = value
                 
                 guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-                    owner.showAlert(title: "카테고리 이름 작성", message: "카테고리 이름은 필수값입니다")
+                    owner.showToast(message: "카테고리 이름을 입력해주세요")
                     return
                 }
                 
@@ -210,16 +210,44 @@ final class EditCategoryViewController: BaseViewController {
                     NotificationCenter.default.post(name: .categoryDidCreate, object: nil)
                     owner.dismiss(animated: true)
                 } else {
-                    owner.showAlert(title: "카테고리 중복", message: "이미 존재하는 카테고리 이름입니다")
+                    owner.showToast(message: "이미 존재하는 카테고리 이름입니다")
                 }
             }
             .disposed(by: disposeBag)
     }
     
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
+    // MARK: - Toast Message
+    private func showToast(message: String) {
+        let toast = UILabel()
+        toast.text = message
+        toast.textAlignment = .center
+        toast.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        toast.textColor = .white
+        toast.backgroundColor = UIColor.black
+        toast.layer.cornerRadius = 8
+        toast.clipsToBounds = true
+        toast.alpha = 0
+        
+        view.addSubview(toast)
+        view.bringSubviewToFront(toast)
+        toast.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-100)
+            make.height.equalTo(36)
+            make.width.greaterThanOrEqualTo(message.count * 12 + 40)
+        }
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            toast.alpha = 1
+        }) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                UIView.animate(withDuration: 0.3, animations: {
+                    toast.alpha = 0
+                }) { _ in
+                    toast.removeFromSuperview()
+                }
+            }
+        }
     }
     
     private func updateColorButtons() {

@@ -310,16 +310,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        let imageView = UIImageView()
+				<string>    }()
 </string>
 				<key>leading</key>
-				<string>    
-    private let calendarIconImageView = {
+				<string>        button.layer.cornerRadius = 12
+        return button
 </string>
 				<key>trailing</key>
-				<string>        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        imageView.image = UIImage(systemName: "calendar", withConfiguration: config)
-        imageView.tintColor = .systemGray3
+				<string>    
+    private let datePicker = {
+        let picker = UIDatePicker()
 </string>
 			</dict>
 			<key>title</key>
@@ -498,16 +498,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>        // 선택된 마감일 TextField에 바인딩
+				<string>                owner.selectedDueDate.accept(owner.datePicker.date)
 </string>
 				<key>leading</key>
-				<string>            .disposed(by: disposeBag)
-        
+				<string>        doneButton.rx.tap
+            .bind(with: self) { owner, _ in
 </string>
 				<key>trailing</key>
-				<string>        dueDateTextField.inputView = datePicker
-        
-        // 완료 버튼 툴바
+				<string>                owner.dueDateTextField.text = DateFormatter.displayFormatter.string(from: owner.datePicker.date)
+                owner.dueDateTextField.resignFirstResponder()
+            }
 </string>
 			</dict>
 			<key>title</key>
