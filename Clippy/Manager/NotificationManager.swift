@@ -18,7 +18,7 @@ final class NotificationManager {
     // MARK: - Permission Request
     
     private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error = error {
                 print("❌ 알림 권한 요청 실패: \(error.localizedDescription)")
                 return
@@ -73,18 +73,21 @@ final class NotificationManager {
         // 알림 시간: 마감일 하루 전 오후 6시
         let notificationDate = calendar.date(byAdding: .day, value: -1, to: dueDate) ?? dueDate
         
-        // 하루 전 날짜의 오전 1시 45분으로 설정 (테스트용)
+        // 하루 전 날짜의 오후 2시로 설정
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: notificationDate)
-        dateComponents.hour = 1
-        dateComponents.minute = 45
+        dateComponents.hour = 14
+        dateComponents.minute = 0
         
         let content = UNMutableNotificationContent()
         content.title = "Clippy"
         
-        // 제목을 30자로 제한하고 요약
-        let truncatedTitle = title.count > 30 ? String(title.prefix(30)) + "..." : title
-        content.body = "\(truncatedTitle) 마감일이 내일입니다!"
+        // 제목을 26자로 제한하고 요약 (링크 + 띄어쓰기 고려)
+        let truncatedTitle = title.count > 26 ? String(title.prefix(26)) + "..." : title
+        content.body = "\(truncatedTitle) 링크 마감일이 내일입니다!"
         content.sound = .default
+        
+        // 배지 설정하지 않음 (배지 사용 안 함)
+        content.badge = nil
         
         // 알림 이미지 첨부 - 더 단순한 방식
         print("🔍 알림 이미지 첨부 시도...")
