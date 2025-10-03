@@ -44,6 +44,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
+        
+        // 알림 매니저 초기화 (알림 권한 요청 및 설정)
+        let _ = NotificationManager.shared
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

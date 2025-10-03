@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 import LinkPresentation
+import UserNotifications
 
 final class LinkManager {
     
@@ -135,6 +136,15 @@ final class LinkManager {
         linkCache[cacheKey] = linkMetadata
         updateLinksArray(with: linkMetadata)
         
+        // 마감일이 있으면 알림 설정
+        if let dueDate = dueDate {
+            NotificationManager.shared.scheduleNotificationForLink(
+                title: linkMetadata.title,
+                dueDate: dueDate,
+                linkId: cacheKey
+            )
+        }
+        
         return Observable.just(linkMetadata)
     }
     
@@ -157,6 +167,10 @@ final class LinkManager {
     
     func deleteLink(url: URL) -> Observable<Bool> {
         let cacheKey = url.absoluteString
+        
+        // 관련 알림 취소
+        NotificationManager.shared.cancelNotificationForLink(linkId: cacheKey)
+        
         linkCache.removeValue(forKey: cacheKey)
         
         var currentLinks = linksSubject.value
