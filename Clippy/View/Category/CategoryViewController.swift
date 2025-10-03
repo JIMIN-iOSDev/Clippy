@@ -367,7 +367,7 @@ final class CategoryViewController: BaseViewController {
         statsStackView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(100)
+            make.height.equalTo(80)
         }
         
         savedLinksIconView.snp.makeConstraints { make in
@@ -382,7 +382,7 @@ final class CategoryViewController: BaseViewController {
         
         savedLinksCountLabel.snp.makeConstraints { make in
             make.leading.equalTo(savedLinksIconView.snp.trailing).offset(12)
-            make.top.equalToSuperview().offset(20)
+            make.centerY.equalToSuperview().offset(-10)
         }
         
         savedLinksTextLabel.snp.makeConstraints { make in
@@ -402,7 +402,7 @@ final class CategoryViewController: BaseViewController {
         
         expiredLinksCountLabel.snp.makeConstraints { make in
             make.leading.equalTo(expiredLinksIconView.snp.trailing).offset(12)
-            make.top.equalToSuperview().offset(20)
+            make.centerY.equalToSuperview().offset(-10)
         }
         
         expiredLinksTextLabel.snp.makeConstraints { make in
