@@ -232,11 +232,9 @@ final class LinkListViewController: BaseViewController {
     }
     
     override func bind() {
-        // allLinks 모드일 때만 테이블뷰 delegate 설정 (스와이프 액션)
-        if case .allLinks = mode {
-            tableView.rx.setDelegate(self)
-                .disposed(by: disposeBag)
-        }
+        // 모든 모드에 테이블뷰 delegate 설정 (스와이프 액션)
+        tableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
         
         // allLinks 모드일 때만 정렬 버튼 바인딩
         if case .allLinks = mode {
@@ -387,9 +385,6 @@ final class LinkListViewController: BaseViewController {
 // MARK: - UITableViewDelegate (스와이프 액션)
 extension LinkListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // allLinks 모드일 때만 스와이프 액션 제공
-        guard case .allLinks = mode else { return nil }
-        
         let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             
@@ -415,9 +410,6 @@ extension LinkListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // allLinks 모드일 때만 스와이프 액션 제공
-        guard case .allLinks = mode else { return nil }
-        
         let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             

@@ -13,6 +13,7 @@ import RxCocoa
 final class LikeViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+    private let repository = CategoryRepository()
     private let sortType = BehaviorRelay<SortType>(value: .latest)
     
     enum SortType {
@@ -151,6 +152,10 @@ final class LikeViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
+        // 테이블뷰 delegate 설정 (스와이프 액션)
+        tableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
         // 셀 클릭 시 Safari에서 링크 열기
         tableView.rx.itemSelected
             .do(onNext: { [weak self] indexPath in
@@ -226,5 +231,88 @@ final class LikeViewController: BaseViewController {
                 return date1 < date2
             }
         }
+    }
+}
+
+// MARK: - UITableViewDelegate (스와이프 액션)
+extension LikeViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            // RX를 사용해서 현재 정렬된 즐겨찾기 링크를 가져오기
+            Observable.combineLatest(
+                LinkManager.shared.links,
+                self.sortType.asObservable()
+            )
+            .take(1)
+            .subscribe(onNext: { links, sortType in
+                let favoriteLinks = links.filter { $0.isLiked }
+                let sortedLinks = self.sortLinks(favoriteLinks, by: sortType)
+                
+                guard indexPath.row < sortedLinks.count else {
+                    completionHandler(false)
+                    return
+                }
+                
+                let link = sortedLinks[indexPath.row]
+                
+                let alert = UIAlertController(title: "링크 삭제", message: "이 링크를 삭제하시겠습니까?", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "취소", style: .cancel) { _ in
+                    completionHandler(false)
+                })
+                alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                    // 데이터베이스에서 실제 삭제
+                    self.repository.deleteLink(url: link.url.absoluteString)
+                    LinkManager.shared.deleteLink(url: link.url)
+                        .subscribe(onNext: { _ in
+                            // 삭제 후 자동으로 UI 업데이트됨 (RX 바인딩으로)
+                        })
+                        .disposed(by: self.disposeBag)
+                    completionHandler(true)
+                })
+                self.present(alert, animated: true)
+            })
+            .disposed(by: self.disposeBag)
+        }
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            // RX를 사용해서 현재 정렬된 즐겨찾기 링크를 가져오기
+            Observable.combineLatest(
+                LinkManager.shared.links,
+                self.sortType.asObservable()
+            )
+            .take(1)
+            .subscribe(onNext: { links, sortType in
+                let favoriteLinks = links.filter { $0.isLiked }
+                let sortedLinks = self.sortLinks(favoriteLinks, by: sortType)
+                
+                guard indexPath.row < sortedLinks.count else {
+                    completionHandler(false)
+                    return
+                }
+                
+                let link = sortedLinks[indexPath.row]
+                
+                let editVC = EditLinkViewController()
+                editVC.editingLink = link
+                editVC.onLinkUpdated = { [weak self] in
+                    LinkManager.shared.reloadFromRealm()
+                }
+                self.present(UINavigationController(rootViewController: editVC), animated: true)
+            })
+            .disposed(by: self.disposeBag)
+            
+            completionHandler(true)
+        }
+        editAction.backgroundColor = .systemBlue
+        
+        return UISwipeActionsConfiguration(actions: [editAction])
     }
 }
