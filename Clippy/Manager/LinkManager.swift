@@ -16,6 +16,7 @@ final class LinkManager {
     static let shared = LinkManager()
     private init() {
         loadLinksFromRealm()
+        setupCategoryNotifications()
     }
     
     // MARK: - Properties
@@ -356,5 +357,22 @@ final class LinkManager {
         // 날짜순으로 정렬
         currentLinks.sort { $0.createdAt > $1.createdAt }
         linksSubject.accept(currentLinks)
+    }
+    
+    // MARK: - Category Notification Setup
+    private func setupCategoryNotifications() {
+        NotificationCenter.default.rx
+            .notification(.categoryDidUpdate)
+            .bind(with: self) { owner, _ in
+                owner.loadLinksFromRealm() // 카테고리 정보가 변경되면 링크 데이터도 새로고침
+            }
+            .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.categoryDidDelete)
+            .bind(with: self) { owner, _ in
+                owner.loadLinksFromRealm() // 카테고리 삭제 시 링크 데이터도 새로고침
+            }
+            .disposed(by: disposeBag)
     }
 }

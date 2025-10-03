@@ -255,6 +255,20 @@ final class CategoryViewController: BaseViewController {
                 owner.loadCategories()
             }
             .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.categoryDidUpdate)
+            .bind(with: self) { owner, _ in
+                owner.loadCategories()
+            }
+            .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.categoryDidDelete)
+            .bind(with: self) { owner, _ in
+                owner.loadCategories()
+            }
+            .disposed(by: disposeBag)
     
         categoryCollectionView.rx.itemSelected
             .withLatestFrom(categories) { indexPath, categories in
