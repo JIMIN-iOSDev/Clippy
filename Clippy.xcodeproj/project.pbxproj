@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC3E2BE72E90F7BD00E7F49B /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = EC3E2BE62E90F7BD00E7F49B /* FirebaseAnalyticsCore */; };
+		EC3E2BE92E90F7BD00E7F49B /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = EC3E2BE82E90F7BD00E7F49B /* FirebaseCrashlytics */; };
+		EC3E2BEB2E90F7BD00E7F49B /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = EC3E2BEA2E90F7BD00E7F49B /* FirebaseMessaging */; };
+		EC3E2BEF2E90FEB000E7F49B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = EC3E2BEE2E90FEB000E7F49B /* .gitignore */; };
 		EC5368642E8417C200B411DB /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368632E8417C200B411DB /* RxCocoa */; };
 		EC5368662E8417C200B411DB /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368652E8417C200B411DB /* RxSwift */; };
 		EC536EBE2E8BFE1500B411DB /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = ECB793952E826D3800C44AF0 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -30,6 +34,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EC3E2BEE2E90FEB000E7F49B /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		ECB792702E82215900C44AF0 /* Clippy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clippy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -59,8 +64,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC3E2BEB2E90F7BD00E7F49B /* FirebaseMessaging in Frameworks */,
 				EC5368642E8417C200B411DB /* RxCocoa in Frameworks */,
+				EC3E2BE72E90F7BD00E7F49B /* FirebaseAnalyticsCore in Frameworks */,
 				ECB793962E826D3800C44AF0 /* RealmSwift in Frameworks */,
+				EC3E2BE92E90F7BD00E7F49B /* FirebaseCrashlytics in Frameworks */,
 				EC5368662E8417C200B411DB /* RxSwift in Frameworks */,
 				EC5370752E8F472400B411DB /* Toast in Frameworks */,
 				ECB793992E826D4E00C44AF0 /* SnapKit in Frameworks */,
@@ -73,6 +81,7 @@
 		ECB792672E82215800C44AF0 = {
 			isa = PBXGroup;
 			children = (
+				EC3E2BEE2E90FEB000E7F49B /* .gitignore */,
 				ECB792722E82215900C44AF0 /* Clippy */,
 				ECB792712E82215900C44AF0 /* Products */,
 			);
@@ -112,6 +121,9 @@
 				EC5368632E8417C200B411DB /* RxCocoa */,
 				EC5368652E8417C200B411DB /* RxSwift */,
 				EC5370742E8F472400B411DB /* Toast */,
+				EC3E2BE62E90F7BD00E7F49B /* FirebaseAnalyticsCore */,
+				EC3E2BE82E90F7BD00E7F49B /* FirebaseCrashlytics */,
+				EC3E2BEA2E90F7BD00E7F49B /* FirebaseMessaging */,
 			);
 			productName = Clippy;
 			productReference = ECB792702E82215900C44AF0 /* Clippy.app */;
@@ -146,6 +158,7 @@
 				ECB793972E826D4E00C44AF0 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				EC5368622E8417C200B411DB /* XCRemoteSwiftPackageReference "RxSwift" */,
 				EC5370732E8F472400B411DB /* XCRemoteSwiftPackageReference "Toast-Swift" */,
+				EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ECB792712E82215900C44AF0 /* Products */;
@@ -162,6 +175,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC3E2BEF2E90FEB000E7F49B /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +401,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.3.0;
+			};
+		};
 		EC5368622E8417C200B411DB /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift";
@@ -422,6 +444,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		EC3E2BE62E90F7BD00E7F49B /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		EC3E2BE82E90F7BD00E7F49B /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		EC3E2BEA2E90F7BD00E7F49B /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		EC5368632E8417C200B411DB /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = EC5368622E8417C200B411DB /* XCRemoteSwiftPackageReference "RxSwift" */;
