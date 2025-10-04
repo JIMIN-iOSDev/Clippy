@@ -18,13 +18,13 @@ enum SequentialTooltipType: String, CaseIterable {
     var message: String {
         switch self {
         case .savedLinks:
-            return "저장된 모든 링크를 볼 수 있습니다"
+            return "저장된 모든 링크를\n볼 수 있습니다"
         case .expiringLinks:
             return "마감일이 3일 이내인\n링크들을 볼 수 있습니다"
         case .defaultCategory:
-            return "카테고리를 설정하지 않으면 '일반'으로 저장됩니다"
+            return "카테고리를 설정하지 않으면\n'일반'으로 저장됩니다"
         case .swipeAction:
-            return "좌우로 슬라이드해서 수정·삭제할 수 있습니다"
+            return "좌우로 슬라이드해서\n수정·삭제할 수 있습니다"
         }
     }
     
