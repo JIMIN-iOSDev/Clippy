@@ -265,15 +265,16 @@ final class LinkTableViewCell: UITableViewCell {
             dateLabel.text = "마감일 없음"
         }
         
-        // 썸네일 이미지 - 이미지가 있을 때만 표시
+        // 썸네일 이미지 - 이미지가 있으면 표시, 없으면 기본 앱 로고 표시
         if let thumbnailImage = link.thumbnailImage {
             thumbnailImageView.image = thumbnailImage
             thumbnailImageView.backgroundColor = .clear
             thumbnailImageView.contentMode = .scaleAspectFill
         } else {
-            // 이미지가 없으면 아예 비워둠 (아이콘도 없음)
-            thumbnailImageView.image = nil
+            // 이미지가 없으면 기본 앱 로고 표시
+            thumbnailImageView.image = UIImage(named: "AppLogo")
             thumbnailImageView.backgroundColor = .clear
+            thumbnailImageView.contentMode = .scaleAspectFit
         }
         
         // 즐겨찾기

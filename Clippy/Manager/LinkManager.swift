@@ -92,9 +92,10 @@ final class LinkManager {
                 guard let url = URL(string: linkList.url),
                       let categoryInfos = urlToCategories[linkList.url] else { return }
                 
-                // 캐시된 이미지가 있으면 바로 사용
+                // 캐시된 이미지가 있으면 바로 사용, 없으면 기본 앱 로고 사용
                 let cachedImage = getCachedImage(for: linkList.url)
-                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: cachedImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                let thumbnailImage = cachedImage ?? UIImage(named: "AppLogo")
+                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
@@ -284,15 +285,18 @@ final class LinkManager {
                 }
                 
                 if let error {
-                    // 에러가 있어도 기본 링크 메타데이터는 제공
-                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString)
+                    // 에러가 있어도 기본 링크 메타데이터는 제공 (기본 앱 로고 포함)
+                    let defaultImage = UIImage(named: "AppLogo")
+                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: defaultImage)
                     observer.onNext(basicMetadata)
                     observer.onCompleted()
                     return
                 }
                 
                 guard let metadata else {
-                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString)
+                    // 메타데이터가 없어도 기본 앱 로고와 함께 제공
+                    let defaultImage = UIImage(named: "AppLogo")
+                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: defaultImage)
                     observer.onNext(basicMetadata)
                     observer.onCompleted()
                     return
@@ -301,16 +305,23 @@ final class LinkManager {
                 // 이미지 로드
                 if let imageProvider = metadata.imageProvider {
                     imageProvider.loadObject(ofClass: UIImage.self) { image, _ in
+                        let finalImage: UIImage?
                         if let image = image as? UIImage {
                             // 이미지 캐시에 저장
                             self.cacheImage(image, for: urlString)
+                            finalImage = image
+                        } else {
+                            // 이미지 로드 실패시 기본 앱 로고 사용
+                            finalImage = UIImage(named: "AppLogo")
                         }
-                        let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: image as? UIImage)
+                        let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: finalImage)
                         observer.onNext(linkMetadata)
                         observer.onCompleted()
                     }
                 } else {
-                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: nil)
+                    // 썸네일 이미지가 없으면 기본 앱 로고 사용
+                    let defaultImage = UIImage(named: "AppLogo")
+                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: defaultImage)
                     observer.onNext(linkMetadata)
                     observer.onCompleted()
                 }

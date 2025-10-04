@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
@@ -594,13 +594,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.systemPurple.cgColor
-            ]
+				<string>                UIColor.clippyBlue.cgColor,
+                UIColor.systemPurple.cgColor
 </string>
 				<key>trailing</key>
-				<string>            
+				<string>            ]
+            
             let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(
 </string>
 			</dict>
 			<key>title</key>
