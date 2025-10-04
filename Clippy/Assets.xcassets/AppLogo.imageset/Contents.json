@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Clippy 로고.png",
+      "filename" : "Clippy 로고 3.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Clippy 로고 1.png",
+      "filename" : "Clippy 로고 4.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Clippy 로고 2.png",
+      "filename" : "Clippy 로고.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
