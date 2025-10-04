@@ -28,7 +28,7 @@ final class CategoryViewController: BaseViewController {
     private let recentLinks = BehaviorRelay<[LinkMetadata]>(value: [])
     
     // MARK: - UI Components
-    internal var addButton: UIButton? // 툴팁에서 접근하기 위해 internal로 변경
+    internal var addButton: UIBarButtonItem? // 툴팁에서 접근하기 위해 internal로 변경
     
     private let scrollView = {
         let scrollView = UIScrollView()
@@ -473,23 +473,18 @@ final class CategoryViewController: BaseViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
         // 네비게이션바 오른쪽에 + 버튼 추가
-        let button = UIButton(type: .system)
-        button.backgroundColor = .clippyBlue
-        button.layer.cornerRadius = 18
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOffset = CGSize(width: 0, height: 1)
-        button.layer.shadowOpacity = 0.2
-        button.layer.shadowRadius = 3
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
-        button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
-        button.tintColor = .white
-        button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+        let button = UIBarButtonItem(
+            image: UIImage(systemName: "plus"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        button.tintColor = .clippyBlue
         
         // 툴팁에서 접근할 수 있도록 저장
         self.addButton = button
         
-        let addButton = UIBarButtonItem(customView: button)
-        navigationItem.rightBarButtonItem = addButton
+        navigationItem.rightBarButtonItem = button
         
         button.rx.tap
             .bind(with: self) { owner, _ in
