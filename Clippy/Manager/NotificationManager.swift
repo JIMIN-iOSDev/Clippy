@@ -73,10 +73,10 @@ final class NotificationManager {
         // 알림 시간: 마감일 하루 전 오후 6시
         let notificationDate = calendar.date(byAdding: .day, value: -1, to: dueDate) ?? dueDate
         
-        // 하루 전 날짜의 오후 1시 29분으로 설정
+        // 하루 전 날짜의 오후 2시로 설정
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: notificationDate)
-        dateComponents.hour = 13
-        dateComponents.minute = 29
+        dateComponents.hour = 14
+        dateComponents.minute = 0
         
         let content = UNMutableNotificationContent()
         content.title = "Clippy"

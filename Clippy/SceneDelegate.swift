@@ -81,21 +81,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // 앱이 포그라운드로 올 때 배지 제거
         UIApplication.shared.applicationIconBadgeNumber = 0
         
-        // 알림으로 앱이 포그라운드로 온 경우 처리
-        if let tabBarController = window?.rootViewController as? UITabBarController {
-            // 현재 대기 중인 알림 응답이 있는지 확인
-            UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
-                // 최근 알림이 있다면 마감 임박 화면으로 이동
-                if let recentNotification = notifications.first,
-                   let userInfo = recentNotification.request.content.userInfo as? [String: Any],
-                   let linkId = userInfo["linkId"] as? String {
-                    
-                    DispatchQueue.main.async {
-                        self.navigateToExpiringLinks(tabBarController: tabBarController)
-                    }
-                }
-            }
-        }
+        // 알림으로 앱이 포그라운드로 온 경우는 제거
+        // (알림 탭으로만 마감 임박 화면으로 이동하도록 수정)
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -113,11 +100,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let linkId = userInfo["linkId"] as? String,
            let title = userInfo["title"] as? String {
             
-            navigateToExpiringLinks(tabBarController: tabBarController)
+            navigateToExpiringLinks(tabBarController: tabBarController, highlightLinkId: linkId)
         }
     }
     
-    private func navigateToExpiringLinks(tabBarController: UITabBarController) {
+    private func navigateToExpiringLinks(tabBarController: UITabBarController, highlightLinkId: String? = nil) {
         // 카테고리 탭으로 이동
         tabBarController.selectedIndex = 0
         
@@ -134,6 +121,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 categoryNavController.navigationBar.topItem?.backButtonTitle = ""
                 
                 categoryNavController.pushViewController(linkListVC, animated: true)
+                
+                // 하이라이트할 링크 ID가 있으면 전달
+                if let linkId = highlightLinkId {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("HighlightExpiringLink"),
+                            object: nil,
+                            userInfo: ["linkId": linkId]
+                        )
+                    }
+                }
             }
         }
     }

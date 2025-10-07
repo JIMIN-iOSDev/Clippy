@@ -303,6 +303,17 @@ final class LinkListViewController: BaseViewController {
                 owner.loadLinks()
             }
             .disposed(by: disposeBag)
+        
+        // 마감 임박 링크 하이라이트 알림 받기
+        NotificationCenter.default.rx
+            .notification(NSNotification.Name("HighlightExpiringLink"))
+            .bind(with: self) { owner, notification in
+                if let userInfo = notification.userInfo,
+                   let linkId = userInfo["linkId"] as? String {
+                    owner.highlightLink(with: linkId)
+                }
+            }
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
@@ -382,6 +393,69 @@ final class LinkListViewController: BaseViewController {
         }
         
         loadLinks()
+    }
+    
+    // MARK: - Highlight Methods
+    
+    private func highlightLink(with linkId: String) {
+        // 마감 임박 모드일 때만 하이라이트 실행
+        guard case .expiring = mode else {
+            print("❌ 마감 임박 모드가 아니므로 하이라이트하지 않습니다")
+            return
+        }
+        
+        let currentLinks = links.value
+        
+        // linkId로 해당 링크 찾기 (URL 기반 매칭)
+        guard let targetIndex = currentLinks.firstIndex(where: { link in
+            let normalizedUrl = link.url.absoluteString.replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: ":", with: "_")
+            return normalizedUrl == linkId
+        }) else {
+            print("❌ 하이라이트할 링크를 찾을 수 없습니다: \(linkId)")
+            return
+        }
+        
+        print("✅ 하이라이트할 링크 찾음: \(currentLinks[targetIndex].title)")
+        
+        // 해당 위치로 스크롤
+        let indexPath = IndexPath(row: targetIndex, section: 0)
+        tableView.scrollToRow(at: indexPath, at: .middle, animated: true)
+        
+        // 하이라이트 애니메이션
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.performHighlightAnimation(at: indexPath)
+        }
+    }
+    
+    private func performHighlightAnimation(at indexPath: IndexPath) {
+        guard let cell = tableView.cellForRow(at: indexPath) as? LinkTableViewCell else { return }
+        
+        // 원래 배경색 저장
+        let originalBackgroundColor = cell.backgroundColor
+        
+        // 하이라이트 애니메이션
+        UIView.animate(withDuration: 0.3, animations: {
+            cell.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.2)
+        }) { _ in
+            UIView.animate(withDuration: 0.3, delay: 1.0, options: [], animations: {
+                cell.backgroundColor = originalBackgroundColor
+            })
+        }
+        
+        // 펄스 효과
+        UIView.animate(withDuration: 0.6, delay: 0.0, options: [.repeat, .autoreverse], animations: {
+            cell.transform = CGAffineTransform(scaleX: 1.02, y: 1.02)
+        }) { _ in
+            UIView.animate(withDuration: 0.3) {
+                cell.transform = .identity
+            }
+        }
+        
+        // 2초 후 애니메이션 중지
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            cell.layer.removeAllAnimations()
+            cell.transform = .identity
+        }
     }
 }
 
