@@ -47,6 +47,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
+        
+        // 알림으로 앱이 열린 경우 처리
+        if let notificationResponse = connectionOptions.notificationResponse {
+            handleNotificationResponse(notificationResponse, tabBarController: tabBarController)
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -75,6 +80,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 앱이 포그라운드로 올 때 배지 제거
         UIApplication.shared.applicationIconBadgeNumber = 0
+        
+        // 알림으로 앱이 포그라운드로 온 경우 처리
+        if let tabBarController = window?.rootViewController as? UITabBarController {
+            // 현재 대기 중인 알림 응답이 있는지 확인
+            UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+                // 최근 알림이 있다면 마감 임박 화면으로 이동
+                if let recentNotification = notifications.first,
+                   let userInfo = recentNotification.request.content.userInfo as? [String: Any],
+                   let linkId = userInfo["linkId"] as? String {
+                    
+                    DispatchQueue.main.async {
+                        self.navigateToExpiringLinks(tabBarController: tabBarController)
+                    }
+                }
+            }
+        }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -82,6 +103,38 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-
-
+    
+    // MARK: - Notification Handling
+    
+    private func handleNotificationResponse(_ response: UNNotificationResponse, tabBarController: UITabBarController) {
+        let userInfo = response.notification.request.content.userInfo
+        
+        // 마감 임박 알림인지 확인
+        if let linkId = userInfo["linkId"] as? String,
+           let title = userInfo["title"] as? String {
+            
+            navigateToExpiringLinks(tabBarController: tabBarController)
+        }
+    }
+    
+    private func navigateToExpiringLinks(tabBarController: UITabBarController) {
+        // 카테고리 탭으로 이동
+        tabBarController.selectedIndex = 0
+        
+        // 마감 임박 화면으로 이동
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if let categoryNavController = tabBarController.viewControllers?[0] as? UINavigationController {
+                
+                let linkListVC = LinkListViewController(mode: .expiring)
+                
+                // 백버튼 제목 완전히 숨기기
+                linkListVC.navigationItem.backButtonTitle = ""
+                
+                // 네비게이션 컨트롤러의 백버튼 스타일 설정
+                categoryNavController.navigationBar.topItem?.backButtonTitle = ""
+                
+                categoryNavController.pushViewController(linkListVC, animated: true)
+            }
+        }
+    }
 }
