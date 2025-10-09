@@ -145,7 +145,12 @@ final class CategoryViewController: BaseViewController {
         let layout = UICollectionViewFlowLayout()
         let totalWidth = UIScreen.main.bounds.width - 40 - 32
         let itemWidth = (totalWidth - 24) / 3
-        layout.itemSize = CGSize(width: itemWidth, height: 130)
+        
+        // 기기별 동적 높이 조정
+        let screenHeight = UIScreen.main.bounds.height
+        let itemHeight: CGFloat = screenHeight < 700 ? 100 : 130
+        
+        layout.itemSize = CGSize(width: itemWidth, height: itemHeight)
         layout.minimumInteritemSpacing = 12
         layout.minimumLineSpacing = 12
         layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
@@ -180,7 +185,21 @@ final class CategoryViewController: BaseViewController {
         loadCategories()
     }
     
-    // MARK: - Configuration    
+    // MARK: - Configuration
+    
+    /// 기기별 카테고리 컨테이너 높이 계산
+    private func getCategoryContainerHeight() -> CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        switch screenHeight {
+        case 0..<700: // iPhone 13 mini, SE 등
+            return 240
+        case 700..<800: // iPhone 13, 14 등
+            return 280
+        default: // iPhone 14 Pro Max 등
+            return 340
+        }
+    }
+    
     private func loadCategories() {
         let realmCategories = repository.readCategoryList()
         let categoryItems = realmCategories.map {
@@ -430,7 +449,7 @@ final class CategoryViewController: BaseViewController {
         categoryContainerView.snp.makeConstraints { make in
             make.top.equalTo(categoryHeaderView.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(340)
+            make.height.equalTo(getCategoryContainerHeight())
         }
         
         categoryCollectionView.snp.makeConstraints { make in

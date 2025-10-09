@@ -13,6 +13,37 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
     // MARK: - Callback
     var onEditTapped: (() -> Void)?
     
+    // MARK: - Dynamic Layout Properties
+    private var iconBackgroundSize: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 40 : 48
+    }
+    
+    private var iconSize: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 16 : 20
+    }
+    
+    private var topOffset: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 12 : 16
+    }
+    
+    private var iconTitleSpacing: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 8 : 12
+    }
+    
+    private var titleCountSpacing: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 2 : 4
+    }
+    
+    private var bottomOffset: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight < 700 ? 12 : 16
+    }
+    
     private let containerView = {
         let view = UIView()
         view.backgroundColor = .systemBackground
@@ -84,26 +115,26 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         }
         
         iconBackgroundView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
+            make.top.equalToSuperview().offset(topOffset)
             make.centerX.equalToSuperview()
-            make.size.equalTo(48)
+            make.size.equalTo(iconBackgroundSize)
         }
         
         iconImageView.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.size.equalTo(20)
+            make.size.equalTo(iconSize)
         }
         
         titleLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(8)
-            make.top.equalTo(iconBackgroundView.snp.bottom).offset(12)
+            make.top.equalTo(iconBackgroundView.snp.bottom).offset(iconTitleSpacing)
         }
         
         countLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
-            make.bottom.lessThanOrEqualToSuperview().offset(-16)
+            make.top.equalTo(titleLabel.snp.bottom).offset(titleCountSpacing)
+            make.bottom.lessThanOrEqualToSuperview().offset(-bottomOffset)
         }
         
         editButton.snp.makeConstraints { make in
@@ -118,7 +149,7 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         countLabel.text = "\(item.count)개"
         iconBackgroundView.backgroundColor = item.backgroundColor
         
-        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
+        let config = UIImage.SymbolConfiguration(pointSize: iconSize, weight: .medium)
         iconImageView.image = UIImage(systemName: item.iconName, withConfiguration: config)
         iconImageView.tintColor = item.iconColor
         
