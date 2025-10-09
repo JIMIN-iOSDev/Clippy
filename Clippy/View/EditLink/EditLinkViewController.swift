@@ -254,6 +254,33 @@ final class EditLinkViewController: BaseViewController {
                     return Observable.empty()
                 }
                 
+                // 중복 링크 검사 (수정 모드가 아닌 경우에만)
+                if self.editingLink == nil {
+                    let categories = self.repository.readCategoryList()
+                    let isDuplicate = categories.contains { category in
+                        category.category.contains { $0.url == trimmedURL }
+                    }
+                    
+                    if isDuplicate {
+                        self.showToast(message: "이미 저장되어 있는 링크입니다")
+                        return Observable.empty()
+                    }
+                } else {
+                    // 수정 모드: 현재 수정 중인 링크를 제외하고 중복 검사
+                    let categories = self.repository.readCategoryList()
+                    let currentEditingURL = self.editingLink?.url.absoluteString
+                    let isDuplicate = categories.contains { category in
+                        category.category.contains { link in
+                            link.url == trimmedURL && link.url != currentEditingURL
+                        }
+                    }
+                    
+                    if isDuplicate {
+                        self.showToast(message: "이미 저장되어 있는 링크입니다")
+                        return Observable.empty()
+                    }
+                }
+                
                 let finalTitle = title.isEmpty ? nil : title
                 let finalMemo = memo.isEmpty ? nil : memo
                 
@@ -541,94 +568,14 @@ final class EditLinkViewController: BaseViewController {
         let completeButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
         navigationItem.rightBarButtonItem = completeButton
         
-        // 완료 버튼 바인딩
+        // 완료 버튼 바인딩 (수정하기 버튼과 동일한 로직)
         completeButton.rx.tap
             .do(onNext: { [weak self] _ in
                 self?.view.endEditing(true) // 키보드 내리기
             })
-            .withLatestFrom(Observable.combineLatest(urlTextField.rx.text.orEmpty, titleTextField.rx.text.orEmpty, memoTextView.rx.text.orEmpty, selectedCategories.asObservable(), selectedDueDate.asObservable()))
-            .flatMapLatest { [weak self] urlString, title, memo, selectedCategories, dueDate -> Observable<LinkMetadata> in
-                guard let self = self else { return Observable.empty() }
-                
-                let trimmedURL = urlString.trimmingCharacters(in: .whitespaces)
-                guard !trimmedURL.isEmpty else {
-                    self.showToast(message: "링크 URL을 입력해주세요")
-                    return Observable.empty()
-                }
-                
-                // URL 형식 검증
-                guard let url = URL(string: trimmedURL),
-                      let scheme = url.scheme?.lowercased(),
-                      ["http", "https"].contains(scheme),
-                      url.host != nil else {
-                    self.showToast(message: "올바른 URL 형식이 아닙니다")
-                    return Observable.empty()
-                }
-                
-                let finalTitle = title.isEmpty ? nil : title
-                let finalMemo = memo.isEmpty ? nil : memo
-                
-                // 카테고리 선택 안했으면 "일반"에 저장
-                let targetCategories = selectedCategories.isEmpty ? ["일반"] : selectedCategories
-                
-                // 카테고리 정보 가져오기 (색상 포함)
-                let categoryInfos: [(name: String, colorIndex: Int)] = targetCategories.compactMap { name in
-                    guard let category = self.repository.readCategory(name: name) else { return nil }
-                    return (name: category.name, colorIndex: category.colorIndex)
-                }
-                
-                // 먼저 메타데이터 가져오기
-                return LinkManager.shared.fetchLinkMetadata(for: url)
-                    .flatMap { [weak self] fetchedMetadata -> Observable<LinkMetadata> in
-                        guard let self = self else { return Observable.empty() }
-                        
-                        // 사용자가 입력하지 않았으면 메타데이터 사용
-                        let actualTitle = finalTitle ?? fetchedMetadata.title
-                        let actualDescription = finalMemo ?? fetchedMetadata.description
-                        
-                        // 수정 모드인 경우
-                        if let editingLink = self.editingLink {
-                            // 기존 링크 삭제
-                            LinkManager.shared.deleteLink(url: editingLink.url)
-                                .subscribe()
-                                .disposed(by: self.disposeBag)
-                            
-                            // CategoryRepository에서 따로 업데이트 (즐겨찾기 상태 보존)
-                            self.repository.updateLink(
-                                url: urlString,
-                                title: actualTitle,
-                                description: actualDescription,
-                                categoryNames: targetCategories,
-                                deadline: dueDate,
-                                preserveLikeStatus: true
-                            )
-                            
-                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 즐겨찾기 상태 복원)
-                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage, isLiked: editingLink.isLiked)
-                        } else {
-                            // 새 링크 추가 모드
-                            targetCategories.forEach { categoryName in
-                                self.repository.addLink(title: actualTitle, url: urlString, description: actualDescription, categoryName: categoryName, deadline: dueDate)
-                            }
-                            
-                            // LinkManager에 추가 (메타데이터 fetch 및 캐시)
-                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
-                        }
-                    }
-            }
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, _ in
-                if owner.editingLink != nil {
-                    // 수정 모드
-                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                    owner.onLinkUpdated?()
-                } else {
-                    // 추가 모드
-                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                    owner.onLinkCreated?()
-                }
-                owner.dismiss(animated: true)
-            }
+            .subscribe(onNext: { [weak self] _ in
+                self?.saveButton.sendActions(for: .touchUpInside) // 저장하기 버튼과 동일한 동작
+            })
             .disposed(by: disposeBag)
         
         // 수정 모드인지 확인

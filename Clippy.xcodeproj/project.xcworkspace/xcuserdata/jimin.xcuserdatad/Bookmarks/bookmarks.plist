@@ -498,16 +498,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>                } else {
+				<string>                                url: urlString,
 </string>
 				<key>leading</key>
-				<string>                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                    owner.onLinkUpdated?()
+				<string>                            // CategoryRepository에서 따로 업데이트 (즐겨찾기 상태 보존)
+                            self.repository.updateLink(
 </string>
 				<key>trailing</key>
-				<string>                    // 추가 모드
-                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                    owner.onLinkCreated?()
+				<string>                                title: actualTitle,
+                                description: actualDescription,
+                                categoryNames: targetCategories,
 </string>
 			</dict>
 			<key>title</key>
