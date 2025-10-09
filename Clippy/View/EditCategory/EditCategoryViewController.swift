@@ -444,6 +444,20 @@ final class EditCategoryViewController: BaseViewController {
     
     /// 모드에 따라 UI 업데이트
     private func updateUIForMode() {
+        // 완료 버튼 추가
+        let completeButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
+        navigationItem.rightBarButtonItem = completeButton
+        
+        // 완료 버튼 바인딩 (카테고리 만들기/수정하기 버튼과 동일한 로직)
+        completeButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.view.endEditing(true) // 키보드 내리기
+            })
+            .subscribe(onNext: { [weak self] _ in
+                self?.actionButton.sendActions(for: .touchUpInside) // 액션 버튼과 동일한 동작
+            })
+            .disposed(by: disposeBag)
+        
         if isEditMode {
             navigationItem.title = "카테고리 수정"
             actionButton.setTitle("카테고리 수정하기", for: .normal)
