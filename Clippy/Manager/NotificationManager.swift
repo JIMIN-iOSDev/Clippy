@@ -127,8 +127,6 @@ final class NotificationManager {
             }
         }
         
-        print("⚠️ 모든 이미지 첨부 실패")
-        
         // 뱃지 제거
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
