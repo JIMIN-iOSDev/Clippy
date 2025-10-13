@@ -90,10 +90,20 @@ class TooltipManager {
         currentTooltipView = TooltipView(message: tooltipType.message, arrowDirection: tooltipType.direction)
         
         currentTooltipView?.onDismiss = { [weak self] in
-            self?.moveToNextTooltip()
+            // 이전 툴팁이 완전히 제거된 후 다음 툴팁 표시
+            DispatchQueue.main.async {
+                self?.moveToNextTooltip()
+            }
         }
         
-        currentTooltipView?.show(in: viewController.view, near: targetView)
+        // 탭바 컨트롤러가 있으면 탭바 컨트롤러의 뷰에, 없으면 윈도우에 표시
+        if let tabBarController = viewController.tabBarController {
+            currentTooltipView?.show(in: tabBarController.view, near: targetView)
+        } else if let window = viewController.view.window {
+            currentTooltipView?.show(in: window, near: targetView)
+        } else {
+            currentTooltipView?.show(in: viewController.view, near: targetView)
+        }
     }
     
     private func getTargetInfo(for tooltipType: SequentialTooltipType, in viewController: UIViewController) -> UIView? {
@@ -117,7 +127,8 @@ class TooltipManager {
     
     private func moveToNextTooltip() {
         currentTooltipIndex += 1
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        // 딜레이 없이 즉시 다음 툴팁 표시
+        DispatchQueue.main.async {
             self.showCurrentSequentialTooltip()
         }
     }
@@ -183,13 +194,21 @@ class TooltipManager {
                 // 툴팁 닫을 때 더미링크 삭제
                 LinkManager.shared.deleteDummyLinkForSwipeGuide()
                 self?.currentTooltipView = nil
-                // 0.5초 후 다음 툴팁으로 자연스럽게 이동
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // 즉시 다음 툴팁으로 이동
+                DispatchQueue.main.async {
                     self?.moveToNextTooltip()
                 }
             }
             self.currentTooltipView = tooltip
-            tooltip.show(in: categoryVC.view, near: firstCell)
+            
+            // 탭바 컨트롤러가 있으면 탭바 컨트롤러의 뷰에, 없으면 윈도우에 표시
+            if let tabBarController = categoryVC.tabBarController {
+                tooltip.show(in: tabBarController.view, near: firstCell)
+            } else if let window = categoryVC.view.window {
+                tooltip.show(in: window, near: firstCell)
+            } else {
+                tooltip.show(in: categoryVC.view, near: firstCell)
+            }
         }
     }
     

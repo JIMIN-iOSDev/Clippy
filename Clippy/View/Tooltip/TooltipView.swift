@@ -42,8 +42,9 @@ class TooltipView: UIView {
     }
     
     private func setupOverlayView() {
-        overlayView.backgroundColor = UIColor.clear // 투명하게 설정
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.3) // 반투명 검은색으로 설정
         overlayView.isUserInteractionEnabled = true
+        
         addSubview(overlayView)
     }
     
@@ -54,6 +55,7 @@ class TooltipView: UIView {
         bubbleView.layer.shadowOffset = CGSize(width: 0, height: 2)
         bubbleView.layer.shadowOpacity = 0.3
         bubbleView.layer.shadowRadius = 8
+        bubbleView.isUserInteractionEnabled = true // 닫기 버튼을 위해 터치 허용
         addSubview(bubbleView)
     }
     
@@ -69,8 +71,10 @@ class TooltipView: UIView {
         closeButton.setTitle("×", for: .normal)
         closeButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         closeButton.setTitleColor(.white, for: .normal)
-        closeButton.backgroundColor = UIColor.clear
+        closeButton.backgroundColor = UIColor.clear // 원래대로 투명 배경
+        closeButton.isUserInteractionEnabled = true
         closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+        
         bubbleView.addSubview(closeButton)
     }
     
@@ -164,9 +168,10 @@ class TooltipView: UIView {
             make.edges.equalToSuperview()
         }
         
-        // 오버레이는 터치 차단, 말풍선은 터치 가능하게 설정
+        // 오버레이는 터치 차단, 말풍선과 닫기 버튼은 터치 가능하게 설정
         overlayView.isUserInteractionEnabled = true
-        bubbleView.isUserInteractionEnabled = true
+        bubbleView.isUserInteractionEnabled = true // 말풍선은 터치 허용 (닫기 버튼을 위해)
+        closeButton.isUserInteractionEnabled = true // 닫기 버튼 터치 가능
         
         // 말풍선과 화살표를 오버레이 위로 올리기
         bringSubviewToFront(bubbleView)
@@ -177,15 +182,15 @@ class TooltipView: UIView {
             positionNearTarget(targetView, in: parentView)
         }
         
-        // 애니메이션으로 나타나기
+        // 애니메이션으로 나타나기 (매우 빠르게)
         alpha = 0
-        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.1, delay: 0, options: .curveEaseOut) {
             self.alpha = 1
         }
     }
     
     private func positionNearTarget(_ targetView: UIView, in parentView: UIView) {
-        // 화면 위치 계산
+        // 화면 위치 계산 - 타겟 뷰를 부모 뷰 좌표계로 변환
         let targetFrame = targetView.convert(targetView.bounds, to: parentView)
         let bubbleHeight = bubbleView.frame.height > 0 ? bubbleView.frame.height : 50
         let margin: CGFloat = 10
@@ -246,7 +251,8 @@ class TooltipView: UIView {
     }
     
     public func dismissTooltip() {
-        UIView.animate(withDuration: 0.3, animations: {
+        // 터치 차단을 유지하면서 애니메이션 (더 빠르게)
+        UIView.animate(withDuration: 0.1, animations: {
             self.alpha = 0
         }) { _ in
             self.removeFromSuperview()
