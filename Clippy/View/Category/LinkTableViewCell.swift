@@ -51,7 +51,7 @@ final class LinkTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .label
-        label.numberOfLines = 2
+        label.numberOfLines = 1
         return label
     }()
     
@@ -79,26 +79,28 @@ final class LinkTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let readButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .clear
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        button.setImage(UIImage(systemName: "circle", withConfiguration: config), for: .normal)
+        button.tintColor = .systemGray3
+        return button
+    }()
+    
     private let heartButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = .systemBackground
-        button.layer.cornerRadius = 16
-        button.layer.shadowColor = UIColor.label.cgColor
-        button.layer.shadowOffset = CGSize(width: 0, height: 1)
-        button.layer.shadowOpacity = 0.1
-        button.layer.shadowRadius = 2
+        button.backgroundColor = .clear
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        button.setImage(UIImage(systemName: "star", withConfiguration: config), for: .normal)
+        button.tintColor = .systemGray3
         return button
     }()
     
     private let shareButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = .systemBackground
-        button.layer.cornerRadius = 16
-        button.layer.shadowColor = UIColor.label.cgColor
-        button.layer.shadowOffset = CGSize(width: 0, height: 1)
-        button.layer.shadowOpacity = 0.1
-        button.layer.shadowRadius = 2
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        button.backgroundColor = .clear
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
         button.setImage(UIImage(systemName: "square.and.arrow.up", withConfiguration: config), for: .normal)
         button.tintColor = .systemGray3
         return button
@@ -112,6 +114,7 @@ final class LinkTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    var readTapHandler: (() -> Void)?
     var heartTapHandler: (() -> Void)?
     var shareTapHandler: (() -> Void)?
     
@@ -136,14 +139,14 @@ final class LinkTableViewCell: UITableViewCell {
         
         contentView.addSubview(containerView)
         
-        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, heartButton, shareButton, categoryTagsScrollView]
+        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, readButton, heartButton, shareButton, categoryTagsScrollView]
             .forEach { containerView.addSubview($0) }
         
         categoryTagsScrollView.addSubview(categoryTagsStackView)
         
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20))
-            make.height.equalTo(140)
+            make.height.equalTo(136)
         }
         
         thumbnailImageView.snp.makeConstraints { make in
@@ -151,34 +154,40 @@ final class LinkTableViewCell: UITableViewCell {
             make.size.equalTo(80)
         }
         
+        readButton.snp.makeConstraints { make in
+            make.centerY.equalTo(titleLabel)
+            make.trailing.equalTo(heartButton.snp.leading).offset(-8)
+            make.size.equalTo(24)
+        }
+        
         heartButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
+            make.centerY.equalTo(titleLabel)
             make.trailing.equalTo(shareButton.snp.leading).offset(-8)
-            make.size.equalTo(32)
+            make.size.equalTo(24)
         }
         
         shareButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
+            make.centerY.equalTo(titleLabel)
             make.trailing.equalToSuperview().offset(-12)
-            make.size.equalTo(32)
+            make.size.equalTo(24)
         }
         
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(16)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(16)
-            make.trailing.equalTo(heartButton.snp.leading).offset(-16)
+            make.trailing.equalTo(readButton.snp.leading).offset(-16)
         }
         
         urlLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.top.equalTo(titleLabel.snp.bottom).offset(8)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(16)
-            make.trailing.equalTo(heartButton.snp.leading).offset(-16)
+            make.trailing.equalToSuperview().offset(-16)
         }
         
         descriptionLabel.snp.makeConstraints { make in
             make.top.equalTo(urlLabel.snp.bottom).offset(8)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(16)
-            make.trailing.equalTo(heartButton.snp.leading).offset(-16)
+            make.trailing.equalToSuperview().offset(-16)
         }
         
         // 카테고리 태그 ScrollView는 남은 공간에만 표시
@@ -213,6 +222,11 @@ final class LinkTableViewCell: UITableViewCell {
         
         heartButton.addTarget(self, action: #selector(heartButtonTapped), for: .touchUpInside)
         shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
+        readButton.addTarget(self, action: #selector(readButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc private func readButtonTapped() {
+        readTapHandler?()
     }
     
     @objc private func heartButtonTapped() {
@@ -277,11 +291,16 @@ final class LinkTableViewCell: UITableViewCell {
             thumbnailImageView.contentMode = .scaleAspectFit
         }
         
-        // 즐겨찾기
-        let heartImageName = link.isLiked ? "heart.fill" : "heart"
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        heartButton.setImage(UIImage(systemName: heartImageName, withConfiguration: config), for: .normal)
-        heartButton.tintColor = link.isLiked ? .systemPink : .systemGray3
+        // 즐겨찾기 (별 모양)
+        let starImageName = link.isLiked ? "star.fill" : "star"
+        let starConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        heartButton.setImage(UIImage(systemName: starImageName, withConfiguration: starConfig), for: .normal)
+        heartButton.tintColor = link.isLiked ? .systemYellow : .systemGray3
+        
+        // 읽음 상태 (임시로 기본 상태로 설정, 나중에 기능 추가)
+        let readConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        readButton.setImage(UIImage(systemName: "circle", withConfiguration: readConfig), for: .normal)
+        readButton.tintColor = .systemGray3
         
         // 카테고리 태그들 (여러 개 표시)
         categoryTagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
