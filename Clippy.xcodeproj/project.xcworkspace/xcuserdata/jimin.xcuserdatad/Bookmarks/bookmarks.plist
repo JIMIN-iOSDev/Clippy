@@ -525,11 +525,11 @@
 					<key>EndingLineNumber</key>
 					<string>51</string>
 					<key>StartingColumnNumber</key>
-					<string>23</string>
+					<string>5</string>
 					<key>StartingLineNumber</key>
 					<string>50</string>
 					<key>Timestamp</key>
-					<string>781249416.881506</string>
+					<string>782042143.4704061</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -545,12 +545,12 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>ory = readCategory(name: categoryName) else {
+				<string>   guard let category = readCategory(name: categoryName) else {
 </string>
 				<key>leading</key>
 				<string>    
     func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false) {
-        guard let categ</string>
+     </string>
 				<key>trailing</key>
 				<string>            print("\(categoryName) 없음")
             return
