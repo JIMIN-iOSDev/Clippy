@@ -142,6 +142,15 @@ final class LikeViewController: BaseViewController {
             .bind(to: tableView.rx.isHidden)
             .disposed(by: disposeBag)
         
+        // 네비게이션 타이틀에 즐겨찾기 수 표시 (0개일 때는 숨김)
+        sortedFavoriteLinks
+            .map { links in
+                let count = links.count
+                return count > 0 ? "즐겨찾기 (\(count))" : "즐겨찾기"
+            }
+            .bind(to: navigationItem.rx.title)
+            .disposed(by: disposeBag)
+        
         // 테이블뷰 바인딩
         sortedFavoriteLinks
             .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, item, cell in
@@ -217,7 +226,6 @@ final class LikeViewController: BaseViewController {
         super.configureView()
         
         
-        title = "즐겨찾기"
     }
     
     private func updateSortButtonStyles(selectedType: SortType) {
