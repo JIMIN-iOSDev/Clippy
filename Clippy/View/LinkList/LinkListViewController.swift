@@ -281,7 +281,7 @@ final class LinkListViewController: BaseViewController {
             .bind(to: emptyView.rx.isHidden)
             .disposed(by: disposeBag)
         
-        // 링크 선택 시 Safari에서 열기
+        // 링크 선택 시 상세 화면으로 이동
         tableView.rx.itemSelected
             .do(onNext: { [weak self] indexPath in
                 self?.tableView.deselectRow(at: indexPath, animated: true)
@@ -290,9 +290,10 @@ final class LinkListViewController: BaseViewController {
                 links[indexPath.row]
             }
             .bind(with: self) { owner, link in
-                if UIApplication.shared.canOpenURL(link.url) {
-                    UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
-                }
+                let detailVC = LinkDetailViewController(link: link)
+                let navController = UINavigationController(rootViewController: detailVC)
+                navController.modalPresentationStyle = .formSheet
+                owner.present(navController, animated: true)
             }
             .disposed(by: disposeBag)
         

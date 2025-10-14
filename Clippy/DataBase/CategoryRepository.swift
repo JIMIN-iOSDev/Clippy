@@ -174,6 +174,21 @@ final class CategoryRepository {
         }
     }
     
+    /// URL로 링크 찾기
+    /// - Parameter url: 찾을 링크의 URL
+    /// - Returns: 해당 URL의 LinkList 객체
+    func getLinkByURL(_ url: String) -> LinkList? {
+        let categories = realm.objects(Category.self)
+        
+        for category in categories {
+            if let link = category.category.first(where: { $0.url == url }) {
+                return link
+            }
+        }
+        
+        return nil
+    }
+    
     /// 카테고리 삭제 (해당 카테고리의 링크들을 일반 카테고리로 이동)
     /// - Parameter name: 삭제할 카테고리명
     func deleteCategory(name: String) -> Bool {

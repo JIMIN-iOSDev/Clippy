@@ -164,10 +164,12 @@ final class LikeViewController: BaseViewController {
             .withLatestFrom(sortedFavoriteLinks) { indexPath, links in
                 links[indexPath.row]
             }
-            .subscribe(onNext: { link in
-                if UIApplication.shared.canOpenURL(link.url) {
-                    UIApplication.shared.open(link.url, options: [:], completionHandler: nil)
-                }
+            .subscribe(onNext: { [weak self] link in
+                guard let self = self else { return }
+                let detailVC = LinkDetailViewController(link: link)
+                let navController = UINavigationController(rootViewController: detailVC)
+                navController.modalPresentationStyle = .formSheet
+                self.present(navController, animated: true)
             })
             .disposed(by: disposeBag)
     }
