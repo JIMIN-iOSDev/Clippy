@@ -89,6 +89,13 @@ final class SearchViewController: BaseViewController {
 
                 cell.configure(with: linkMetadata)
 
+                // 읽음 상태 버튼
+                cell.readTapHandler = {
+                    LinkManager.shared.toggleOpened(for: linkMetadata.url)
+                        .subscribe()
+                        .disposed(by: cell.disposeBag)
+                }
+                
                 // 즐겨찾기 버튼 - LinkManager 사용
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: linkMetadata.url)

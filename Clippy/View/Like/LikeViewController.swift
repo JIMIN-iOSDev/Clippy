@@ -139,6 +139,12 @@ final class LikeViewController: BaseViewController {
                 guard let self = self else { return }
                 cell.configure(with: item)
                 
+                cell.readTapHandler = {
+                    LinkManager.shared.toggleOpened(for: item.url)
+                        .subscribe()
+                        .disposed(by: cell.disposeBag)
+                }
+                
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: item.url)
                         .subscribe()

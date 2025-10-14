@@ -343,11 +343,23 @@ final class LinkDetailViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
-        // 읽음 상태 버튼 클릭 (임시로 구현)
+        // 읽음 상태 버튼 클릭
         unreadButton.rx.tap
             .bind(with: self) { owner, _ in
-                // 읽음 상태 토글 로직 (추후 구현)
-                print("읽음 상태 토글")
+                LinkManager.shared.toggleOpened(for: owner.link.url)
+                    .subscribe(onNext: { updatedLink in
+                        if let updatedLink = updatedLink {
+                            // 애니메이션 없이 즉시 업데이트
+                            UIView.performWithoutAnimation {
+                                let readImageName = updatedLink.isOpened ? "checkmark.circle.fill" : "circle"
+                                owner.unreadButton.setImage(UIImage(systemName: readImageName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)), for: .normal)
+                                owner.unreadButton.tintColor = updatedLink.isOpened ? .clippyBlue : .systemGray3
+                                owner.unreadButton.setTitle(updatedLink.isOpened ? "읽음" : "안읽음", for: .normal)
+                                owner.unreadButton.layoutIfNeeded()
+                            }
+                        }
+                    })
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
     }
@@ -482,8 +494,10 @@ final class LinkDetailViewController: BaseViewController {
     private func configureActionButtons() {
         // 읽음 상태 버튼
         let unreadConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        unreadButton.setImage(UIImage(systemName: "circle", withConfiguration: unreadConfig), for: .normal)
-        unreadButton.setTitle("안읽음", for: .normal)
+        let readImageName = link.isOpened ? "checkmark.circle.fill" : "circle"
+        unreadButton.setImage(UIImage(systemName: readImageName, withConfiguration: unreadConfig), for: .normal)
+        unreadButton.setTitle(link.isOpened ? "읽음" : "안읽음", for: .normal)
+        unreadButton.tintColor = link.isOpened ? .clippyBlue : .systemGray3
         
         // 즐겨찾기 버튼
         let favoriteConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)

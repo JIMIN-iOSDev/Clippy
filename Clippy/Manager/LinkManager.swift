@@ -95,7 +95,7 @@ final class LinkManager {
                 // 캐시된 이미지가 있으면 바로 사용, 없으면 기본 앱 로고 사용
                 let cachedImage = getCachedImage(for: linkList.url)
                 let thumbnailImage = cachedImage ?? UIImage(named: "AppLogo")
-                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
@@ -105,7 +105,7 @@ final class LinkManager {
                     fetchLinkMetadata(for: url)
                         .bind(with: self) { owner, fetchedMetadata in
                             // 썸네일만 업데이트
-                            let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus)
+                            let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
                             
                             owner.linkCache[linkList.url] = updatedMetadata
                             owner.updateLinksArray(with: updatedMetadata)
@@ -159,7 +159,24 @@ final class LinkManager {
         
         repository.toggleLikeStatus(url: cacheKey)
         
-        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked)
+        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked, isOpened: linkMetadata.isOpened)
+        
+        linkCache[cacheKey] = updatedLink
+        updateLinksArray(with: updatedLink)
+        
+        return Observable.just(updatedLink)
+    }
+    
+    func toggleOpened(for url: URL) -> Observable<LinkMetadata?> {
+        let cacheKey = url.absoluteString
+        
+        guard let linkMetadata = linkCache[cacheKey] else {
+            return Observable.just(nil)
+        }
+        
+        repository.toggleOpenedStatus(url: cacheKey)
+        
+        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: linkMetadata.isLiked, isOpened: !linkMetadata.isOpened)
         
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)

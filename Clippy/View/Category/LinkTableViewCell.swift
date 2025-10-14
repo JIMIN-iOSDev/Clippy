@@ -345,10 +345,11 @@ final class LinkTableViewCell: UITableViewCell {
         heartButton.setImage(UIImage(systemName: starImageName, withConfiguration: starConfig), for: .normal)
         heartButton.tintColor = link.isLiked ? .systemYellow : .systemGray3
         
-        // 읽음 상태 (임시로 기본 상태로 설정, 나중에 기능 추가)
+        // 읽음 상태 표시
         let readConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
-        readButton.setImage(UIImage(systemName: "circle", withConfiguration: readConfig), for: .normal)
-        readButton.tintColor = .systemGray3
+        let readImageName = link.isOpened ? "checkmark.circle.fill" : "circle"
+        readButton.setImage(UIImage(systemName: readImageName, withConfiguration: readConfig), for: .normal)
+        readButton.tintColor = link.isOpened ? .clippyBlue : .systemGray3
         
         // 카테고리 태그들 (여러 개 표시)
         categoryTagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }

@@ -313,6 +313,12 @@ final class CategoryViewController: BaseViewController {
                 cell.configure(with: link)
                 cell.removeShadow() // 최근 링크 셀의 그림자 제거
                 
+                cell.readTapHandler = {
+                    LinkManager.shared.toggleOpened(for: link.url)
+                        .subscribe()
+                        .disposed(by: cell.disposeBag)
+                }
+                
                 cell.heartTapHandler = {
                     LinkManager.shared.toggleLike(for: link.url)
                         .subscribe()

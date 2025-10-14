@@ -16,8 +16,9 @@ struct LinkMetadata {
     let dueDate: Date?  
     let createdAt: Date
     let isLiked: Bool
+    let isOpened: Bool
     
-    init(url: URL, title: String, description: String? = nil, thumbnailImage: UIImage? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, createdAt: Date = Date(), isLiked: Bool = false) {
+    init(url: URL, title: String, description: String? = nil, thumbnailImage: UIImage? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, createdAt: Date = Date(), isLiked: Bool = false, isOpened: Bool = false) {
         self.url = url
         self.title = title.isEmpty ? url.absoluteString : title
         self.description = description
@@ -26,5 +27,6 @@ struct LinkMetadata {
         self.dueDate = dueDate
         self.createdAt = createdAt
         self.isLiked = isLiked
+        self.isOpened = isOpened
     }
 }

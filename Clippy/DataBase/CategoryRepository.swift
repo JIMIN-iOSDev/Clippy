@@ -141,6 +141,23 @@ final class CategoryRepository {
         }
     }
     
+    // 열람 상태 토글
+    func toggleOpenedStatus(url: String) {
+        let categories = realm.objects(Category.self)
+        
+        do {
+            try realm.write {
+                for category in categories {
+                    if let link = category.category.first(where: { $0.url == url }) {
+                        link.isOpened.toggle()
+                    }
+                }
+            }
+        } catch {
+            print("열람 상태 토글 실패: \(error)")
+        }
+    }
+    
     /// 카테고리 수정
     /// - Parameters:
     ///   - oldName: 기존 카테고리명

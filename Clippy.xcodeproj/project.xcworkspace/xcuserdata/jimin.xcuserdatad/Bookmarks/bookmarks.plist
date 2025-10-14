@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
@@ -594,13 +594,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>                UIColor.clippyBlue.cgColor,
-                UIColor.systemPurple.cgColor
+				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
+        let cacheKey = dummyURL.absoluteString
 </string>
 				<key>trailing</key>
-				<string>            ]
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
+				<string>        
+        linkCache.removeValue(forKey: cacheKey)
+        
 </string>
 			</dict>
 			<key>title</key>
