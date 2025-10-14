@@ -217,6 +217,11 @@ final class LinkListViewController: BaseViewController {
         }
     }
     
+    private func scrollToTop() {
+        guard tableView.numberOfRows(inSection: 0) > 0 else { return }
+        tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+    }
+    
     override func bind() {
         // 모든 모드에 테이블뷰 delegate 설정 (스와이프 액션)
         tableView.rx.setDelegate(self)
@@ -225,16 +230,25 @@ final class LinkListViewController: BaseViewController {
         // allLinks 모드일 때만 정렬 버튼 바인딩
         if case .allLinks = mode {
             latestButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
                 .map { SortType.latest }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)
             
             titleSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
                 .map { SortType.title }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)
             
             deadlineSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
                 .map { SortType.deadline }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)

@@ -86,16 +86,25 @@ final class LikeViewController: BaseViewController {
     override func bind() {
         // 정렬 버튼 탭 이벤트
         latestButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.scrollToTop()
+            })
             .map { SortType.latest }
             .bind(to: sortType)
             .disposed(by: disposeBag)
         
         titleSortButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.scrollToTop()
+            })
             .map { SortType.title }
             .bind(to: sortType)
             .disposed(by: disposeBag)
         
         deadlineSortButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.scrollToTop()
+            })
             .map { SortType.deadline }
             .bind(to: sortType)
             .disposed(by: disposeBag)
@@ -241,6 +250,11 @@ final class LikeViewController: BaseViewController {
                 return date1 < date2
             }
         }
+    }
+    
+    private func scrollToTop() {
+        guard tableView.numberOfRows(inSection: 0) > 0 else { return }
+        tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
     }
 }
 
