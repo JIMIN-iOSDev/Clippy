@@ -139,7 +139,7 @@ final class LinkTableViewCell: UITableViewCell {
         
         contentView.addSubview(containerView)
         
-        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, arrowIcon, readButton, heartButton, shareButton, categoryTagsScrollView]
+        [thumbnailImageView, titleLabel, urlLabel, descriptionLabel, dateLabel, readButton, heartButton, shareButton, categoryTagsScrollView]
             .forEach { containerView.addSubview($0) }
         
         categoryTagsScrollView.addSubview(categoryTagsStackView)
@@ -200,14 +200,7 @@ final class LinkTableViewCell: UITableViewCell {
         // 마감일과 화살표를 먼저 배치하고 centerY를 카테고리와 맞춤
         dateLabel.snp.makeConstraints { make in
             make.centerY.equalTo(categoryTagsScrollView)
-            make.leading.greaterThanOrEqualTo(categoryTagsScrollView.snp.trailing).offset(8)
-            make.trailing.equalTo(arrowIcon.snp.leading).offset(-8)
-        }
-        
-        arrowIcon.snp.makeConstraints { make in
-            make.centerY.equalTo(categoryTagsScrollView)
             make.trailing.equalToSuperview().offset(-16)
-            make.width.equalTo(16)
         }
         
         // ScrollView의 trailing을 dateLabel 기준으로 설정
@@ -270,13 +263,68 @@ final class LinkTableViewCell: UITableViewCell {
             descriptionLabel.isHidden = true
         }
         
-        // 마감일
+        // 마감일 표시 로직
         if let dueDate = link.dueDate {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "M월 d일"
-            dateLabel.text = dateFormatter.string(from: dueDate)
+            let calendar = Calendar.current
+            let now = Date()
+            let startOfToday = calendar.startOfDay(for: now)
+            let startOfDueDate = calendar.startOfDay(for: dueDate)
+            
+            let daysDifference = calendar.dateComponents([.day], from: startOfToday, to: startOfDueDate).day ?? 0
+            
+            let clockIcon = "clock"
+            let clockConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+            let clockImage = UIImage(systemName: clockIcon, withConfiguration: clockConfig)
+            
+            let attachment = NSTextAttachment()
+            attachment.image = clockImage
+            
+            let attributedString = NSMutableAttributedString()
+            
+            if daysDifference < 0 {
+                // 마감일 지남
+                attachment.image = clockImage?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " 마감"))
+                dateLabel.textColor = .secondaryLabel
+            } else if daysDifference == 0 {
+                // 오늘 마감
+                attachment.image = clockImage?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " 오늘"))
+                dateLabel.textColor = .systemRed
+            } else if daysDifference <= 3 {
+                // 3일 이내 - 빨간색으로 표시
+                attachment.image = clockImage?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " \(daysDifference)일 남음"))
+                dateLabel.textColor = .systemRed
+            } else {
+                // 3일 이후 - 기본 색상으로 날짜 표시
+                attachment.image = clockImage?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "M월 d일"
+                attributedString.append(NSAttributedString(string: " \(dateFormatter.string(from: dueDate))"))
+                dateLabel.textColor = .secondaryLabel
+            }
+            
+            dateLabel.attributedText = attributedString
         } else {
-            dateLabel.text = "마감일 없음"
+            // 마감일 없음에도 clock 아이콘 추가
+            let clockIcon = "clock"
+            let clockConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+            let clockImage = UIImage(systemName: clockIcon, withConfiguration: clockConfig)
+            
+            let attachment = NSTextAttachment()
+            attachment.image = clockImage?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+            
+            let attributedString = NSMutableAttributedString()
+            attributedString.append(NSAttributedString(attachment: attachment))
+            attributedString.append(NSAttributedString(string: " 마감일 없음"))
+            
+            dateLabel.attributedText = attributedString
+            dateLabel.textColor = .secondaryLabel
         }
         
         // 썸네일 이미지 - 이미지가 있으면 표시, 없으면 기본 앱 로고 표시
