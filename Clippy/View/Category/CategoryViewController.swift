@@ -143,20 +143,23 @@ final class CategoryViewController: BaseViewController {
 
     private let categoryCollectionView = {
         let layout = UICollectionViewFlowLayout()
-        let totalWidth = UIScreen.main.bounds.width - 40 - 32
-        let itemWidth = (totalWidth - 24) / 3
         
-        // 기기별 동적 높이 조정
-        let screenHeight = UIScreen.main.bounds.height
-        let itemHeight: CGFloat = screenHeight < 700 ? 100 : 130
-        
-        layout.itemSize = CGSize(width: itemWidth, height: itemHeight)
+        // 가로 스크롤을 위한 설정
+        layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 12
         layout.minimumLineSpacing = 12
         layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         
+        // 카드 크기 설정 (한 행에 맞게, 높이 증가)
+        let screenHeight = UIScreen.main.bounds.height
+        let itemHeight: CGFloat = screenHeight < 700 ? 110 : 130
+        let itemWidth: CGFloat = screenHeight < 700 ? 100 : 120
+        
+        layout.itemSize = CGSize(width: itemWidth, height: itemHeight)
+        
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
+        collectionView.showsHorizontalScrollIndicator = false
         collectionView.register(CategoryCollectionViewCell.self, forCellWithReuseIdentifier: CategoryCollectionViewCell.identifier)
         return collectionView
     }()
@@ -187,16 +190,16 @@ final class CategoryViewController: BaseViewController {
     
     // MARK: - Configuration
     
-    /// 기기별 카테고리 컨테이너 높이 계산
+    /// 기기별 카테고리 컨테이너 높이 계산 (한 행에 맞게 조정, 높이 증가)
     private func getCategoryContainerHeight() -> CGFloat {
         let screenHeight = UIScreen.main.bounds.height
         switch screenHeight {
         case 0..<700: // iPhone 13 mini, SE 등
-            return 240
+            return 142 // 110 + 16*2 (패딩)
         case 700..<800: // iPhone 13, 14 등
-            return 280
+            return 162 // 130 + 16*2 (패딩)
         default: // iPhone 14 Pro Max 등
-            return 340
+            return 162 // 130 + 16*2 (패딩)
         }
     }
     
@@ -447,7 +450,7 @@ final class CategoryViewController: BaseViewController {
         }
         
         categoryContainerView.snp.makeConstraints { make in
-            make.top.equalTo(categoryHeaderView.snp.bottom).offset(8)
+            make.top.equalTo(categoryHeaderView.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(getCategoryContainerHeight())
         }
@@ -457,12 +460,12 @@ final class CategoryViewController: BaseViewController {
         }
         
         recentLinksLabel.snp.makeConstraints { make in
-            make.top.equalTo(categoryContainerView.snp.bottom).offset(20)
+            make.top.equalTo(categoryContainerView.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
         linksTableView.snp.makeConstraints { make in
-            make.top.equalTo(recentLinksLabel.snp.bottom).offset(16)
+            make.top.equalTo(recentLinksLabel.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(0)
             make.bottom.equalToSuperview().offset(-100)

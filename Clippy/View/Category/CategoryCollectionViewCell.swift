@@ -81,6 +81,8 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -133,6 +135,7 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         
         countLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(4)
             make.top.equalTo(titleLabel.snp.bottom).offset(titleCountSpacing)
             make.bottom.lessThanOrEqualToSuperview().offset(-bottomOffset)
         }
