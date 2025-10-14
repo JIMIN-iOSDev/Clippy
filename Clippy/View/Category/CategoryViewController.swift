@@ -450,7 +450,7 @@ final class CategoryViewController: BaseViewController {
         }
         
         categoryContainerView.snp.makeConstraints { make in
-            make.top.equalTo(categoryHeaderView.snp.bottom).offset(12)
+            make.top.equalTo(categoryHeaderView.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(getCategoryContainerHeight())
         }
@@ -460,12 +460,12 @@ final class CategoryViewController: BaseViewController {
         }
         
         recentLinksLabel.snp.makeConstraints { make in
-            make.top.equalTo(categoryContainerView.snp.bottom).offset(12)
+            make.top.equalTo(categoryContainerView.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
         linksTableView.snp.makeConstraints { make in
-            make.top.equalTo(recentLinksLabel.snp.bottom).offset(12)
+            make.top.equalTo(recentLinksLabel.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(0)
             make.bottom.equalToSuperview().offset(-100)
