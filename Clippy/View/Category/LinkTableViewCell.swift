@@ -91,7 +91,7 @@ final class LinkTableViewCell: UITableViewCell {
     private let heartButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .clear
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
         button.setImage(UIImage(systemName: "star", withConfiguration: config), for: .normal)
         button.tintColor = .systemGray3
         return button
@@ -100,9 +100,10 @@ final class LinkTableViewCell: UITableViewCell {
     private let shareButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .clear
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
-        button.setImage(UIImage(systemName: "square.and.arrow.up", withConfiguration: config), for: .normal)
+        let image = UIImage(named: "share-icon")
+        button.setImage(image, for: .normal)
         button.tintColor = .systemGray3
+        button.imageView?.contentMode = .scaleAspectFit
         return button
     }()
     
@@ -162,7 +163,7 @@ final class LinkTableViewCell: UITableViewCell {
         
         heartButton.snp.makeConstraints { make in
             make.centerY.equalTo(titleLabel)
-            make.trailing.equalTo(shareButton.snp.leading).offset(-8)
+            make.trailing.equalTo(shareButton.snp.leading).offset(-5)
             make.size.equalTo(24)
         }
         
@@ -341,7 +342,7 @@ final class LinkTableViewCell: UITableViewCell {
         
         // 즐겨찾기 (별 모양)
         let starImageName = link.isLiked ? "star.fill" : "star"
-        let starConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        let starConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
         heartButton.setImage(UIImage(systemName: starImageName, withConfiguration: starConfig), for: .normal)
         heartButton.tintColor = link.isLiked ? .systemYellow : .systemGray3
         

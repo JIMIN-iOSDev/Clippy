@@ -68,7 +68,15 @@ final class LinkDetailViewController: BaseViewController {
         button.contentHorizontalAlignment = .left
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         button.setTitleColor(.systemBlue, for: .normal)
-        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        // 아이콘을 왼쪽에 배치하고 텍스트와 간격 최소화
+        let icon = UIImage(named: "external-link-icon")
+        button.setImage(icon, for: .normal)
+        button.tintColor = .tertiaryLabel
+        button.imageView?.contentMode = .scaleAspectFit
+        // 아이콘 주변 여백 최소화
+        button.imageEdgeInsets = .zero
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0)
+        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 8, bottom: 12, right: 12)
         return button
     }()
     
@@ -260,6 +268,23 @@ final class LinkDetailViewController: BaseViewController {
             make.top.equalTo(descriptionLabel.snp.bottom).offset(16)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(44)
+        }
+
+        // URL 아이콘 이미지를 버튼의 높이와 같은 정사각형으로 고정하고 좌측 정렬
+        if let imageView = urlButton.imageView, let titleLabel = urlButton.titleLabel {
+            imageView.contentMode = .scaleAspectFit
+            // 아이콘 자체 크기를 20x20으로 고정
+            imageView.snp.remakeConstraints { make in
+                make.leading.equalToSuperview().offset(8)
+                make.centerY.equalToSuperview()
+                make.width.height.equalTo(20)
+            }
+            // 텍스트를 아이콘 바로 옆 6pt로
+            titleLabel.snp.remakeConstraints { make in
+                make.leading.equalTo(imageView.snp.trailing).offset(6)
+                make.centerY.equalToSuperview()
+                make.trailing.lessThanOrEqualToSuperview().offset(-12)
+            }
         }
         
         categorySectionLabel.snp.makeConstraints { make in

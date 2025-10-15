@@ -17,27 +17,30 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="sSR-5m-PZL">
-                                <rect key="frame" x="131.66666666666666" y="361" width="129.99999999999997" height="130"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="130" id="7IO-g4-cuv"/>
-                                    <constraint firstAttribute="width" constant="130" id="Clk-mR-bFL"/>
-                                </constraints>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clippy" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FCJ-Sb-naX">
-                                <rect key="frame" x="151.66666666666666" y="491" width="89.666666666666657" height="36"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="30"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="SeG-TO-t2X">
+                                <rect key="frame" x="101.66666666666667" y="376" width="189.66666666666663" height="100"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="sSR-5m-PZL">
+                                        <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="100" id="eYH-4K-fzR"/>
+                                            <constraint firstAttribute="width" constant="100" id="sXE-e6-T6b"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clippy" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FCJ-Sb-naX">
+                                        <rect key="frame" x="99.999999999999972" y="32" width="89.666666666666657" height="36"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="30"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="FCJ-Sb-naX" firstAttribute="top" secondItem="sSR-5m-PZL" secondAttribute="bottom" id="Qxp-qC-mPa"/>
-                            <constraint firstItem="sSR-5m-PZL" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="SWi-MR-1YC"/>
-                            <constraint firstItem="sSR-5m-PZL" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="YF6-Df-Cgf"/>
-                            <constraint firstItem="FCJ-Sb-naX" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="ab6-9Z-Mii"/>
+                            <constraint firstItem="SeG-TO-t2X" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="b2h-OS-74i"/>
+                            <constraint firstItem="SeG-TO-t2X" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cbX-BH-a1P"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -47,7 +50,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchLogo" width="512" height="512"/>
+        <image name="LaunchLogo" width="170.66667175292969" height="170.66667175292969"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
