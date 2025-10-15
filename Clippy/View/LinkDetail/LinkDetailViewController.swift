@@ -320,6 +320,9 @@ final class LinkDetailViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
         
+        // URL 버튼에 복사 메뉴 설정
+        configureURLButtonMenu()
+        
         // 즐겨찾기 버튼 클릭
         favoriteButton.rx.tap
             .bind(with: self) { owner, _ in
@@ -568,5 +571,65 @@ final class LinkDetailViewController: BaseViewController {
     
     @objc private func closeButtonTapped() {
         dismiss(animated: true)
+    }
+    
+    private func configureURLButtonMenu() {
+        let copyAction = UIAction(title: "복사", image: UIImage(systemName: "doc.on.doc")) { [weak self] _ in
+            guard let self = self else { return }
+            let urlString = self.link.url.absoluteString
+            UIPasteboard.general.string = urlString
+            
+            // 햅틱 피드백 제공
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            
+            // 복사 완료 알림 표시
+            self.showCopySuccessAlert()
+        }
+        
+        let menu = UIMenu(title: "", children: [copyAction])
+        urlButton.menu = menu
+        urlButton.showsMenuAsPrimaryAction = false
+    }
+    
+    private func showCopySuccessAlert() {
+        // 토스트 스타일 알림 표시
+        let toastView = UIView()
+        toastView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastView.layer.cornerRadius = 8
+        
+        let label = UILabel()
+        label.text = "URL이 복사되었습니다"
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        label.textAlignment = .center
+        
+        toastView.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16))
+        }
+        
+        view.addSubview(toastView)
+        toastView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-50)
+        }
+        
+        // 애니메이션으로 표시
+        toastView.alpha = 0
+        toastView.transform = CGAffineTransform(translationX: 0, y: 20)
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            toastView.alpha = 1
+            toastView.transform = .identity
+        }) { _ in
+            // 2초 후 자동으로 사라지게
+            UIView.animate(withDuration: 0.3, delay: 2.0, options: [], animations: {
+                toastView.alpha = 0
+                toastView.transform = CGAffineTransform(translationX: 0, y: -20)
+            }) { _ in
+                toastView.removeFromSuperview()
+            }
+        }
     }
 }
