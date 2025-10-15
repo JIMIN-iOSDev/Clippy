@@ -142,7 +142,7 @@ Clippy/
 - **UIKit**: 네이티브 iOS UI 구현
 - **Auto Layout**: SnapKit을 활용한 코드 기반 레이아웃
 - **UserNotifications**: 로컬 알림 시스템 구현
-- **URLSession**: 네트워크 통신 및 메타데이터 수집
+- **LinkPresentation**: Apple 프레임워크를 활용한 링크 메타데이터 자동 추출
 
 ### 데이터 관리
 - **Realm**: 로컬 데이터베이스 설계 및 최적화
