@@ -104,6 +104,17 @@ final class LinkListViewController: BaseViewController {
         return button
     }()
     
+    private let allExpiringButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("전체", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
     private let readSortButton = {
         let button = UIButton(type: .system)
         button.setTitle("열람", for: .normal)
@@ -231,7 +242,14 @@ final class LinkListViewController: BaseViewController {
     }
     
     private func updateSortButtonStyles(selectedType: LinkSortType) {
-        let buttons: [(UIButton, LinkSortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline), (readSortButton, .read), (unreadSortButton, .unread)]
+        let buttons: [(UIButton, LinkSortType)] = [
+            (latestButton, .latest),
+            (titleSortButton, .title),
+            (deadlineSortButton, .deadline),
+            (allExpiringButton, .deadline),
+            (readSortButton, .read),
+            (unreadSortButton, .unread)
+        ]
         
         buttons.forEach { button, type in
             if type == selectedType {
@@ -317,6 +335,13 @@ final class LinkListViewController: BaseViewController {
         
         // expiring 모드에서도 정렬 버튼 바인딩
         if case .expiring = mode {
+            allExpiringButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.deadline }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
             readSortButton.rx.tap
                 .do(onNext: { [weak self] _ in
                     self?.scrollToTop()
@@ -348,6 +373,9 @@ final class LinkListViewController: BaseViewController {
                 }
                 .bind(to: links)
                 .disposed(by: disposeBag)
+            
+            // 기본 선택: 전체(마감일순)
+            sortType.accept(.deadline)
         }
         
         
@@ -424,7 +452,7 @@ final class LinkListViewController: BaseViewController {
             [latestButton, titleSortButton, deadlineSortButton, readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
         } else if case .expiring = mode {
             [sortButtonsStackView, tableView, emptyView].forEach { view.addSubview($0) }
-            [readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+            [allExpiringButton, readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
         } else {
             [tableView, emptyView].forEach { view.addSubview($0) }
         }
