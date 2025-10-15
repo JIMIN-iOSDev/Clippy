@@ -10,7 +10,7 @@
 
 ## 📱 소개
 
-Clippy는 링크를 카테고리별로 체계적으로 관리하고, 마감일이 있는 링크에 대해 알림을 제공하는 iOS 앱입니다. 웹 링크의 메타데이터를 자동으로 추출하여 썸네일과 제목을 제공하며, 즐겨찾기 기능과 검색 기능을 통해 효율적인 링크 관리를 지원합니다.
+**Clippy**는 링크를 카테고리별로 체계적으로 관리하고, 마감일이 있는 링크에 대해 알림을 제공하는 앱입니다. 웹 링크의 메타데이터를 자동으로 추출하여 썸네일과 제목을 제공하며, 즐겨찾기 기능과 검색 기능을 통해 효율적인 링크 관리를 지원합니다.
 
 ## ✨ 주요 기능
 
@@ -47,26 +47,26 @@ Clippy는 링크를 카테고리별로 체계적으로 관리하고, 마감일�
 
 <div align="center">
   <img src="screenshots/home.png" width="200" alt="홈 화면"/>
-  <img src="screenshots/category.png" width="200" alt="카테고리 관리"/>
   <img src="screenshots/search.png" width="200" alt="검색 화면"/>
-  <img src="screenshots/link-detail.png" width="200" alt="링크 상세"/>
+  <img src="screenshots/like.png" width="200" alt="즐겨찾기"/>
+  <img src="screenshots/duedate.png" width="200" alt="마감일 알림"/>
 </div>
 
 ## 🛠️ 기술 스택
 
 ### Frontend
-- **Swift 5.0+** - iOS 앱 개발
-- **UIKit** - 사용자 인터페이스
-- **SnapKit** - Auto Layout 코드 작성
-- **RxSwift/RxCocoa** - 반응형 프로그래밍
+- **Swift 5.0+** 
+- **UIKit** 
+- **SnapKit** 
+- **RxSwift/RxCocoa** 
 
 ### Backend & Database
-- **Realm** - 로컬 데이터베이스
-- **Firebase** - 푸시 알림 서비스
+- **Realm** 
+- **Firebase** 
 
 ### Architecture
-- **MVVM** - 아키텍처 패턴
-- **Repository Pattern** - 데이터 접근 계층 분리
+- **MVVM + Input/Output** 
+- **Repository Pattern** 
 
 ## 📁 프로젝트 구조
 
@@ -124,8 +124,8 @@ Clippy/
 ## 👨‍💻 개발 정보
 
 - **개발 기간**: 
-  - 핵심 개발: 2024.09 ~ 2024.10 (1개월)
-  - 유지보수: 2024.10 ~ 현재 (지속적 개선)
+  - 핵심 개발: 2025.09.24 ~ 2025.10.03 (10일)
+  - 유지보수: 2025.10.04 ~ 현재 (지속적 개선)
 - **개발 인원**: 1명 (개인 프로젝트)
 - **역할**: 기획, 디자인, 개발, 배포 전담
 - **최소 지원 버전**: iOS 16.0+
@@ -142,11 +142,10 @@ Clippy/
 - **UIKit**: 네이티브 iOS UI 구현
 - **Auto Layout**: SnapKit을 활용한 코드 기반 레이아웃
 - **UserNotifications**: 로컬 알림 시스템 구현
-- **URLSession**: 네트워크 통신 및 메타데이터 수집
+- **LinkPresentation**: Apple 프레임워크를 활용한 링크 메타데이터 자동 추출
 
 ### 데이터 관리
 - **Realm**: 로컬 데이터베이스 설계 및 최적화
-- **Core Data 대안**: Realm의 장점 활용
 - **데이터 모델링**: 관계형 데이터베이스 설계
 
 ### 외부 서비스 연동
