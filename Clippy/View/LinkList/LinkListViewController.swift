@@ -18,9 +18,7 @@ final class LinkListViewController: BaseViewController {
         case allLinks
     }
     
-    enum SortType {
-        case latest, title, deadline
-    }
+    // LinkSortType을 사용하도록 변경
     
     // MARK: - Properties
     private let disposeBag = DisposeBag()
@@ -28,7 +26,7 @@ final class LinkListViewController: BaseViewController {
     private let repository = CategoryRepository()
     private let links = BehaviorRelay<[LinkMetadata]>(value: [])
     private let allLinksCache = BehaviorRelay<[LinkMetadata]>(value: [])
-    private let sortType = BehaviorRelay<SortType>(value: .latest)
+    private let sortType = BehaviorRelay<LinkSortType>(value: .latest)
     var categoryName: String
     private let mode: Mode
     
@@ -57,6 +55,13 @@ final class LinkListViewController: BaseViewController {
     }
     
     // MARK: - UI Components
+    private let scrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
+    
     private let sortButtonsStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -91,6 +96,28 @@ final class LinkListViewController: BaseViewController {
     private let deadlineSortButton = {
         let button = UIButton(type: .system)
         button.setTitle("마감일순", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
+    private let readSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("열람", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
+    private let unreadSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("미열람", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
         button.setTitleColor(.label, for: .normal)
@@ -170,12 +197,8 @@ final class LinkListViewController: BaseViewController {
                     let startOfDueDate = calendar.startOfDay(for: dueDate)
                     return startOfDueDate >= startOfToday && startOfDueDate <= threeDaysLater
                 }
-                .sorted { link1, link2 in
-                    guard let date1 = link1.dueDate, let date2 = link2.dueDate else { return false }
-                    return date1 < date2
-                }
             }
-            .bind(to: links)
+            .bind(to: allLinksCache)
             .disposed(by: loadDisposeBag)
     }
     
@@ -185,7 +208,7 @@ final class LinkListViewController: BaseViewController {
             .disposed(by: loadDisposeBag)
     }
     
-    private func sortLinks(_ links: [LinkMetadata], by sortType: SortType) -> [LinkMetadata] {
+    private func sortLinks(_ links: [LinkMetadata], by sortType: LinkSortType) -> [LinkMetadata] {
         switch sortType {
         case .latest:
             return links.sorted { $0.createdAt > $1.createdAt }
@@ -198,11 +221,17 @@ final class LinkListViewController: BaseViewController {
                 guard let date2 = link2.dueDate else { return true }
                 return date1 < date2
             }
+        case .read:
+            // 열람한 링크만 필터링하고 최신순으로 정렬
+            return links.filter { $0.isOpened }.sorted { $0.createdAt > $1.createdAt }
+        case .unread:
+            // 미열람한 링크만 필터링하고 최신순으로 정렬
+            return links.filter { !$0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         }
     }
     
-    private func updateSortButtonStyles(selectedType: SortType) {
-        let buttons: [(UIButton, SortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline)]
+    private func updateSortButtonStyles(selectedType: LinkSortType) {
+        let buttons: [(UIButton, LinkSortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline), (readSortButton, .read), (unreadSortButton, .unread)]
         
         buttons.forEach { button, type in
             if type == selectedType {
@@ -227,13 +256,13 @@ final class LinkListViewController: BaseViewController {
         tableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        // allLinks 모드일 때만 정렬 버튼 바인딩
+        // allLinks 모드와 expiring 모드에서 정렬 버튼 바인딩
         if case .allLinks = mode {
             latestButton.rx.tap
                 .do(onNext: { [weak self] _ in
                     self?.scrollToTop()
                 })
-                .map { SortType.latest }
+                .map { LinkSortType.latest }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)
             
@@ -241,7 +270,7 @@ final class LinkListViewController: BaseViewController {
                 .do(onNext: { [weak self] _ in
                     self?.scrollToTop()
                 })
-                .map { SortType.title }
+                .map { LinkSortType.title }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)
             
@@ -249,7 +278,58 @@ final class LinkListViewController: BaseViewController {
                 .do(onNext: { [weak self] _ in
                     self?.scrollToTop()
                 })
-                .map { SortType.deadline }
+                .map { LinkSortType.deadline }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            readSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.read }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            unreadSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.unread }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            // 정렬 타입에 따른 버튼 스타일 변경
+            sortType
+                .subscribe(onNext: { [weak self] type in
+                    self?.updateSortButtonStyles(selectedType: type)
+                })
+                .disposed(by: disposeBag)
+            
+            // 정렬 적용
+            Observable.combineLatest(allLinksCache, sortType)
+                .map { [weak self] (links, sortType) -> [LinkMetadata] in
+                    guard let self = self else { return [] }
+                    return self.sortLinks(links, by: sortType)
+                }
+                .bind(to: links)
+                .disposed(by: disposeBag)
+        }
+        
+        // expiring 모드에서도 정렬 버튼 바인딩
+        if case .expiring = mode {
+            readSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.read }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            unreadSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.unread }
                 .bind(to: sortType)
                 .disposed(by: disposeBag)
             
@@ -339,8 +419,12 @@ final class LinkListViewController: BaseViewController {
     
     override func configureHierarchy() {
         if case .allLinks = mode {
+            [scrollView, tableView, emptyView].forEach { view.addSubview($0) }
+            scrollView.addSubview(sortButtonsStackView)
+            [latestButton, titleSortButton, deadlineSortButton, readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+        } else if case .expiring = mode {
             [sortButtonsStackView, tableView, emptyView].forEach { view.addSubview($0) }
-            [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+            [readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
         } else {
             [tableView, emptyView].forEach { view.addSubview($0) }
         }
@@ -349,6 +433,23 @@ final class LinkListViewController: BaseViewController {
     
     override func configureLayout() {
         if case .allLinks = mode {
+            scrollView.snp.makeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+                make.leading.trailing.equalToSuperview()
+                make.height.equalTo(36)
+            }
+            
+            sortButtonsStackView.snp.makeConstraints { make in
+                // 좌우 패딩을 주어 첫 버튼이 가장자리와 붙지 않도록 함
+                make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20))
+                make.height.equalToSuperview()
+            }
+            
+            tableView.snp.makeConstraints { make in
+                make.top.equalTo(scrollView.snp.bottom).offset(16)
+                make.horizontalEdges.bottom.equalToSuperview()
+            }
+        } else if case .expiring = mode {
             sortButtonsStackView.snp.makeConstraints { make in
                 make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
                 make.leading.equalToSuperview().offset(20)
@@ -365,7 +466,6 @@ final class LinkListViewController: BaseViewController {
                 make.horizontalEdges.bottom.equalToSuperview()
             }
         }
-        
         emptyView.snp.makeConstraints { make in
             make.center.equalToSuperview()
             make.width.equalToSuperview()

@@ -14,13 +14,18 @@ final class LikeViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
     private let repository = CategoryRepository()
-    private let sortType = BehaviorRelay<SortType>(value: .latest)
+    private let sortType = BehaviorRelay<LinkSortType>(value: .latest)
     
-    enum SortType {
-        case latest, title, deadline
-    }
+    // LinkSortType을 사용하도록 변경
     
     // MARK: - UI Components
+    private let scrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
+    
     private let sortButtonsStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -63,6 +68,28 @@ final class LikeViewController: BaseViewController {
         return button
     }()
     
+    private let readSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("열람", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
+    private let unreadSortButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("미열람", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+        button.setTitleColor(.label, for: .normal)
+        button.layer.cornerRadius = 18
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        return button
+    }()
+    
     private let tableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .systemBackground
@@ -89,7 +116,7 @@ final class LikeViewController: BaseViewController {
             .do(onNext: { [weak self] _ in
                 self?.scrollToTop()
             })
-            .map { SortType.latest }
+            .map { LinkSortType.latest }
             .bind(to: sortType)
             .disposed(by: disposeBag)
         
@@ -97,7 +124,7 @@ final class LikeViewController: BaseViewController {
             .do(onNext: { [weak self] _ in
                 self?.scrollToTop()
             })
-            .map { SortType.title }
+            .map { LinkSortType.title }
             .bind(to: sortType)
             .disposed(by: disposeBag)
         
@@ -105,7 +132,23 @@ final class LikeViewController: BaseViewController {
             .do(onNext: { [weak self] _ in
                 self?.scrollToTop()
             })
-            .map { SortType.deadline }
+            .map { LinkSortType.deadline }
+            .bind(to: sortType)
+            .disposed(by: disposeBag)
+        
+        readSortButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.scrollToTop()
+            })
+            .map { LinkSortType.read }
+            .bind(to: sortType)
+            .disposed(by: disposeBag)
+        
+        unreadSortButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.scrollToTop()
+            })
+            .map { LinkSortType.unread }
             .bind(to: sortType)
             .disposed(by: disposeBag)
         
@@ -142,10 +185,10 @@ final class LikeViewController: BaseViewController {
             .bind(to: tableView.rx.isHidden)
             .disposed(by: disposeBag)
         
-        // 네비게이션 타이틀에 즐겨찾기 수 표시 (0개일 때는 숨김)
-        sortedFavoriteLinks
+        // 네비게이션 타이틀에 즐겨찾기 전체 수 표시 (필터/정렬과 무관)
+        LinkManager.shared.links
             .map { links in
-                let count = links.count
+                let count = links.filter { $0.isLiked }.count
                 return count > 0 ? "즐겨찾기 (\(count))" : "즐겨찾기"
             }
             .bind(to: navigationItem.rx.title)
@@ -199,20 +242,27 @@ final class LikeViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
-        [sortButtonsStackView, tableView, emptyStateLabel].forEach { view.addSubview($0) }
+        [scrollView, tableView, emptyStateLabel].forEach { view.addSubview($0) }
+        scrollView.addSubview(sortButtonsStackView)
         
-        [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+        [latestButton, titleSortButton, deadlineSortButton, readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
     }
     
     override func configureLayout() {
-        sortButtonsStackView.snp.makeConstraints { make in
+        scrollView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
-            make.leading.equalToSuperview().offset(20)
+            make.leading.trailing.equalToSuperview()
             make.height.equalTo(36)
         }
         
+        sortButtonsStackView.snp.makeConstraints { make in
+            // 좌우 패딩을 주어 첫 버튼이 가장자리와 붙지 않도록 함
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20))
+            make.height.equalToSuperview()
+        }
+        
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(sortButtonsStackView.snp.bottom).offset(16)
+            make.top.equalTo(scrollView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
@@ -228,8 +278,8 @@ final class LikeViewController: BaseViewController {
         
     }
     
-    private func updateSortButtonStyles(selectedType: SortType) {
-        let buttons: [(UIButton, SortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline)]
+    private func updateSortButtonStyles(selectedType: LinkSortType) {
+        let buttons: [(UIButton, LinkSortType)] = [(latestButton, .latest), (titleSortButton, .title), (deadlineSortButton, .deadline), (readSortButton, .read), (unreadSortButton, .unread)]
         
         buttons.forEach { button, type in
             if type == selectedType {
@@ -244,7 +294,7 @@ final class LikeViewController: BaseViewController {
         }
     }
     
-    private func sortLinks(_ links: [LinkMetadata], by sortType: SortType) -> [LinkMetadata] {
+    private func sortLinks(_ links: [LinkMetadata], by sortType: LinkSortType) -> [LinkMetadata] {
         switch sortType {
         case .latest:
             return links.sorted { $0.createdAt > $1.createdAt }
@@ -257,6 +307,12 @@ final class LikeViewController: BaseViewController {
                 guard let date2 = link2.dueDate else { return true }
                 return date1 < date2
             }
+        case .read:
+            // 열람한 링크만 필터링하고 최신순으로 정렬
+            return links.filter { $0.isOpened }.sorted { $0.createdAt > $1.createdAt }
+        case .unread:
+            // 미열람한 링크만 필터링하고 최신순으로 정렬
+            return links.filter { !$0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         }
     }
     
