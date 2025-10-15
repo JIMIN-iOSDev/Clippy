@@ -53,13 +53,24 @@ final class CategoryRepository {
             return
         }
         
-        let existingLink = category.category.first { $0.url == url }    // url 중복 체크
+        // 이미 해당 카테고리에 같은 URL의 링크가 있는지 확인
+        let existingLink = category.category.first { $0.url == url }
         if existingLink != nil {
             print("이미 존재하는 링크 \(url)")
             return
         }
         
-        let link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: false, openCount: 0)
+        // 다른 카테고리에 같은 URL의 링크가 있는지 확인
+        let existingLinkInOtherCategory = getLinkByURL(url)
+        
+        let link: LinkList
+        if let existingLink = existingLinkInOtherCategory {
+            // 기존 링크가 있으면 그 링크를 재사용
+            link = existingLink
+        } else {
+            // 새로운 링크 생성
+            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: false, openCount: 0)
+        }
         
         do {
             try realm.write {
@@ -122,6 +133,17 @@ final class CategoryRepository {
     /// - Returns: 전체 카테고리 수
     func readCategoryCount() -> Int {
         return realm.objects(Category.self).count
+    }
+    
+    /// 특정 카테고리의 고유 링크 개수 계산 (중복 제거)
+    /// - Parameter categoryName: 카테고리명
+    /// - Returns: 해당 카테고리의 고유 링크 개수
+    func getUniqueLinkCount(for categoryName: String) -> Int {
+        guard let category = readCategory(name: categoryName) else { return 0 }
+        
+        // URL 기준으로 중복 제거하여 고유 링크 개수 계산
+        let uniqueURLs = Set(category.category.map { $0.url })
+        return uniqueURLs.count
     }
     
     // 즐겨찾기 토글
@@ -226,7 +248,11 @@ final class CategoryRepository {
                 if let generalCategory = readCategory(name: "일반") {
                     let linksToMove = Array(category.category)
                     linksToMove.forEach { link in
-                        generalCategory.category.append(link)
+                        // 일반 카테고리에 이미 같은 URL의 링크가 있는지 확인
+                        let existingLink = generalCategory.category.first { $0.url == link.url }
+                        if existingLink == nil {
+                            generalCategory.category.append(link)
+                        }
                     }
                 }
                 

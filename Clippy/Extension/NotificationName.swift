@@ -12,4 +12,5 @@ extension Notification.Name {
     static let categoryDidUpdate = Notification.Name("categoryDidUpdate")
     static let categoryDidDelete = Notification.Name("categoryDidDelete")
     static let linkDidCreate = Notification.Name("linkDidCreate")
+    static let linkDidDelete = Notification.Name("linkDidDelete")
 }

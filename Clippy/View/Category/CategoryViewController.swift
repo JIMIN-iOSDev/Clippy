@@ -206,7 +206,7 @@ final class CategoryViewController: BaseViewController {
     private func loadCategories() {
         let realmCategories = repository.readCategoryList()
         let categoryItems = realmCategories.map {
-            CategoryItem(title: $0.name, count: $0.category.count, iconName: $0.iconName, iconColor: CategoryColor.color(index: $0.colorIndex), backgroundColor: CategoryColor.color(index: $0.colorIndex).withAlphaComponent(0.1))
+            CategoryItem(title: $0.name, count: repository.getUniqueLinkCount(for: $0.name), iconName: $0.iconName, iconColor: CategoryColor.color(index: $0.colorIndex), backgroundColor: CategoryColor.color(index: $0.colorIndex).withAlphaComponent(0.1))
         }
         
         categories.accept(categoryItems)
@@ -364,6 +364,13 @@ final class CategoryViewController: BaseViewController {
         
         NotificationCenter.default.rx
             .notification(.linkDidCreate)
+            .bind(with: self) { owner, _ in
+                owner.loadCategories()
+            }
+            .disposed(by: disposeBag)
+        
+        NotificationCenter.default.rx
+            .notification(.linkDidDelete)
             .bind(with: self) { owner, _ in
                 owner.loadCategories()
             }

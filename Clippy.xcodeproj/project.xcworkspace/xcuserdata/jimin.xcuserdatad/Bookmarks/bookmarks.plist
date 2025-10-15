@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
@@ -523,53 +523,6 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>51</string>
-					<key>StartingColumnNumber</key>
-					<string>5</string>
-					<key>StartingLineNumber</key>
-					<string>50</string>
-					<key>Timestamp</key>
-					<string>782042143.4704061</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>Clippy/DataBase/CategoryRepository.swift</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string>   guard let category = readCategory(name: categoryName) else {
-</string>
-				<key>leading</key>
-				<string>    
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false) {
-     </string>
-				<key>trailing</key>
-				<string>            print("\(categoryName) 없음")
-            return
-        }
-</string>
-			</dict>
-			<key>title</key>
-			<string>옵션 중에 선택하게 해서 쓸 일이 없을지도?</string>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>0</string>
-					<key>EndingLineNumber</key>
 					<string>231</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
@@ -594,64 +547,17 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
-        let cacheKey = dummyURL.absoluteString
+				<string>        linkCache[dummyURL.absoluteString] = dummyLink
+        updateLinksArray(with: dummyLink)
 </string>
 				<key>trailing</key>
 				<string>        
-        linkCache.removeValue(forKey: cacheKey)
-        
+        return Observable.just(dummyLink)
+    }
 </string>
 			</dict>
 			<key>title</key>
 			<string>로딩 구현</string>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>0</string>
-					<key>EndingLineNumber</key>
-					<string>58</string>
-					<key>StartingColumnNumber</key>
-					<string>4</string>
-					<key>StartingLineNumber</key>
-					<string>57</string>
-					<key>Timestamp</key>
-					<string>781240730.900261</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>Clippy/DataBase/CategoryRepository.swift</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string>        print("이미 존재하는 링크 \(url)")
-</string>
-				<key>leading</key>
-				<string>        let existingLink = category.category.first { $0.url == url }    // url 중복 체크
-        if existingLink != nil {
-    </string>
-				<key>trailing</key>
-				<string>            return
-        }
-        
-</string>
-			</dict>
-			<key>title</key>
-			<string>알림 추가</string>
 			<key>type</key>
 			<string>bookmark</string>
 		</dict>

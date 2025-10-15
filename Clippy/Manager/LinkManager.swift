@@ -84,10 +84,13 @@ final class LinkManager {
             }
         }
         
+        // URL별로 고유한 링크만 처리 (중복 제거)
+        var processedURLs = Set<String>()
+        
         categories.forEach { category in
             category.category.forEach { linkList in
-                // 이미 추가된 URL 중복 방지
-                if allLinks.contains(where: { $0.url.absoluteString == linkList.url }) { return }
+                // 이미 처리된 URL인지 확인
+                if processedURLs.contains(linkList.url) { return }
                 
                 guard let url = URL(string: linkList.url),
                       let categoryInfos = urlToCategories[linkList.url] else { return }
@@ -99,6 +102,7 @@ final class LinkManager {
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
+                processedURLs.insert(linkList.url)
                 
                 // 캐시된 이미지가 없으면 백그라운드에서 썸네일 로드
                 if cachedImage == nil {
@@ -196,6 +200,9 @@ final class LinkManager {
         currentLinks.removeAll { $0.url.absoluteString == cacheKey }
         linksSubject.accept(currentLinks)
         
+        // 링크 삭제 알림 발생
+        NotificationCenter.default.post(name: .linkDidDelete, object: nil)
+        
         return Observable.just(true)
     }
     
@@ -235,6 +242,9 @@ final class LinkManager {
         var currentLinks = linksSubject.value
         currentLinks.removeAll { $0.url.absoluteString == cacheKey }
         linksSubject.accept(currentLinks)
+        
+        // 더미링크 삭제 알림 발생
+        NotificationCenter.default.post(name: .linkDidDelete, object: nil)
     }
     
     private func createDummyThumbnail() -> UIImage {
