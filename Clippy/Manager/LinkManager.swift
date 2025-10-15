@@ -194,7 +194,11 @@ final class LinkManager {
         // 관련 알림 취소
         NotificationManager.shared.cancelNotificationForLink(linkId: cacheKey)
         
+        // 링크 캐시와 이미지 캐시 모두 삭제
         linkCache.removeValue(forKey: cacheKey)
+        imageCacheQueue.async(flags: .barrier) { [weak self] in
+            self?.imageCache.removeValue(forKey: cacheKey)
+        }
         
         var currentLinks = linksSubject.value
         currentLinks.removeAll { $0.url.absoluteString == cacheKey }

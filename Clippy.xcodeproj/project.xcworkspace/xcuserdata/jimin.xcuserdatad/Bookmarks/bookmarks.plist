@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
@@ -547,13 +547,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        linkCache[dummyURL.absoluteString] = dummyLink
-        updateLinksArray(with: dummyLink)
+				<string>            isLiked: false
+        )
 </string>
 				<key>trailing</key>
 				<string>        
-        return Observable.just(dummyLink)
-    }
+        // 캐시에 저장하고 링크 목록 업데이트
+        linkCache[dummyURL.absoluteString] = dummyLink
 </string>
 			</dict>
 			<key>title</key>
