@@ -10,6 +10,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    private let appGroupID = "group.com.jimin.Clippy"
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -52,6 +53,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let notificationResponse = connectionOptions.notificationResponse {
             handleNotificationResponse(notificationResponse, tabBarController: tabBarController)
         }
+
+        // URL 스킴으로 앱이 열린 경우 처리 (clippy://add?url=...)
+        if let urlContext = connectionOptions.urlContexts.first {
+            handleURLContext(urlContext, tabBarController: tabBarController)
+        }
+
+        // 카테고리 목록을 App Group에 동기화
+        syncCategoriesToAppGroup()
+
+        // 카테고리 변경 알림 구독하여 동기화 유지
+        NotificationCenter.default.addObserver(forName: .categoryDidCreate, object: nil, queue: .main) { [weak self] _ in
+            self?.syncCategoriesToAppGroup()
+        }
+        NotificationCenter.default.addObserver(forName: .categoryDidUpdate, object: nil, queue: .main) { [weak self] _ in
+            self?.syncCategoriesToAppGroup()
+        }
+        NotificationCenter.default.addObserver(forName: .categoryDidDelete, object: nil, queue: .main) { [weak self] _ in
+            self?.syncCategoriesToAppGroup()
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -67,6 +87,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 앱이 활성화될 때마다 배지 제거
         UIApplication.shared.applicationIconBadgeNumber = 0
+
+        // Share Extension에서 적재된 항목을 수신해 저장
+        importSharedItemsIfNeeded()
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -134,5 +157,101 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             }
         }
+    }
+}
+
+// MARK: - App Group Shared Items Import
+extension SceneDelegate {
+    private func importSharedItemsIfNeeded() {
+        let defaults = UserDefaults(suiteName: appGroupID)
+        guard var items = defaults?.array(forKey: "shared_items") as? [[String: String]], !items.isEmpty else { return }
+
+        let repository = CategoryRepository()
+        // 기본 카테고리 보장
+        repository.createDefaultCategory()
+
+        // 저장 처리
+        for item in items {
+            guard let urlString = item["url"], !urlString.isEmpty else { continue }
+            let title = item["title"]
+            let memo = item["memo"]
+
+            // 선택된 카테고리 문자열 파싱 ("이름1|이름2")
+            let selectedCategoriesString = item["categories"] ?? ""
+            let selectedCategoryNames = selectedCategoriesString.split(separator: "|").map { String($0) }.filter { !$0.isEmpty }
+            let targetCategories = selectedCategoryNames.isEmpty ? ["일반"] : selectedCategoryNames
+
+            // Realm 저장 + LinkManager 반영
+            var categoryInfos: [(name: String, colorIndex: Int)] = []
+            for categoryName in targetCategories {
+                repository.addLink(title: title ?? urlString, url: urlString, description: memo, categoryName: categoryName, deadline: nil)
+                if let colorIdx = repository.readCategory(name: categoryName)?.colorIndex {
+                    categoryInfos.append((name: categoryName, colorIndex: colorIdx))
+                } else {
+                    categoryInfos.append((name: categoryName, colorIndex: 0))
+                }
+            }
+
+            if let url = URL(string: urlString) {
+                _ = LinkManager.shared.addLink(
+                    url: url,
+                    title: title,
+                    descrpition: memo,
+                    categories: categoryInfos,
+                    dueDate: nil,
+                    thumbnailImage: nil
+                )
+            }
+        }
+
+        // 큐 비우기
+        defaults?.removeObject(forKey: "shared_items")
+
+        // UI 갱신 알림
+        NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+    }
+
+    private func syncCategoriesToAppGroup() {
+        let repository = CategoryRepository()
+        let categories = repository.readCategoryList()
+        let payload: [[String: Any]] = categories.map { [
+            "name": $0.name,
+            "colorIndex": $0.colorIndex
+        ] }
+
+        let defaults = UserDefaults(suiteName: appGroupID)
+        defaults?.set(payload, forKey: "categories")
+    }
+}
+
+// MARK: - URL Scheme Handling
+extension SceneDelegate {
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let tabBarController = window?.rootViewController as? UITabBarController,
+              let urlContext = URLContexts.first else { return }
+        handleURLContext(urlContext, tabBarController: tabBarController)
+    }
+
+    private func handleURLContext(_ urlContext: UIOpenURLContext, tabBarController: UITabBarController) {
+        let url = urlContext.url
+        guard url.scheme == "clippy" else { return }
+
+        // clippy://add?url=ENCODED_URL
+        if url.host == "add" {
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            let queryItems = components?.queryItems ?? []
+            let sharedURLString = queryItems.first(where: { $0.name == "url" })?.value
+            presentEditLink(with: sharedURLString, tabBarController: tabBarController)
+        }
+    }
+
+    private func presentEditLink(with urlString: String?, tabBarController: UITabBarController) {
+        // 카테고리 탭(NavController) 기준으로 표시
+        tabBarController.selectedIndex = 0
+        guard let nav = tabBarController.viewControllers?.first as? UINavigationController else { return }
+
+        let editVC = EditLinkViewController()
+        editVC.prefillURLString = urlString
+        nav.present(UINavigationController(rootViewController: editVC), animated: true)
     }
 }

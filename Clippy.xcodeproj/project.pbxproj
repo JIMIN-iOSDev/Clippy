@@ -17,7 +17,19 @@
 		EC5370752E8F472400B411DB /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = EC5370742E8F472400B411DB /* Toast */; };
 		ECB793962E826D3800C44AF0 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = ECB793952E826D3800C44AF0 /* RealmSwift */; };
 		ECB793992E826D4E00C44AF0 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECB793982E826D4E00C44AF0 /* SnapKit */; };
+		ECD17EC02E9FE30E00751E4F /* ClippyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ECD17EC92E9FECA600751E4F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17EC82E9FECA600751E4F /* SnapKit */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ECD17EBE2E9FE30E00751E4F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECB792682E82215900C44AF0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ECD17EB52E9FE30E00751E4F;
+			remoteInfo = ClippyShare;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		EC536EBF2E8BFE1500B411DB /* Embed Frameworks */ = {
@@ -31,11 +43,23 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECD17EC12E9FE30E00751E4F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ECD17EC02E9FE30E00751E4F /* ClippyShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		EC3E2BEE2E90FEB000E7F49B /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		ECB792702E82215900C44AF0 /* Clippy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clippy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClippyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,6 +70,13 @@
 			);
 			target = ECB7926F2E82215900C44AF0 /* Clippy */;
 		};
+		ECD17EC52E9FE30E00751E4F /* Exceptions for "ClippyShare" folder in "ClippyShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ECD17EB52E9FE30E00751E4F /* ClippyShare */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -55,6 +86,14 @@
 				ECB792822E82215B00C44AF0 /* Exceptions for "Clippy" folder in "Clippy" target */,
 			);
 			path = Clippy;
+			sourceTree = "<group>";
+		};
+		ECD17EB72E9FE30E00751E4F /* ClippyShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ECD17EC52E9FE30E00751E4F /* Exceptions for "ClippyShare" folder in "ClippyShare" target */,
+			);
+			path = ClippyShare;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +114,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECD17EB32E9FE30E00751E4F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECD17EC92E9FECA600751E4F /* SnapKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -83,6 +130,8 @@
 			children = (
 				EC3E2BEE2E90FEB000E7F49B /* .gitignore */,
 				ECB792722E82215900C44AF0 /* Clippy */,
+				ECD17EB72E9FE30E00751E4F /* ClippyShare */,
+				ECD17EC72E9FECA600751E4F /* Frameworks */,
 				ECB792712E82215900C44AF0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,8 +140,16 @@
 			isa = PBXGroup;
 			children = (
 				ECB792702E82215900C44AF0 /* Clippy.app */,
+				ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		ECD17EC72E9FECA600751E4F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -107,10 +164,12 @@
 				ECB7926E2E82215900C44AF0 /* Resources */,
 				EC536EBF2E8BFE1500B411DB /* Embed Frameworks */,
 				EC3E2BF62E91057300E7F49B /* ShellScript */,
+				ECD17EC12E9FE30E00751E4F /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				ECD17EBF2E9FE30E00751E4F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ECB792722E82215900C44AF0 /* Clippy */,
@@ -130,6 +189,29 @@
 			productReference = ECB792702E82215900C44AF0 /* Clippy.app */;
 			productType = "com.apple.product-type.application";
 		};
+		ECD17EB52E9FE30E00751E4F /* ClippyShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECD17EC42E9FE30E00751E4F /* Build configuration list for PBXNativeTarget "ClippyShare" */;
+			buildPhases = (
+				ECD17EB22E9FE30E00751E4F /* Sources */,
+				ECD17EB32E9FE30E00751E4F /* Frameworks */,
+				ECD17EB42E9FE30E00751E4F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ECD17EB72E9FE30E00751E4F /* ClippyShare */,
+			);
+			name = ClippyShare;
+			packageProductDependencies = (
+				ECD17EC82E9FECA600751E4F /* SnapKit */,
+			);
+			productName = ClippyShare;
+			productReference = ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -141,6 +223,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					ECB7926F2E82215900C44AF0 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					ECD17EB52E9FE30E00751E4F = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -167,6 +252,7 @@
 			projectRoot = "";
 			targets = (
 				ECB7926F2E82215900C44AF0 /* Clippy */,
+				ECD17EB52E9FE30E00751E4F /* ClippyShare */,
 			);
 		};
 /* End PBXProject section */
@@ -177,6 +263,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				EC3E2BEF2E90FEB000E7F49B /* .gitignore in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECD17EB42E9FE30E00751E4F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +308,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECD17EB22E9FE30E00751E4F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ECD17EBF2E9FE30E00751E4F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ECD17EB52E9FE30E00751E4F /* ClippyShare */;
+			targetProxy = ECD17EBE2E9FE30E00751E4F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		ECB792842E82215B00C44AF0 /* Debug */ = {
@@ -410,6 +518,58 @@
 			};
 			name = Release;
 		};
+		ECD17EC22E9FE30E00751E4F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ClippyShare/ClippyShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ClippyShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ClippyShare;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ECD17EC32E9FE30E00751E4F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ClippyShare/ClippyShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ClippyShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ClippyShare;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -427,6 +587,15 @@
 			buildConfigurations = (
 				ECB792842E82215B00C44AF0 /* Debug */,
 				ECB792852E82215B00C44AF0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECD17EC42E9FE30E00751E4F /* Build configuration list for PBXNativeTarget "ClippyShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECD17EC22E9FE30E00751E4F /* Debug */,
+				ECD17EC32E9FE30E00751E4F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -513,6 +682,11 @@
 			productName = RealmSwift;
 		};
 		ECB793982E826D4E00C44AF0 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ECB793972E826D4E00C44AF0 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		ECD17EC82E9FECA600751E4F /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = ECB793972E826D4E00C44AF0 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;

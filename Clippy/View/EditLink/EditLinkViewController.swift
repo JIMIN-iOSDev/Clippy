@@ -23,6 +23,8 @@ final class EditLinkViewController: BaseViewController {
     private let selectedDueDate = BehaviorRelay<Date?>(value: nil)
     var editingLink: LinkMetadata? // 수정 모드일 때 사용
     var onLinkUpdated: (() -> Void)? // 수정 완료 콜백
+    /// 외부에서 진입 시 URL을 미리 채우기 위한 값
+    var prefillURLString: String?
     
     
     // MARK: - UI Components
@@ -621,6 +623,11 @@ final class EditLinkViewController: BaseViewController {
             
             if let defaultCategoryName = defaultCategoryName {
                 selectedCategories.accept([defaultCategoryName])
+            }
+
+            // 외부에서 전달된 URL이 있으면 프리필
+            if let prefill = prefillURLString, !prefill.isEmpty {
+                urlTextField.text = prefill
             }
         }
         

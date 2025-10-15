@@ -310,16 +310,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>    private let calendarIconImageView = {
+				<string>    }()
 </string>
 				<key>leading</key>
-				<string>    }()
-    
+				<string>        textField.rightViewMode = .always
+        return textField
 </string>
 				<key>trailing</key>
-				<string>        let imageView = UIImageView()
-        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        imageView.image = UIImage(systemName: "calendar", withConfiguration: config)
+				<string>    
+    private let calendarIconImageView = {
+        let imageView = UIImageView()
 </string>
 			</dict>
 			<key>title</key>
