@@ -47,7 +47,7 @@ final class CategoryRepository {
         return category
     }
     
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false) {
+    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0) {
         guard let category = readCategory(name: categoryName) else {
             print("\(categoryName) 없음")
             return
@@ -69,7 +69,7 @@ final class CategoryRepository {
             link = existingLink
         } else {
             // 새로운 링크 생성
-            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: false, openCount: 0)
+            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: isOpened, openCount: openCount)
         }
         
         do {
@@ -81,15 +81,19 @@ final class CategoryRepository {
         }
     }
     
-    func updateLink(url: String, title: String, description: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false) {
+    func updateLink(url: String, title: String, description: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false, preserveOpenedStatus: Bool = true, preserveOpenCount: Bool = true) {
         let categories = realm.objects(Category.self)
         
         // 기존 링크의 즐겨찾기 상태 보존
         var preservedLikeStatus = false
+        var preservedIsOpened = false
+        var preservedOpenCount = 0
         if preserveLikeStatus {
             for category in categories {
                 if let existingLink = category.category.first(where: { $0.url == url }) {
                     preservedLikeStatus = existingLink.likeStatus
+                    if preserveOpenedStatus { preservedIsOpened = existingLink.isOpened }
+                    if preserveOpenCount { preservedOpenCount = existingLink.openCount }
                     break
                 }
             }
@@ -100,7 +104,7 @@ final class CategoryRepository {
         
         // 새 카테고리에 링크 추가 (즐겨찾기 상태 보존)
         categoryNames.forEach { categoryName in
-            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus)
+            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount)
         }
     }
     

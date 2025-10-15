@@ -122,7 +122,7 @@ final class LinkManager {
         linksSubject.accept(allLinks)
     }
     
-    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false) -> Observable<LinkMetadata> {
+    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false, isOpened: Bool = false, openCount: Int = 0) -> Observable<LinkMetadata> {
         
         let cacheKey = url.absoluteString
         
@@ -135,7 +135,8 @@ final class LinkManager {
             categories: categories,
             dueDate: dueDate,
             createdAt: Date(),
-            isLiked: isLiked
+            isLiked: isLiked,
+            isOpened: isOpened
         )
         
         // 캐시에 저장

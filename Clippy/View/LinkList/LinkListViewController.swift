@@ -323,11 +323,28 @@ final class LinkListViewController: BaseViewController {
                 })
                 .disposed(by: disposeBag)
             
-            // 정렬 적용
+            // 정렬 적용 (expiring 모드에서는 열람/미열람도 마감일 오름차순, 일 단위 비교)
             Observable.combineLatest(allLinksCache, sortType)
-                .map { [weak self] (links, sortType) -> [LinkMetadata] in
-                    guard let self = self else { return [] }
-                    return self.sortLinks(links, by: sortType)
+                .map { (links, sortType) -> [LinkMetadata] in
+                    let calendar = Calendar.current
+                    var target = links
+                    switch sortType {
+                    case .read:
+                        target = target.filter { $0.isOpened }
+                    case .unread:
+                        target = target.filter { !$0.isOpened }
+                    default:
+                        break
+                    }
+                    // 마감일 오름차순 정렬 (startOfDay 기준으로 날짜만 비교)
+                    return target.sorted { l1, l2 in
+                        guard let d1 = l1.dueDate, let d2 = l2.dueDate else { return false }
+                        let sd1 = calendar.startOfDay(for: d1)
+                        let sd2 = calendar.startOfDay(for: d2)
+                        if sd1 != sd2 { return sd1 < sd2 }
+                        // 같은 날이면 생성일 기준 최신 우선
+                        return l1.createdAt > l2.createdAt
+                    }
                 }
                 .bind(to: links)
                 .disposed(by: disposeBag)
@@ -365,11 +382,27 @@ final class LinkListViewController: BaseViewController {
                 })
                 .disposed(by: disposeBag)
             
-            // 정렬 적용
+            // 정렬 적용 (열람/미열람도 마감일 오름차순, 일 단위 비교)
             Observable.combineLatest(allLinksCache, sortType)
-                .map { [weak self] (links, sortType) -> [LinkMetadata] in
-                    guard let self = self else { return [] }
-                    return self.sortLinks(links, by: sortType)
+                .map { (links, sortType) -> [LinkMetadata] in
+                    let calendar = Calendar.current
+                    var target = links
+                    switch sortType {
+                    case .read:
+                        target = target.filter { $0.isOpened }
+                    case .unread:
+                        target = target.filter { !$0.isOpened }
+                    default:
+                        break
+                    }
+                    // 마감일 오름차순 정렬 (startOfDay 기준으로 날짜만 비교). 같은 날이면 생성일 최신 우선
+                    return target.sorted { l1, l2 in
+                        guard let d1 = l1.dueDate, let d2 = l2.dueDate else { return false }
+                        let sd1 = calendar.startOfDay(for: d1)
+                        let sd2 = calendar.startOfDay(for: d2)
+                        if sd1 != sd2 { return sd1 < sd2 }
+                        return l1.createdAt > l2.createdAt
+                    }
                 }
                 .bind(to: links)
                 .disposed(by: disposeBag)

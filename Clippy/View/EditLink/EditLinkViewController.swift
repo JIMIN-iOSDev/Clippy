@@ -309,18 +309,29 @@ final class EditLinkViewController: BaseViewController {
                                 .subscribe()
                                 .disposed(by: self.disposeBag)
                             
-                            // CategoryRepository에서 따로 업데이트 (즐겨찾기 상태 보존)
+                            // CategoryRepository에서 따로 업데이트 (즐겨찾기/열람 상태 보존)
                             self.repository.updateLink(
                                 url: urlString,
                                 title: actualTitle,
                                 description: actualDescription,
                                 categoryNames: targetCategories,
                                 deadline: dueDate,
-                                preserveLikeStatus: true
+                                preserveLikeStatus: true,
+                                preserveOpenedStatus: true,
+                                preserveOpenCount: true
                             )
                             
-                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 즐겨찾기 상태 복원)
-                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage, isLiked: editingLink.isLiked)
+                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 상태 복원)
+                            return LinkManager.shared.addLink(
+                                url: url,
+                                title: actualTitle,
+                                descrpition: actualDescription,
+                                categories: categoryInfos,
+                                dueDate: dueDate,
+                                thumbnailImage: fetchedMetadata.thumbnailImage,
+                                isLiked: editingLink.isLiked,
+                                isOpened: editingLink.isOpened
+                            )
                         } else {
                             // 새 링크 추가 모드
                             targetCategories.forEach { categoryName in
