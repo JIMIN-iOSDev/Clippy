@@ -183,8 +183,18 @@ final class ShareViewController: UIViewController {
         bind()
         loadCategoriesFromAppGroup()
         preloadURLFromContext()
-        // 버튼/토글 등 전체에 정확한 색상 적용
         saveButton.backgroundColor = clippyBlue
+
+        // --- 키보드 내리기 로직 ---
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(endEditing))
+        tapGesture.cancelsTouchesInView = false
+        scrollView.addGestureRecognizer(tapGesture)
+        contentView.addGestureRecognizer(tapGesture)
+        scrollView.delegate = self
+    }
+
+    @objc private func endEditing() {
+        view.endEditing(true)
     }
     
     private func setupSheetStyle() {
@@ -466,5 +476,11 @@ extension ShareViewController: UITextViewDelegate {
     }
     private func updateMemoPlaceholder() {
         memoPlaceholderLabel.isHidden = !(memoTextView.text?.isEmpty ?? true)
+    }
+}
+
+extension ShareViewController: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        view.endEditing(true)
     }
 }
