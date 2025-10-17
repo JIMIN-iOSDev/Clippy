@@ -295,6 +295,8 @@ final class LikeViewController: BaseViewController {
     }
     
     private func sortLinks(_ links: [LinkMetadata], by sortType: LinkSortType) -> [LinkMetadata] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
         switch sortType {
         case .latest:
             return links.sorted { $0.createdAt > $1.createdAt }
@@ -302,16 +304,41 @@ final class LikeViewController: BaseViewController {
             return links.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
         case .deadline:
             return links.sorted { link1, link2 in
-                // 마감일이 없는 링크는 뒤로
-                guard let date1 = link1.dueDate else { return false }
-                guard let date2 = link2.dueDate else { return true }
-                return date1 < date2
+                // 1. 미래 마감일, 2. 마감일 없음, 3. 마감일 지난 링크 순
+                let d1 = link1.dueDate
+                let d2 = link2.dueDate
+                let isPast1 = d1 != nil && calendar.startOfDay(for: d1!) < today
+                let isPast2 = d2 != nil && calendar.startOfDay(for: d2!) < today
+                let isNil1 = d1 == nil
+                let isNil2 = d2 == nil
+                // 마감된 링크는 항상 뒤에
+                if isPast1 != isPast2 {
+                    return !isPast1 && isPast2
+                }
+                // 둘 다 마감됨 -> 최근 마감 먼저
+                if isPast1 && isPast2 {
+                    return d1! > d2!
+                }
+                // 둘 다 미래(오늘 포함) or 마감일 없음인 경우
+                if isNil1 != isNil2 {
+                    return !isNil1 && isNil2 // nil이 더 아래
+                }
+                // 둘 다 날짜 있음(미래, 오늘) -> 날짜 빠른게 위
+                if let d1 = d1, let d2 = d2 {
+                    let sd1 = calendar.startOfDay(for: d1)
+                    let sd2 = calendar.startOfDay(for: d2)
+                    if sd1 != sd2 {
+                        return sd1 < sd2
+                    }
+                    // 같은 날이면 최근 생성된 게 위
+                    return link1.createdAt > link2.createdAt
+                }
+                // 둘 다 마감일 없음 -> 최근 생성일이 위
+                return link1.createdAt > link2.createdAt
             }
         case .read:
-            // 열람한 링크만 필터링하고 최신순으로 정렬
             return links.filter { $0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         case .unread:
-            // 미열람한 링크만 필터링하고 최신순으로 정렬
             return links.filter { !$0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         }
     }

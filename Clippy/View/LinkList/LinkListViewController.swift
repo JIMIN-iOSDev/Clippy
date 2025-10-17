@@ -189,9 +189,8 @@ final class LinkListViewController: BaseViewController {
                     guard let categories = link.categories else { return false }
                     return categories.contains { $0.name == categoryName }
                 }
-                .sorted { $0.createdAt > $1.createdAt }
             }
-            .bind(to: links)
+            .bind(to: allLinksCache)
             .disposed(by: loadDisposeBag)
     }
     
@@ -220,6 +219,9 @@ final class LinkListViewController: BaseViewController {
     }
     
     private func sortLinks(_ links: [LinkMetadata], by sortType: LinkSortType) -> [LinkMetadata] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
         switch sortType {
         case .latest:
             return links.sorted { $0.createdAt > $1.createdAt }
@@ -227,16 +229,47 @@ final class LinkListViewController: BaseViewController {
             return links.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
         case .deadline:
             return links.sorted { link1, link2 in
-                // 마감일이 없는 링크는 뒤로
-                guard let date1 = link1.dueDate else { return false }
-                guard let date2 = link2.dueDate else { return true }
-                return date1 < date2
+                // 1. 미래 마감일, 2. 마감일 없음, 3. 마감일 지난 링크 순
+                let d1 = link1.dueDate
+                let d2 = link2.dueDate
+
+                let isPast1 = d1 != nil && calendar.startOfDay(for: d1!) < today
+                let isPast2 = d2 != nil && calendar.startOfDay(for: d2!) < today
+                let isNil1 = d1 == nil
+                let isNil2 = d2 == nil
+
+                // 마감된 링크는 항상 뒤에
+                if isPast1 != isPast2 {
+                    return !isPast1 && isPast2
+                }
+
+                // 둘 다 마감됨 -> 최근 마감 먼저
+                if isPast1 && isPast2 {
+                    return d1! > d2!
+                }
+
+                // 둘 다 미래(오늘 포함) or 마감일 없음인 경우
+                if isNil1 != isNil2 {
+                    return !isNil1 && isNil2 // nil이 더 아래
+                }
+
+                // 둘 다 날짜 있음(미래, 오늘) -> 날짜 빠른게 위
+                if let d1 = d1, let d2 = d2 {
+                    let sd1 = calendar.startOfDay(for: d1)
+                    let sd2 = calendar.startOfDay(for: d2)
+                    if sd1 != sd2 {
+                        return sd1 < sd2
+                    }
+                    // 같은 날이면 최근 생성된 게 위
+                    return link1.createdAt > link2.createdAt
+                }
+
+                // 둘 다 마감일 없음 -> 최근 생성일이 위
+                return link1.createdAt > link2.createdAt
             }
         case .read:
-            // 열람한 링크만 필터링하고 최신순으로 정렬
             return links.filter { $0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         case .unread:
-            // 미열람한 링크만 필터링하고 최신순으로 정렬
             return links.filter { !$0.isOpened }.sorted { $0.createdAt > $1.createdAt }
         }
     }
@@ -274,7 +307,7 @@ final class LinkListViewController: BaseViewController {
         tableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        // allLinks 모드와 expiring 모드에서 정렬 버튼 바인딩
+        // allLinks 모드, expiring 모드, category 모드에서 정렬 버튼 바인딩
         if case .allLinks = mode {
             latestButton.rx.tap
                 .do(onNext: { [weak self] _ in
@@ -323,28 +356,11 @@ final class LinkListViewController: BaseViewController {
                 })
                 .disposed(by: disposeBag)
             
-            // 정렬 적용 (expiring 모드에서는 열람/미열람도 마감일 오름차순, 일 단위 비교)
+            // 정렬 적용
             Observable.combineLatest(allLinksCache, sortType)
-                .map { (links, sortType) -> [LinkMetadata] in
-                    let calendar = Calendar.current
-                    var target = links
-                    switch sortType {
-                    case .read:
-                        target = target.filter { $0.isOpened }
-                    case .unread:
-                        target = target.filter { !$0.isOpened }
-                    default:
-                        break
-                    }
-                    // 마감일 오름차순 정렬 (startOfDay 기준으로 날짜만 비교)
-                    return target.sorted { l1, l2 in
-                        guard let d1 = l1.dueDate, let d2 = l2.dueDate else { return false }
-                        let sd1 = calendar.startOfDay(for: d1)
-                        let sd2 = calendar.startOfDay(for: d2)
-                        if sd1 != sd2 { return sd1 < sd2 }
-                        // 같은 날이면 생성일 기준 최신 우선
-                        return l1.createdAt > l2.createdAt
-                    }
+                .map { [weak self] (links, sortType) -> [LinkMetadata] in
+                    guard let self = self else { return links }
+                    return self.sortLinks(links, by: sortType)
                 }
                 .bind(to: links)
                 .disposed(by: disposeBag)
@@ -382,27 +398,11 @@ final class LinkListViewController: BaseViewController {
                 })
                 .disposed(by: disposeBag)
             
-            // 정렬 적용 (열람/미열람도 마감일 오름차순, 일 단위 비교)
+            // 정렬 적용
             Observable.combineLatest(allLinksCache, sortType)
-                .map { (links, sortType) -> [LinkMetadata] in
-                    let calendar = Calendar.current
-                    var target = links
-                    switch sortType {
-                    case .read:
-                        target = target.filter { $0.isOpened }
-                    case .unread:
-                        target = target.filter { !$0.isOpened }
-                    default:
-                        break
-                    }
-                    // 마감일 오름차순 정렬 (startOfDay 기준으로 날짜만 비교). 같은 날이면 생성일 최신 우선
-                    return target.sorted { l1, l2 in
-                        guard let d1 = l1.dueDate, let d2 = l2.dueDate else { return false }
-                        let sd1 = calendar.startOfDay(for: d1)
-                        let sd2 = calendar.startOfDay(for: d2)
-                        if sd1 != sd2 { return sd1 < sd2 }
-                        return l1.createdAt > l2.createdAt
-                    }
+                .map { [weak self] (links, sortType) -> [LinkMetadata] in
+                    guard let self = self else { return links }
+                    return self.sortLinks(links, by: sortType)
                 }
                 .bind(to: links)
                 .disposed(by: disposeBag)
@@ -411,6 +411,58 @@ final class LinkListViewController: BaseViewController {
             sortType.accept(.deadline)
         }
         
+        // category 모드에서도 정렬 버튼 바인딩
+        if case .category = mode {
+            latestButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.latest }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            titleSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.title }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            deadlineSortButton.rx.tap
+                .do(onNext: { [weak self] _ in
+                    self?.scrollToTop()
+                })
+                .map { LinkSortType.deadline }
+                .bind(to: sortType)
+                .disposed(by: disposeBag)
+            
+            // 정렬 타입에 따른 버튼 스타일 변경
+            sortType
+                .subscribe(onNext: { [weak self] type in
+                    self?.updateSortButtonStyles(selectedType: type)
+                })
+                .disposed(by: disposeBag)
+            
+            // 정렬 적용
+            Observable.combineLatest(allLinksCache, sortType)
+                .map { [weak self] (links, sortType) -> [LinkMetadata] in
+                    guard let self = self else { return links }
+                    return self.sortLinks(links, by: sortType)
+                }
+                .bind(to: links)
+                .disposed(by: disposeBag)
+            
+            // 기본 선택: 최신순
+            sortType.accept(.latest)
+        }
+        
+        // category 모드가 아닌 경우에만 기존 links 바인딩 사용
+        if case .category = mode {
+            // category 모드는 위에서 이미 바인딩됨
+        } else {
+            // allLinks와 expiring 모드는 위에서 이미 바인딩됨
+        }
         
         links
             .bind(to: tableView.rx.items(cellIdentifier: LinkTableViewCell.identifier, cellType: LinkTableViewCell.self)) { [weak self] _, item, cell in
@@ -486,6 +538,10 @@ final class LinkListViewController: BaseViewController {
         } else if case .expiring = mode {
             [sortButtonsStackView, tableView, emptyView].forEach { view.addSubview($0) }
             [allExpiringButton, readSortButton, unreadSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
+        } else if case .category = mode {
+            [scrollView, tableView, emptyView].forEach { view.addSubview($0) }
+            scrollView.addSubview(sortButtonsStackView)
+            [latestButton, titleSortButton, deadlineSortButton].forEach { sortButtonsStackView.addArrangedSubview($0) }
         } else {
             [tableView, emptyView].forEach { view.addSubview($0) }
         }
@@ -519,6 +575,23 @@ final class LinkListViewController: BaseViewController {
             
             tableView.snp.makeConstraints { make in
                 make.top.equalTo(sortButtonsStackView.snp.bottom).offset(16)
+                make.horizontalEdges.bottom.equalToSuperview()
+            }
+        } else if case .category = mode {
+            scrollView.snp.makeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+                make.leading.trailing.equalToSuperview()
+                make.height.equalTo(36)
+            }
+            
+            sortButtonsStackView.snp.makeConstraints { make in
+                // 좌우 패딩을 주어 첫 버튼이 가장자리와 붙지 않도록 함
+                make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20))
+                make.height.equalToSuperview()
+            }
+            
+            tableView.snp.makeConstraints { make in
+                make.top.equalTo(scrollView.snp.bottom).offset(16)
                 make.horizontalEdges.bottom.equalToSuperview()
             }
         } else {
