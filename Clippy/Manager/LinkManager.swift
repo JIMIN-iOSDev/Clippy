@@ -69,6 +69,16 @@ final class LinkManager {
     }
     
     // MARK: - Methods
+    
+    func refreshLinks() {
+        // 캐시 클리어
+        linkCache.removeAll()
+        imageCache.removeAll()
+        
+        // Realm에서 다시 로드
+        loadLinksFromRealm()
+    }
+    
     private func loadLinksFromRealm() {
         let categories = repository.readCategoryList()
         var allLinks: [LinkMetadata] = []
@@ -317,10 +327,12 @@ final class LinkManager {
                 }
                 
                 if let error {
-                    // 에러가 있어도 기본 링크 메타데이터는 제공 (기본 앱 로고 포함)
+                    // LPMetadataProvider 실패 시 대안 방법: URL에서 도메인 추출하여 제목 생성
+                    let fallbackTitle = self.generateFallbackTitle(from: url)
                     let defaultImage = UIImage(named: "AppLogo")
-                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: defaultImage)
-                    observer.onNext(basicMetadata)
+                    let fallbackMetadata = LinkMetadata(url: url, title: fallbackTitle, description: nil, thumbnailImage: defaultImage)
+                    
+                    observer.onNext(fallbackMetadata)
                     observer.onCompleted()
                     return
                 }
@@ -334,6 +346,9 @@ final class LinkManager {
                     return
                 }
                 
+                let extractedTitle = metadata.title ?? url.absoluteString
+                let extractedDescription = metadata.value(forKey: "summary") as? String
+                
                 // 이미지 로드
                 if let imageProvider = metadata.imageProvider {
                     imageProvider.loadObject(ofClass: UIImage.self) { image, _ in
@@ -346,14 +361,14 @@ final class LinkManager {
                             // 이미지 로드 실패시 기본 앱 로고 사용
                             finalImage = UIImage(named: "AppLogo")
                         }
-                        let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: finalImage)
+                        let linkMetadata = LinkMetadata(url: url, title: extractedTitle, description: extractedDescription, thumbnailImage: finalImage)
                         observer.onNext(linkMetadata)
                         observer.onCompleted()
                     }
                 } else {
                     // 썸네일 이미지가 없으면 기본 앱 로고 사용
                     let defaultImage = UIImage(named: "AppLogo")
-                    let linkMetadata = LinkMetadata(url: url, title: metadata.title ?? url.absoluteString, description: metadata.value(forKey: "summary") as? String, thumbnailImage: defaultImage)
+                    let linkMetadata = LinkMetadata(url: url, title: extractedTitle, description: extractedDescription, thumbnailImage: defaultImage)
                     observer.onNext(linkMetadata)
                     observer.onCompleted()
                 }
@@ -364,6 +379,52 @@ final class LinkManager {
             }
         }
         .observe(on: MainScheduler.instance)
+    }
+    
+    // MARK: - Fallback Methods
+    
+    private func generateFallbackTitle(from url: URL) -> String {
+        let host = url.host ?? "알 수 없는 사이트"
+        
+        // 주요 사이트별 한글 이름 매핑
+        let siteNames: [String: String] = [
+            "www.naver.com": "네이버",
+            "m.naver.com": "네이버",
+            "naver.com": "네이버",
+            "www.daum.net": "다음",
+            "m.daum.net": "다음",
+            "daum.net": "다음",
+            "www.google.com": "구글",
+            "google.com": "구글",
+            "www.youtube.com": "유튜브",
+            "youtube.com": "유튜브",
+            "m.youtube.com": "유튜브",
+            "www.facebook.com": "페이스북",
+            "facebook.com": "페이스북",
+            "m.facebook.com": "페이스북",
+            "www.instagram.com": "인스타그램",
+            "instagram.com": "인스타그램",
+            "www.twitter.com": "트위터",
+            "twitter.com": "트위터",
+            "x.com": "X (트위터)",
+            "www.github.com": "깃허브",
+            "github.com": "깃허브"
+        ]
+        
+        // 도메인에서 www. 제거
+        let cleanHost = host.replacingOccurrences(of: "www.", with: "")
+        
+        if let koreanName = siteNames[cleanHost] {
+            return koreanName
+        } else {
+            // 도메인 이름에서 첫 번째 부분만 사용 (예: example.com -> example)
+            let components = cleanHost.components(separatedBy: ".")
+            if let firstComponent = components.first, !firstComponent.isEmpty {
+                return firstComponent.capitalized
+            } else {
+                return "링크"
+            }
+        }
     }
     
     // MARK: - Image Cache Methods

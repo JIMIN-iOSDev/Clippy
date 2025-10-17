@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>
@@ -500,13 +500,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>            createdAt: Date(),
-            isLiked: false
+				<string>        let dummyImage = createDummyThumbnail()
+        
 </string>
 				<key>trailing</key>
-				<string>        )
-        
-        // 캐시에 저장하고 링크 목록 업데이트
+				<string>        // 더미링크 메타데이터 생성
+        let dummyLink = LinkMetadata(
+            url: dummyURL,
 </string>
 			</dict>
 			<key>title</key>

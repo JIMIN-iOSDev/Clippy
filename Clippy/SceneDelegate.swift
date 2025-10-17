@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RxSwift
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -61,16 +62,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // 카테고리 목록을 App Group에 동기화
         syncCategoriesToAppGroup()
+        
+        // 앱 시작 시에도 공유된 항목 확인
+        importSharedItemsIfNeeded()
 
         // 카테고리 변경 알림 구독하여 동기화 유지
         NotificationCenter.default.addObserver(forName: .categoryDidCreate, object: nil, queue: .main) { [weak self] _ in
             self?.syncCategoriesToAppGroup()
+            self?.syncSavedLinksToAppGroup()
         }
         NotificationCenter.default.addObserver(forName: .categoryDidUpdate, object: nil, queue: .main) { [weak self] _ in
             self?.syncCategoriesToAppGroup()
         }
         NotificationCenter.default.addObserver(forName: .categoryDidDelete, object: nil, queue: .main) { [weak self] _ in
             self?.syncCategoriesToAppGroup()
+            self?.syncSavedLinksToAppGroup()
+        }
+        NotificationCenter.default.addObserver(forName: .linkDidCreate, object: nil, queue: .main) { [weak self] _ in
+            self?.syncSavedLinksToAppGroup()
+        }
+        NotificationCenter.default.addObserver(forName: .linkDidDelete, object: nil, queue: .main) { [weak self] _ in
+            self?.syncSavedLinksToAppGroup()
         }
     }
 
@@ -103,6 +115,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 앱이 포그라운드로 올 때 배지 제거
         UIApplication.shared.applicationIconBadgeNumber = 0
+        
+        // Share Extension에서 적재된 항목을 수신해 저장 (포그라운드 진입 시에도 체크)
+        importSharedItemsIfNeeded()
         
         // 알림으로 앱이 포그라운드로 온 경우는 제거
         // (알림 탭으로만 마감 임박 화면으로 이동하도록 수정)
@@ -164,27 +179,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 extension SceneDelegate {
     private func importSharedItemsIfNeeded() {
         let defaults = UserDefaults(suiteName: appGroupID)
-        guard var items = defaults?.array(forKey: "shared_items") as? [[String: String]], !items.isEmpty else { return }
+        guard var items = defaults?.array(forKey: "shared_items") as? [[String: String]], !items.isEmpty else { 
+            return 
+        }
 
         let repository = CategoryRepository()
-        // 기본 카테고리 보장
         repository.createDefaultCategory()
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        dateFormatter.dateFormat = "yyyy. MM. dd."
 
-        // 저장 처리
-        for item in items {
-            guard let urlString = item["url"], !urlString.isEmpty else { continue }
+        let importDisposeBag = DisposeBag()
+        let importObservables: [Observable<Void>] = items.compactMap { item in
+            guard let urlString = item["url"], !urlString.isEmpty else { return nil }
             let title = item["title"]
             let memo = item["memo"]
+            let dueDateString = item["dueDate"]
+            let dueDate: Date? = dueDateString.flatMap { dateFormatter.date(from: $0) }
 
-            // 선택된 카테고리 문자열 파싱 ("이름1|이름2")
             let selectedCategoriesString = item["categories"] ?? ""
             let selectedCategoryNames = selectedCategoriesString.split(separator: "|").map { String($0) }.filter { !$0.isEmpty }
             let targetCategories = selectedCategoryNames.isEmpty ? ["일반"] : selectedCategoryNames
 
-            // Realm 저장 + LinkManager 반영
+            guard let url = URL(string: urlString) else { return nil }
+
+            // 카테고리 정보 생성
             var categoryInfos: [(name: String, colorIndex: Int)] = []
             for categoryName in targetCategories {
-                repository.addLink(title: title ?? urlString, url: urlString, description: memo, categoryName: categoryName, deadline: nil)
                 if let colorIdx = repository.readCategory(name: categoryName)?.colorIndex {
                     categoryInfos.append((name: categoryName, colorIndex: colorIdx))
                 } else {
@@ -192,23 +213,55 @@ extension SceneDelegate {
                 }
             }
 
-            if let url = URL(string: urlString) {
-                _ = LinkManager.shared.addLink(
-                    url: url,
-                    title: title,
-                    descrpition: memo,
-                    categories: categoryInfos,
-                    dueDate: nil,
-                    thumbnailImage: nil
-                )
-            }
+            // 일단 메타데이터 없이 단순 저장
+            return Observable.just(())
+                .observe(on: MainScheduler.instance)
+                .map { _ in
+                    let actualTitle = (title?.isEmpty == false) ? title : urlString
+                    let actualDescription = (memo?.isEmpty == false) ? memo : nil
+                    
+                    // Realm에 저장
+                    for categoryName in targetCategories {
+                        repository.addLink(
+                            title: actualTitle ?? urlString, 
+                            url: urlString, 
+                            description: actualDescription, 
+                            categoryName: categoryName, 
+                            deadline: dueDate
+                        )
+                    }
+                    
+                    // LinkManager 캐시에도 저장
+                    _ = LinkManager.shared.addLink(
+                        url: url,
+                        title: actualTitle,
+                        descrpition: actualDescription,
+                        categories: categoryInfos,
+                        dueDate: dueDate,
+                        thumbnailImage: nil
+                    )
+                    
+                }
         }
 
-        // 큐 비우기
-        defaults?.removeObject(forKey: "shared_items")
-
-        // UI 갱신 알림
-        NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+        if !importObservables.isEmpty {
+            Observable.zip(importObservables)
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { _ in
+                    defaults?.removeObject(forKey: "shared_items")
+                    
+                    // LinkManager 캐시 새로고침
+                    LinkManager.shared.refreshLinks()
+                    
+                    // UI 업데이트 알림
+                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+                })
+                .disposed(by: importDisposeBag)
+        } else {
+            // 아무것도 없으면 기존대로 처리
+            defaults?.removeObject(forKey: "shared_items")
+            NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+        }
     }
 
     private func syncCategoriesToAppGroup() {
@@ -221,6 +274,16 @@ extension SceneDelegate {
 
         let defaults = UserDefaults(suiteName: appGroupID)
         defaults?.set(payload, forKey: "categories")
+    }
+
+    // --- AppGroup으로 전체 저장 URL 동기화 ---
+    private func syncSavedLinksToAppGroup() {
+        let categoryRepo = CategoryRepository()
+        let categories = categoryRepo.readCategoryList()
+        let allLinks = categories.flatMap { $0.category } // Realm 리스트 flatMap
+        let urlArr = allLinks.compactMap { $0.url }
+        let defaults = UserDefaults(suiteName: appGroupID)
+        defaults?.set(urlArr, forKey: "saved_links")
     }
 }
 
@@ -239,7 +302,7 @@ extension SceneDelegate {
         // clippy://add?url=ENCODED_URL
         if url.host == "add" {
             var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            let queryItems = components?.queryItems ?? []
+            let queryItems = components?.queryItems ?? [URLQueryItem]()
             let sharedURLString = queryItems.first(where: { $0.name == "url" })?.value
             presentEditLink(with: sharedURLString, tabBarController: tabBarController)
         }

@@ -19,6 +19,7 @@
 		ECB793992E826D4E00C44AF0 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECB793982E826D4E00C44AF0 /* SnapKit */; };
 		ECD17EC02E9FE30E00751E4F /* ClippyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ECD17EC92E9FECA600751E4F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17EC82E9FECA600751E4F /* SnapKit */; };
+		ECD17ECB2E9FF5EA00751E4F /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17ECA2E9FF5EA00751E4F /* Toast */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -118,6 +119,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECD17ECB2E9FF5EA00751E4F /* Toast in Frameworks */,
 				ECD17EC92E9FECA600751E4F /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -207,6 +209,7 @@
 			name = ClippyShare;
 			packageProductDependencies = (
 				ECD17EC82E9FECA600751E4F /* SnapKit */,
+				ECD17ECA2E9FF5EA00751E4F /* Toast */,
 			);
 			productName = ClippyShare;
 			productReference = ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */;
@@ -690,6 +693,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = ECB793972E826D4E00C44AF0 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		ECD17ECA2E9FF5EA00751E4F /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC5370732E8F472400B411DB /* XCRemoteSwiftPackageReference "Toast-Swift" */;
+			productName = Toast;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

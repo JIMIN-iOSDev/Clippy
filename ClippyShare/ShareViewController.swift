@@ -137,7 +137,7 @@ final class ShareViewController: UIViewController {
     }()
     private let dueDateTextField: UITextField = {
         let tf = UITextField()
-        tf.placeholder = "연도.월.일."
+        tf.placeholder = "연도. 월. 일."
         tf.font = UIFont.systemFont(ofSize: 16)
         tf.borderStyle = .none
         tf.backgroundColor = .systemGray6
@@ -444,6 +444,12 @@ final class ShareViewController: UIViewController {
         let dueDateString: String? = selectedDueDate.map { Self.dateFormatter.string(from: $0) }
 
         let defaults = UserDefaults(suiteName: appGroupID)
+        
+        if defaults == nil {
+            showAlert(message: "App Group 설정 오류")
+            return
+        }
+        
         var items = defaults?.array(forKey: "shared_items") as? [[String: String]] ?? []
         var dict: [String: String] = ["url": url.absoluteString]
         if let title, !title.isEmpty { dict["title"] = title }
@@ -451,7 +457,10 @@ final class ShareViewController: UIViewController {
         if !selectedCategoriesString.isEmpty { dict["categories"] = selectedCategoriesString }
         if let dueDate = dueDateString { dict["dueDate"] = dueDate }
         items.append(dict)
+        
         defaults?.set(items, forKey: "shared_items")
+        defaults?.synchronize()
+        
         extensionContext?.completeRequest(returningItems: nil)
     }
     @objc private func onCancel() {
