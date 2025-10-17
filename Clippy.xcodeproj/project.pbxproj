@@ -22,16 +22,6 @@
 		ECD17ECB2E9FF5EA00751E4F /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17ECA2E9FF5EA00751E4F /* Toast */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		ECD17EBE2E9FE30E00751E4F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = ECB792682E82215900C44AF0 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ECD17EB52E9FE30E00751E4F;
-			remoteInfo = ClippyShare;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		EC536EBF2E8BFE1500B411DB /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -171,7 +161,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				ECD17EBF2E9FE30E00751E4F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ECB792722E82215900C44AF0 /* Clippy */,
@@ -319,14 +308,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		ECD17EBF2E9FE30E00751E4F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = ECD17EB52E9FE30E00751E4F /* ClippyShare */;
-			targetProxy = ECD17EBE2E9FE30E00751E4F /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		ECB792842E82215B00C44AF0 /* Debug */ = {
