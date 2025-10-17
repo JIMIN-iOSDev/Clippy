@@ -155,8 +155,8 @@
 				ECB7926D2E82215900C44AF0 /* Frameworks */,
 				ECB7926E2E82215900C44AF0 /* Resources */,
 				EC536EBF2E8BFE1500B411DB /* Embed Frameworks */,
-				EC3E2BF62E91057300E7F49B /* ShellScript */,
 				ECD17EC12E9FE30E00751E4F /* Embed Foundation Extensions */,
+				EC3E2BF62E91057300E7F49B /* ShellScript */,
 			);
 			buildRules = (
 			);

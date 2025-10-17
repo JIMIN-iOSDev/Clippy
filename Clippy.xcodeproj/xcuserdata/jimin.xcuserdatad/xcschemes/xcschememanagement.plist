@@ -7,12 +7,12 @@
 		<key>Clippy.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>0</integer>
 		</dict>
 		<key>ClippyShare.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</dict>
 		<key>ClippyShareExtension.xcscheme_^#shared#^_</key>
 		<dict>
@@ -38,6 +38,19 @@
 		<dict>
 			<key>orderHint</key>
 			<integer>4</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>ECB7926F2E82215900C44AF0</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ECD17EB52E9FE30E00751E4F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
