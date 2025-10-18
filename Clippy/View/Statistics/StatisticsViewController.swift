@@ -1740,8 +1740,8 @@ extension CalendarView: UICollectionViewDelegate, UICollectionViewDataSource, UI
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (collectionView.bounds.width - 6 * 8) / 7
-        let height = width + 2 // 이벤트 점을 위한 추가 공간 더 줄임 (4 -> 2)
-        return CGSize(width: width, height: height)
+        // 완벽한 정사각형 셀로 만들어 원형 보장
+        return CGSize(width: width, height: width)
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -1817,20 +1817,26 @@ final class CalendarDateCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // 실제 frame 기준으로 cornerRadius 계산하여 완전한 원형 보장
+        backgroundCircle.layer.cornerRadius = backgroundCircle.bounds.width / 2
+    }
+
     private func setupUI() {
         contentView.addSubview(backgroundCircle)
         contentView.addSubview(dayLabel)
         contentView.addSubview(eventDotsStackView)
 
-        let circleSize: CGFloat = 36
+        // 이벤트 점 공간을 위해 동그라미 크기를 셀보다 작게 설정
+        let circleSize: CGFloat = 32
         backgroundCircle.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.top.equalToSuperview().offset(2)
-            make.width.height.equalTo(circleSize)
+            make.top.equalToSuperview().offset(4)
+            make.width.equalTo(circleSize)
+            make.height.equalTo(backgroundCircle.snp.width) // width와 동일하게 설정하여 정사각형 보장
         }
 
-        // 완전한 원형 보장
-        backgroundCircle.layer.cornerRadius = circleSize / 2
         backgroundCircle.clipsToBounds = true
 
         dayLabel.snp.makeConstraints { make in
@@ -1840,7 +1846,6 @@ final class CalendarDateCell: UICollectionViewCell {
         eventDotsStackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalTo(backgroundCircle.snp.bottom).offset(2)
-            make.bottom.equalToSuperview()
             make.height.equalTo(6)
         }
     }
