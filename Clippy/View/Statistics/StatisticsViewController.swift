@@ -483,8 +483,23 @@ final class StatisticsViewController: BaseViewController {
         }
 
         // 가장 많이 저장한 카테고리 찾기
-        if let topCategory = categoryCounts.max(by: { $0.value < $1.value }) {
-            weeklyInsightLabel.text = "이번 주 가장 많이 저장한 카테고리는 '\(topCategory.key)'입니다"
+        if categoryCounts.isEmpty {
+            weeklyInsightLabel.text = ""
+            return
+        }
+
+        // 최대값 찾기
+        let maxCount = categoryCounts.values.max() ?? 0
+
+        // 최대값을 가진 카테고리들 찾기
+        let topCategories = categoryCounts.filter { $0.value == maxCount }.map { $0.key }.sorted()
+
+        if topCategories.count == 1 {
+            // 하나만 최대값인 경우
+            weeklyInsightLabel.text = "이번 주 가장 많이 저장한 카테고리는 '\(topCategories[0])'입니다"
+        } else if topCategories.count >= 2 {
+            // 여러 개가 동일 최대값인 경우 - 알파벳 순으로 정렬된 첫 번째 선택
+            weeklyInsightLabel.text = "이번 주 가장 많이 저장한 카테고리는 '\(topCategories[0])'입니다"
         } else {
             weeklyInsightLabel.text = ""
         }
