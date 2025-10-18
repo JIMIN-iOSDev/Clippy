@@ -86,6 +86,15 @@ final class StatisticsViewController: BaseViewController {
 
     private let weeklyChartView = WeeklyChartView()
 
+    private let weeklyInsightLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
+
     // MARK: - Category Distribution Section
     private let categoryChartContainerView = {
         let view = UIView()
@@ -108,13 +117,22 @@ final class StatisticsViewController: BaseViewController {
 
     private let categoryDonutChartView = CategoryDonutChartView()
 
-    private let categoryLegendStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 12
-        stackView.distribution = .fillEqually
-        return stackView
+    private lazy var categoryLegendCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 12
+        layout.minimumInteritemSpacing = 12
+        layout.scrollDirection = .vertical
+
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.isScrollEnabled = false
+        collectionView.register(CategoryLegendCell.self, forCellWithReuseIdentifier: "CategoryLegendCell")
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        return collectionView
     }()
+
+    private var categoryLegendData: [(name: String, info: String, colorIndex: Int, iconName: String)] = []
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -157,15 +175,13 @@ final class StatisticsViewController: BaseViewController {
         weeklyChartContainerView.addSubview(weeklyChartCountLabel)
         weeklyChartContainerView.addSubview(weeklyChartCountUnitLabel)
         weeklyChartContainerView.addSubview(weeklyChartView)
+        weeklyChartContainerView.addSubview(weeklyInsightLabel)
 
         // Category Chart Section
         contentView.addSubview(categoryChartContainerView)
         categoryChartContainerView.addSubview(categoryChartTitleLabel)
         categoryChartContainerView.addSubview(categoryDonutChartView)
-        categoryChartContainerView.addSubview(categoryLegendStackView)
-
-        // Add sample category legend items
-        createCategoryLegendItems()
+        categoryChartContainerView.addSubview(categoryLegendCollectionView)
     }
 
     private func setupConstraints() {
@@ -192,7 +208,7 @@ final class StatisticsViewController: BaseViewController {
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(calendarTitleLabel.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(320)
+            make.height.equalTo(360)
             make.bottom.equalToSuperview().offset(-20)
         }
 
@@ -220,7 +236,12 @@ final class StatisticsViewController: BaseViewController {
         weeklyChartView.snp.makeConstraints { make in
             make.top.equalTo(weeklyChartTitleLabel.snp.bottom).offset(24)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(200)
+            make.height.equalTo(160)
+        }
+
+        weeklyInsightLabel.snp.makeConstraints { make in
+            make.top.equalTo(weeklyChartView.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().offset(-20)
         }
 
@@ -242,31 +263,217 @@ final class StatisticsViewController: BaseViewController {
             make.width.height.equalTo(200)
         }
 
-        categoryLegendStackView.snp.makeConstraints { make in
+        categoryLegendCollectionView.snp.makeConstraints { make in
             make.top.equalTo(categoryDonutChartView.snp.bottom).offset(24)
             make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().offset(-20)
+            make.height.greaterThanOrEqualTo(48)
         }
     }
 
     private func createCategoryLegendItems() {
-        let sampleCategories = [
-            ("일반", "2개 · 22%", UIColor.systemBlue, "folder"),
-            ("iOS", "1개 · 11%", UIColor.systemRed, "swift"),
-            ("개발", "3개 · 33%", UIColor.systemPurple, "chevron.left.forwardslash.chevron.right"),
-            ("디자인", "2개 · 22%", UIColor.systemGreen, "paintpalette"),
-            ("영상", "1개 · 11%", UIColor.systemOrange, "video")
-        ]
+        let repository = CategoryRepository()
+        let categories = repository.readCategoryList()
 
-        for (name, info, color, iconName) in sampleCategories {
-            let legendItem = CategoryLegendItemView()
-            legendItem.configure(name: name, info: info, color: color, iconName: iconName)
-            categoryLegendStackView.addArrangedSubview(legendItem)
+        // 카테고리별 링크 개수 계산
+        categoryLegendData = []
+        var totalCategoryLinks = 0
+
+        for category in categories {
+            let linkCount = category.category.count
+            if linkCount > 0 {
+                totalCategoryLinks += linkCount
+            }
+        }
+
+        guard totalCategoryLinks > 0 else {
+            categoryLegendData = []
+            categoryLegendCollectionView.reloadData()
+            return
+        }
+
+        // 카테고리 데이터 생성
+        var tempData: [(name: String, count: Int, colorIndex: Int, iconName: String)] = []
+        for category in categories {
+            let linkCount = category.category.count
+            if linkCount > 0 {
+                tempData.append((
+                    name: category.name,
+                    count: linkCount,
+                    colorIndex: category.colorIndex,
+                    iconName: category.iconName
+                ))
+            }
+        }
+
+        // 링크 개수가 많은 순으로 정렬
+        tempData.sort { $0.count > $1.count }
+
+        // 범례 데이터 생성
+        for data in tempData {
+            let percentage = Double(data.count) / Double(totalCategoryLinks) * 100
+            let info = "\(data.count)개 · \(Int(percentage))%"
+            categoryLegendData.append((
+                name: data.name,
+                info: info,
+                colorIndex: data.colorIndex,
+                iconName: data.iconName
+            ))
+        }
+
+        categoryLegendCollectionView.reloadData()
+
+        // 컬렉션뷰 높이 업데이트
+        let rows = ceil(Double(categoryLegendData.count) / 2.0)
+        let height = rows * 60 + max(0, rows - 1) * 12
+        categoryLegendCollectionView.snp.updateConstraints { make in
+            make.height.greaterThanOrEqualTo(height)
         }
     }
 
     private func bindData() {
-        // TODO: Bind real data from LinkManager
+        // 링크 데이터 변경 감지
+        LinkManager.shared.links
+            .bind(with: self) { owner, links in
+                // 전체 링크 개수 업데이트
+                owner.categoryDonutChartView.updateTotalCount(links.count)
+
+                // 카테고리 분포 업데이트
+                owner.updateCategoryDistribution()
+
+                // 주간 차트 업데이트
+                owner.updateWeeklyChart(with: links)
+
+                // 캘린더 업데이트
+                owner.calendarView.updateEvents(with: links)
+            }
+            .disposed(by: disposeBag)
+
+        // 카테고리 변경 감지
+        NotificationCenter.default.rx
+            .notification(.categoryDidUpdate)
+            .bind(with: self) { owner, _ in
+                owner.updateCategoryDistribution()
+            }
+            .disposed(by: disposeBag)
+
+        NotificationCenter.default.rx
+            .notification(.categoryDidDelete)
+            .bind(with: self) { owner, _ in
+                owner.updateCategoryDistribution()
+            }
+            .disposed(by: disposeBag)
+    }
+
+    private func updateCategoryDistribution() {
+        let repository = CategoryRepository()
+        let categories = repository.readCategoryList()
+
+        // 카테고리별 링크 개수 계산
+        var categoryCounts: [(count: Int, colorIndex: Int)] = []
+        var totalCategoryLinks = 0
+
+        for category in categories {
+            let linkCount = category.category.count
+            if linkCount > 0 {
+                categoryCounts.append((count: linkCount, colorIndex: category.colorIndex))
+                totalCategoryLinks += linkCount
+            }
+        }
+
+        guard totalCategoryLinks > 0 else {
+            categoryDonutChartView.updateChartData([])
+            createCategoryLegendItems()
+            return
+        }
+
+        // 카테고리별 비율 계산
+        var categoryData: [(percentage: CGFloat, color: UIColor)] = []
+        for item in categoryCounts {
+            let percentage = CGFloat(item.count) / CGFloat(totalCategoryLinks)
+            let color = CategoryColor.color(index: item.colorIndex)
+            categoryData.append((percentage: percentage, color: color))
+        }
+
+        categoryDonutChartView.updateChartData(categoryData)
+        createCategoryLegendItems()
+    }
+
+    private func updateWeeklyChart(with links: [LinkMetadata]) {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // 최근 7일간의 날짜 생성
+        var dailyCounts: [Int] = Array(repeating: 0, count: 7)
+        var totalCount = 0
+        var weeklyLinks: [LinkMetadata] = []
+
+        for i in 0..<7 {
+            guard let date = calendar.date(byAdding: .day, value: -6 + i, to: today) else { continue }
+
+            let linksOnDate = links.filter { link in
+                calendar.isDate(link.createdAt, inSameDayAs: date)
+            }
+
+            dailyCounts[i] = linksOnDate.count
+            totalCount += linksOnDate.count
+            weeklyLinks.append(contentsOf: linksOnDate)
+        }
+
+        // 주간 총 개수 업데이트
+        weeklyChartCountLabel.text = "\(totalCount)"
+
+        // 차트 업데이트
+        weeklyChartView.updateChartData(dailyCounts)
+
+        // 주간 인사이트 업데이트
+        updateWeeklyInsight(with: weeklyLinks)
+    }
+
+    private func updateWeeklyInsight(with weeklyLinks: [LinkMetadata]) {
+        guard !weeklyLinks.isEmpty else {
+            weeklyInsightLabel.text = "이번 주에 저장한 링크가 없습니다"
+            return
+        }
+
+        // 카테고리별 링크 개수 계산
+        var categoryCounts: [String: Int] = [:]
+
+        for link in weeklyLinks {
+            if let categories = link.categories {
+                for category in categories {
+                    categoryCounts[category.name, default: 0] += 1
+                }
+            }
+        }
+
+        // 가장 많이 저장한 카테고리 찾기
+        if let topCategory = categoryCounts.max(by: { $0.value < $1.value }) {
+            weeklyInsightLabel.text = "이번 주 가장 많이 저장한 카테고리는 '\(topCategory.key)'입니다"
+        } else {
+            weeklyInsightLabel.text = ""
+        }
+    }
+}
+
+// MARK: - StatisticsViewController CollectionView Extension
+extension StatisticsViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return categoryLegendData.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CategoryLegendCell", for: indexPath) as! CategoryLegendCell
+        let data = categoryLegendData[indexPath.item]
+        let color = CategoryColor.color(index: data.colorIndex)
+        cell.configure(name: data.name, info: data.info, color: color, iconName: data.iconName)
+        return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let spacing: CGFloat = 12
+        let width = (collectionView.bounds.width - spacing) / 2
+        return CGSize(width: width, height: 60)
     }
 }
 
@@ -284,6 +491,7 @@ final class WeeklyChartView: UIView {
     }()
 
     private let dayLabels = ["일", "월", "화", "수", "목", "금", "토"]
+    private var barContainers: [UIView] = []
 
     // MARK: - Initialization
     override init(frame: CGRect) {
@@ -299,26 +507,51 @@ final class WeeklyChartView: UIView {
         addSubview(barStackView)
 
         barStackView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            make.top.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(160)
         }
 
-        // Create 7 bar items (sample data)
-        let sampleHeights: [CGFloat] = [0.6, 0.8, 0.7, 0.9, 0.5, 0.7, 0.0] // normalized heights
-
-        for (index, height) in sampleHeights.enumerated() {
-            let barContainer = createBarContainer(dayLabel: dayLabels[index], height: height)
+        // Create 7 bar items
+        for index in 0..<7 {
+            let barContainer = createBarContainer(dayLabel: dayLabels[index], count: 0)
             barStackView.addArrangedSubview(barContainer)
+            barContainers.append(barContainer)
         }
     }
 
-    private func createBarContainer(dayLabel: String, height: CGFloat) -> UIView {
+    func updateChartData(_ dailyCounts: [Int]) {
+        guard dailyCounts.count == 7 else { return }
+
+        // 최대값 찾기 (높이 정규화용)
+        let maxCount = dailyCounts.max() ?? 1
+
+        // 기존 막대 제거
+        barContainers.forEach { $0.removeFromSuperview() }
+        barContainers.removeAll()
+
+        // 새 막대 추가
+        for (index, count) in dailyCounts.enumerated() {
+            let normalizedHeight: CGFloat = maxCount > 0 ? CGFloat(count) / CGFloat(maxCount) : 0
+            let barContainer = createBarContainer(dayLabel: dayLabels[index], count: count, height: normalizedHeight)
+            barStackView.addArrangedSubview(barContainer)
+            barContainers.append(barContainer)
+        }
+    }
+
+    private func createBarContainer(dayLabel: String, count: Int, height: CGFloat = 0) -> UIView {
         let container = UIView()
 
         let barView = UIView()
-        barView.backgroundColor = .clippyBlue.withAlphaComponent(0.8)
+        barView.backgroundColor = height > 0 ? .clippyBlue.withAlphaComponent(0.8) : .systemGray5
         barView.layer.cornerRadius = 8
         barView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+
+        // 개수 라벨 추가 (막대 위에 배치)
+        let countLabel = UILabel()
+        countLabel.text = count > 0 ? "\(count)" : ""
+        countLabel.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        countLabel.textColor = .clippyBlue
+        countLabel.textAlignment = .center
 
         let label = UILabel()
         label.text = dayLabel
@@ -326,13 +559,23 @@ final class WeeklyChartView: UIView {
         label.textColor = .secondaryLabel
         label.textAlignment = .center
 
+        container.addSubview(countLabel)
         container.addSubview(barView)
         container.addSubview(label)
+
+        // 최대 높이를 130으로 제한 (160에서 줄임)
+        let maxBarHeight: CGFloat = 130
+        let barHeight = height > 0 ? max(maxBarHeight * height, 20) : 20
+
+        countLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(barView.snp.top).offset(-4)
+        }
 
         barView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(4)
             make.bottom.equalTo(label.snp.top).offset(-8)
-            make.height.equalTo(160 * height)
+            make.height.equalTo(barHeight)
         }
 
         label.snp.makeConstraints { make in
@@ -350,7 +593,7 @@ final class CategoryDonutChartView: UIView {
     // MARK: - Properties
     private let centerLabel = {
         let label = UILabel()
-        label.text = "9"
+        label.text = "0"
         label.font = UIFont.systemFont(ofSize: 48, weight: .bold)
         label.textColor = .label
         label.textAlignment = .center
@@ -365,6 +608,8 @@ final class CategoryDonutChartView: UIView {
         label.textAlignment = .center
         return label
     }()
+
+    private var chartData: [(percentage: CGFloat, color: UIColor)] = []
 
     // MARK: - Initialization
     override init(frame: CGRect) {
@@ -393,6 +638,15 @@ final class CategoryDonutChartView: UIView {
         }
     }
 
+    func updateTotalCount(_ count: Int) {
+        centerLabel.text = "\(count)"
+    }
+
+    func updateChartData(_ data: [(percentage: CGFloat, color: UIColor)]) {
+        chartData = data
+        setNeedsDisplay()
+    }
+
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         drawDonutChart(in: rect)
@@ -400,41 +654,59 @@ final class CategoryDonutChartView: UIView {
 
     private func drawDonutChart(in rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
+        guard !chartData.isEmpty else { return }
 
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let radius: CGFloat = min(rect.width, rect.height) / 2 - 20
         let lineWidth: CGFloat = 30
-
-        // Sample data: percentages for each category
-        let data: [(percentage: CGFloat, color: UIColor)] = [
-            (0.22, .systemBlue),    // 일반 22%
-            (0.11, .systemRed),     // iOS 11%
-            (0.33, .systemPurple),  // 개발 33%
-            (0.22, .systemGreen),   // 디자인 22%
-            (0.11, .systemOrange)   // 영상 11%
-        ]
+        let gapAngle: CGFloat = 0.05 // 각 섹션 사이 간격 (라디안) - 0.02에서 0.05로 증가
 
         var startAngle: CGFloat = -.pi / 2 // Start from top
 
-        for (percentage, color) in data {
-            let endAngle = startAngle + (percentage * 2 * .pi)
+        for (percentage, color) in chartData {
+            // 간격을 고려하여 실제 그릴 각도 계산
+            let actualPercentage = percentage * 2 * .pi
+            // 시작과 끝에 간격의 절반씩 적용
+            let drawStartAngle = startAngle + (gapAngle / 2)
+            let drawEndAngle = startAngle + actualPercentage - (gapAngle / 2)
 
             let path = UIBezierPath(
                 arcCenter: center,
                 radius: radius,
-                startAngle: startAngle,
-                endAngle: endAngle,
+                startAngle: drawStartAngle,
+                endAngle: drawEndAngle,
                 clockwise: true
             )
 
             context.setStrokeColor(color.cgColor)
             context.setLineWidth(lineWidth)
-            context.setLineCap(.round)
+            context.setLineCap(.butt)
             context.addPath(path.cgPath)
             context.strokePath()
 
-            startAngle = endAngle
+            startAngle = startAngle + actualPercentage
         }
+    }
+}
+
+// MARK: - Category Legend Cell
+final class CategoryLegendCell: UICollectionViewCell {
+    private let itemView = CategoryLegendItemView()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        contentView.addSubview(itemView)
+        itemView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(name: String, info: String, color: UIColor, iconName: String) {
+        itemView.configure(name: name, info: info, color: color, iconName: iconName)
     }
 }
 
@@ -459,6 +731,7 @@ final class CategoryLegendItemView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         label.textColor = .label
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
 
@@ -466,6 +739,7 @@ final class CategoryLegendItemView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         label.textColor = .secondaryLabel
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
 
@@ -497,11 +771,13 @@ final class CategoryLegendItemView: UIView {
 
         nameLabel.snp.makeConstraints { make in
             make.leading.equalTo(iconContainerView.snp.trailing).offset(16)
+            make.trailing.lessThanOrEqualToSuperview().offset(-4)
             make.top.equalToSuperview().offset(6)
         }
 
         infoLabel.snp.makeConstraints { make in
             make.leading.equalTo(nameLabel)
+            make.trailing.lessThanOrEqualToSuperview().offset(-4)
             make.top.equalTo(nameLabel.snp.bottom).offset(2)
             make.bottom.equalToSuperview().offset(-6)
         }
@@ -528,7 +804,8 @@ final class CalendarView: UIView {
     private let calendar = Calendar.current
     private var currentMonth = Date()
     private var selectedDate: Date?
-    private let eventDates: Set<Date> = [] // TODO: 실제 데이터로 채우기
+    private var createdDates: Set<Date> = [] // 링크 저장 날짜
+    private var dueDates: Set<Date> = [] // 마감일 날짜
 
     // MARK: - UI Components
     private let headerView = UIView()
@@ -575,6 +852,14 @@ final class CalendarView: UIView {
         return collectionView
     }()
 
+    private let legendStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 16
+        stackView.alignment = .leading
+        return stackView
+    }()
+
     private var days: [Date?] = []
 
     // MARK: - Initialization
@@ -598,6 +883,7 @@ final class CalendarView: UIView {
         headerView.addSubview(nextButton)
         addSubview(weekdayStackView)
         addSubview(datesCollectionView)
+        addSubview(legendStackView)
 
         headerView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -631,10 +917,55 @@ final class CalendarView: UIView {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
+        legendStackView.snp.makeConstraints { make in
+            make.trailing.equalTo(datesCollectionView.snp.trailing)
+            make.bottom.equalTo(datesCollectionView.snp.bottom).offset(-28)
+        }
+
         datesCollectionView.delegate = self
         datesCollectionView.dataSource = self
 
         setupWeekdayLabels()
+        setupLegend()
+    }
+
+    private func setupLegend() {
+        // 저장 날짜 범례
+        let createdLegend = createLegendItem(color: .clippyBlue, text: "저장 날짜")
+        legendStackView.addArrangedSubview(createdLegend)
+
+        // 마감일 범례
+        let dueLegend = createLegendItem(color: .systemRed, text: "마감일")
+        legendStackView.addArrangedSubview(dueLegend)
+    }
+
+    private func createLegendItem(color: UIColor, text: String) -> UIView {
+        let container = UIView()
+
+        let dot = UIView()
+        dot.backgroundColor = color
+        dot.layer.cornerRadius = 3
+
+        let label = UILabel()
+        label.text = text
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .secondaryLabel
+
+        container.addSubview(dot)
+        container.addSubview(label)
+
+        dot.snp.makeConstraints { make in
+            make.leading.centerY.equalToSuperview()
+            make.width.height.equalTo(6)
+        }
+
+        label.snp.makeConstraints { make in
+            make.leading.equalTo(dot.snp.trailing).offset(6)
+            make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualToSuperview()
+        }
+
+        return container
     }
 
     private func setupWeekdayLabels() {
@@ -666,6 +997,28 @@ final class CalendarView: UIView {
             currentMonth = newMonth
             updateCalendar()
         }
+    }
+
+    func updateEvents(with links: [LinkMetadata]) {
+        let calendar = Calendar.current
+        var newCreatedDates = Set<Date>()
+        var newDueDates = Set<Date>()
+
+        for link in links {
+            // 저장 날짜 추가 (시간 제거)
+            let createdDay = calendar.startOfDay(for: link.createdAt)
+            newCreatedDates.insert(createdDay)
+
+            // 마감일 추가 (있으면)
+            if let dueDate = link.dueDate {
+                let dueDay = calendar.startOfDay(for: dueDate)
+                newDueDates.insert(dueDay)
+            }
+        }
+
+        createdDates = newCreatedDates
+        dueDates = newDueDates
+        datesCollectionView.reloadData()
     }
 
     private func updateCalendar() {
@@ -726,9 +1079,25 @@ extension CalendarView: UICollectionViewDelegate, UICollectionViewDataSource, UI
             let isToday = calendar.isDateInToday(day)
             let isSelected = selectedDate != nil && calendar.isDate(day, inSameDayAs: selectedDate!)
 
-            cell.configure(day: dayNumber, isToday: isToday, isSelected: isSelected, hasEvent: false)
+            // 이벤트 타입 확인
+            let hasCreatedEvent = createdDates.contains(day)
+            let hasDueEvent = dueDates.contains(day)
+
+            cell.configure(
+                day: dayNumber,
+                isToday: isToday,
+                isSelected: isSelected,
+                hasCreatedEvent: hasCreatedEvent,
+                hasDueEvent: hasDueEvent
+            )
         } else {
-            cell.configure(day: nil, isToday: false, isSelected: false, hasEvent: false)
+            cell.configure(
+                day: nil,
+                isToday: false,
+                isSelected: false,
+                hasCreatedEvent: false,
+                hasDueEvent: false
+            )
         }
 
         return cell
@@ -736,7 +1105,8 @@ extension CalendarView: UICollectionViewDelegate, UICollectionViewDataSource, UI
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (collectionView.bounds.width - 6 * 8) / 7
-        return CGSize(width: width, height: width)
+        let height = width + 2 // 이벤트 점을 위한 추가 공간 더 줄임 (4 -> 2)
+        return CGSize(width: width, height: height)
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -749,6 +1119,8 @@ extension CalendarView: UICollectionViewDelegate, UICollectionViewDataSource, UI
 // MARK: - Calendar Date Cell
 final class CalendarDateCell: UICollectionViewCell {
 
+    private let backgroundCircle = UIView()
+
     private let dayLabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -756,11 +1128,26 @@ final class CalendarDateCell: UICollectionViewCell {
         return label
     }()
 
-    private let eventDotView = {
+    private let eventDotsStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.distribution = .fillEqually
+        stackView.isHidden = true
+        return stackView
+    }()
+
+    private let createdEventDot = {
         let view = UIView()
         view.backgroundColor = .clippyBlue
         view.layer.cornerRadius = 3
-        view.isHidden = true
+        return view
+    }()
+
+    private let dueEventDot = {
+        let view = UIView()
+        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 3
         return view
     }()
 
@@ -774,44 +1161,87 @@ final class CalendarDateCell: UICollectionViewCell {
     }
 
     private func setupUI() {
+        contentView.addSubview(backgroundCircle)
         contentView.addSubview(dayLabel)
-        contentView.addSubview(eventDotView)
+        contentView.addSubview(eventDotsStackView)
+
+        let circleSize: CGFloat = 32
+        backgroundCircle.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(2)
+            make.width.height.equalTo(circleSize)
+        }
 
         dayLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.center.equalTo(backgroundCircle)
         }
 
-        eventDotView.snp.makeConstraints { make in
+        eventDotsStackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.top.equalTo(dayLabel.snp.bottom).offset(2)
-            make.width.height.equalTo(6)
+            make.top.equalTo(backgroundCircle.snp.bottom)
+            make.bottom.equalToSuperview()
+            make.height.equalTo(6)
         }
-
-        contentView.layer.cornerRadius = 8
     }
 
-    func configure(day: Int?, isToday: Bool, isSelected: Bool, hasEvent: Bool) {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // 완벽한 원형으로 만들기 위해 layoutSubviews에서 cornerRadius 설정
+        backgroundCircle.layer.cornerRadius = backgroundCircle.bounds.width / 2
+    }
+
+    func configure(day: Int?, isToday: Bool, isSelected: Bool, hasCreatedEvent: Bool, hasDueEvent: Bool) {
         if let day = day {
             dayLabel.text = "\(day)"
-            dayLabel.textColor = .label
             dayLabel.isHidden = false
+            backgroundCircle.isHidden = false
 
             if isSelected {
-                contentView.backgroundColor = .clippyBlue
-                dayLabel.textColor = .white
+                // 선택된 날짜: 배경색 있음
+                backgroundCircle.backgroundColor = .clippyBlue.withAlphaComponent(0.3)
+                dayLabel.textColor = .clippyBlue
             } else if isToday {
-                contentView.backgroundColor = .clippyBlue.withAlphaComponent(0.2)
+                // 오늘: 다른 날짜가 선택되면 배경색 없이 텍스트만 포인트 색상
+                backgroundCircle.backgroundColor = .clear
                 dayLabel.textColor = .clippyBlue
             } else {
-                contentView.backgroundColor = .clear
+                // 일반 날짜: 배경색 없음, 기본 텍스트 색상
+                backgroundCircle.backgroundColor = .clear
                 dayLabel.textColor = .label
             }
 
-            eventDotView.isHidden = !hasEvent || isSelected
+            // 이벤트 점 표시
+            eventDotsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+            if hasCreatedEvent || hasDueEvent {
+                eventDotsStackView.isHidden = false
+
+                if hasCreatedEvent {
+                    let dot = UIView()
+                    dot.backgroundColor = .clippyBlue
+                    dot.layer.cornerRadius = 3
+                    dot.snp.makeConstraints { make in
+                        make.width.height.equalTo(6)
+                    }
+                    eventDotsStackView.addArrangedSubview(dot)
+                }
+
+                if hasDueEvent {
+                    let dot = UIView()
+                    dot.backgroundColor = .systemRed
+                    dot.layer.cornerRadius = 3
+                    dot.snp.makeConstraints { make in
+                        make.width.height.equalTo(6)
+                    }
+                    eventDotsStackView.addArrangedSubview(dot)
+                }
+            } else {
+                eventDotsStackView.isHidden = true
+            }
         } else {
             dayLabel.isHidden = true
-            eventDotView.isHidden = true
-            contentView.backgroundColor = .clear
+            backgroundCircle.isHidden = true
+            eventDotsStackView.isHidden = true
         }
     }
 }
