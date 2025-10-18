@@ -388,12 +388,13 @@ final class StatisticsViewController: BaseViewController {
 
         // 링크 탭 시 링크 상세 화면으로 이동
         bottomSheet.onLinkTap = { [weak self] link in
-            bottomSheet.dismiss()
-            // 링크 상세 화면 표시 (LinkDetailViewController 사용)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                let linkDetailVC = LinkDetailViewController(link: link)
-                self?.navigationController?.pushViewController(linkDetailVC, animated: true)
-            }
+            // 바텀시트는 그대로 두고 링크 상세 화면을 바로 표시
+            let linkDetailVC = LinkDetailViewController(link: link)
+            linkDetailVC.modalPresentationStyle = .overFullScreen
+            linkDetailVC.modalTransitionStyle = .crossDissolve
+
+            // 바텀시트가 있는 뷰컨트롤러에서 present
+            self?.present(linkDetailVC, animated: true)
         }
 
         bottomSheet.show(in: view)
