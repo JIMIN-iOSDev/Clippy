@@ -27,6 +27,14 @@ final class StatisticsViewController: BaseViewController {
     private let contentView = UIView()
 
     // MARK: - Calendar Section
+    private let calendarTitleLabel = {
+        let label = UILabel()
+        label.text = "캘린더"
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.textColor = .black
+        return label
+    }()
+
     private let calendarContainerView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -38,17 +46,17 @@ final class StatisticsViewController: BaseViewController {
         return view
     }()
 
-    private let calendarTitleLabel = {
-        let label = UILabel()
-        label.text = "링크 저장 캘린더"
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        label.textColor = .label
-        return label
-    }()
-
     private let calendarView = CalendarView()
 
     // MARK: - Weekly Chart Section
+    private let weeklyChartTitleLabel = {
+        let label = UILabel()
+        label.text = "주간 활동"
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.textColor = .black
+        return label
+    }()
+
     private let weeklyChartContainerView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -60,11 +68,11 @@ final class StatisticsViewController: BaseViewController {
         return view
     }()
 
-    private let weeklyChartTitleLabel = {
+    private let weeklyChartSubtitleLabel = {
         let label = UILabel()
         label.text = "최근 7일간 저장한 링크"
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        label.textColor = .label
+        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        label.textColor = .systemGray
         return label
     }()
 
@@ -72,7 +80,7 @@ final class StatisticsViewController: BaseViewController {
         let label = UILabel()
         label.text = "6"
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        label.textColor = .clippyBlue
+        label.textColor = .black
         return label
     }()
 
@@ -80,7 +88,7 @@ final class StatisticsViewController: BaseViewController {
         let label = UILabel()
         label.text = "개"
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .secondaryLabel
+        label.textColor = .black
         return label
     }()
 
@@ -96,6 +104,14 @@ final class StatisticsViewController: BaseViewController {
     }()
 
     // MARK: - Category Distribution Section
+    private let categoryChartTitleLabel = {
+        let label = UILabel()
+        label.text = "카테고리 분포"
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.textColor = .black
+        return label
+    }()
+
     private let categoryChartContainerView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -105,14 +121,6 @@ final class StatisticsViewController: BaseViewController {
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
         return view
-    }()
-
-    private let categoryChartTitleLabel = {
-        let label = UILabel()
-        label.text = "카테고리 분포"
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        label.textColor = .label
-        return label
     }()
 
     private let categoryDonutChartView = CategoryDonutChartView()
@@ -165,21 +173,22 @@ final class StatisticsViewController: BaseViewController {
         scrollView.addSubview(contentView)
 
         // Calendar Section
+        contentView.addSubview(calendarTitleLabel)
         contentView.addSubview(calendarContainerView)
-        calendarContainerView.addSubview(calendarTitleLabel)
         calendarContainerView.addSubview(calendarView)
 
         // Weekly Chart Section
+        contentView.addSubview(weeklyChartTitleLabel)
         contentView.addSubview(weeklyChartContainerView)
-        weeklyChartContainerView.addSubview(weeklyChartTitleLabel)
+        weeklyChartContainerView.addSubview(weeklyChartSubtitleLabel)
         weeklyChartContainerView.addSubview(weeklyChartCountLabel)
         weeklyChartContainerView.addSubview(weeklyChartCountUnitLabel)
         weeklyChartContainerView.addSubview(weeklyChartView)
         weeklyChartContainerView.addSubview(weeklyInsightLabel)
 
         // Category Chart Section
+        contentView.addSubview(categoryChartTitleLabel)
         contentView.addSubview(categoryChartContainerView)
-        categoryChartContainerView.addSubview(categoryChartTitleLabel)
         categoryChartContainerView.addSubview(categoryDonutChartView)
         categoryChartContainerView.addSubview(categoryLegendCollectionView)
     }
@@ -194,47 +203,51 @@ final class StatisticsViewController: BaseViewController {
             make.width.equalToSuperview()
         }
 
-        // Calendar Container
-        calendarContainerView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
-        }
-
+        // Calendar Section
         calendarTitleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.leading.equalToSuperview().offset(20)
         }
 
+        calendarContainerView.snp.makeConstraints { make in
+            make.top.equalTo(calendarTitleLabel.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+
         calendarView.snp.makeConstraints { make in
-            make.top.equalTo(calendarTitleLabel.snp.bottom).offset(16)
+            make.top.bottom.equalToSuperview().inset(20)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(360)
-            make.bottom.equalToSuperview().offset(-20)
         }
 
-        // Weekly Chart Container
+        // Weekly Chart Section
+        weeklyChartTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(calendarContainerView.snp.bottom).offset(32)
+            make.leading.equalToSuperview().offset(20)
+        }
+
         weeklyChartContainerView.snp.makeConstraints { make in
-            make.top.equalTo(calendarContainerView.snp.bottom).offset(20)
+            make.top.equalTo(weeklyChartTitleLabel.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
         }
 
-        weeklyChartTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
+        weeklyChartSubtitleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(24)
             make.leading.equalToSuperview().offset(20)
         }
 
         weeklyChartCountLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
+            make.centerY.equalTo(weeklyChartSubtitleLabel)
             make.trailing.equalTo(weeklyChartCountUnitLabel.snp.leading).offset(-4)
         }
 
         weeklyChartCountUnitLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(weeklyChartCountLabel)
+            make.centerY.equalTo(weeklyChartSubtitleLabel)
             make.trailing.equalToSuperview().offset(-20)
         }
 
         weeklyChartView.snp.makeConstraints { make in
-            make.top.equalTo(weeklyChartTitleLabel.snp.bottom).offset(24)
+            make.top.equalTo(weeklyChartSubtitleLabel.snp.bottom).offset(24)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(160)
         }
@@ -245,20 +258,20 @@ final class StatisticsViewController: BaseViewController {
             make.bottom.equalToSuperview().offset(-20)
         }
 
-        // Category Chart Container
+        // Category Chart Section
+        categoryChartTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(weeklyChartContainerView.snp.bottom).offset(32)
+            make.leading.equalToSuperview().offset(20)
+        }
+
         categoryChartContainerView.snp.makeConstraints { make in
-            make.top.equalTo(weeklyChartContainerView.snp.bottom).offset(20)
+            make.top.equalTo(categoryChartTitleLabel.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().offset(-20)
         }
 
-        categoryChartTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
-            make.leading.equalToSuperview().offset(20)
-        }
-
         categoryDonutChartView.snp.makeConstraints { make in
-            make.top.equalTo(categoryChartTitleLabel.snp.bottom).offset(24)
+            make.top.equalToSuperview().offset(20)
             make.centerX.equalToSuperview()
             make.width.height.equalTo(200)
         }
@@ -1187,12 +1200,16 @@ final class CalendarDateCell: UICollectionViewCell {
         contentView.addSubview(dayLabel)
         contentView.addSubview(eventDotsStackView)
 
-        let circleSize: CGFloat = 32
+        let circleSize: CGFloat = 36
         backgroundCircle.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalToSuperview().offset(2)
             make.width.height.equalTo(circleSize)
         }
+
+        // 완전한 원형 보장
+        backgroundCircle.layer.cornerRadius = circleSize / 2
+        backgroundCircle.clipsToBounds = true
 
         dayLabel.snp.makeConstraints { make in
             make.center.equalTo(backgroundCircle)
@@ -1200,16 +1217,10 @@ final class CalendarDateCell: UICollectionViewCell {
 
         eventDotsStackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.top.equalTo(backgroundCircle.snp.bottom)
+            make.top.equalTo(backgroundCircle.snp.bottom).offset(2)
             make.bottom.equalToSuperview()
             make.height.equalTo(6)
         }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        // 완벽한 원형으로 만들기 위해 layoutSubviews에서 cornerRadius 설정
-        backgroundCircle.layer.cornerRadius = backgroundCircle.bounds.width / 2
     }
 
     func configure(day: Int?, isToday: Bool, isSelected: Bool, hasCreatedEvent: Bool, hasDueEvent: Bool) {
