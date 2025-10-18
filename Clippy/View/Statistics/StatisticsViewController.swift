@@ -217,7 +217,7 @@ final class StatisticsViewController: BaseViewController {
         calendarView.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview().inset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(360)
+            // 높이는 내부 컨텐츠에 맞춰 자동 조정됨
         }
 
         // Weekly Chart Section
@@ -1524,14 +1524,32 @@ final class CalendarView: UIView {
             make.height.equalTo(30)
         }
 
+        // 컬렉션뷰 높이를 6행 기준으로 계산
+        let spacing: CGFloat = 8
+        let cellWidth = (UIScreen.main.bounds.width - 40 - 6 * spacing) / 7 // 화면 너비 - 좌우 여백(40) - spacing
+        let cellHeight = cellWidth
+
+        // 범례를 4행 bottom + 3 위치에 배치
+        let row3Bottom = (cellHeight + spacing) * 3 + cellHeight
+        let legendTop = row3Bottom + 3
+
+        // 범례 높이 계산: "저장 날짜"(18) + spacing(16) + "마감일"(18) = 52
+        let legendHeight: CGFloat = 52
+        let legendBottom = legendTop + legendHeight
+
+        // 마감일 bottom에 맞춤
+        let collectionViewHeight = legendBottom
+
         datesCollectionView.snp.makeConstraints { make in
             make.top.equalTo(weekdayStackView.snp.bottom).offset(8)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(collectionViewHeight)
+            make.bottom.equalToSuperview()
         }
 
         legendStackView.snp.makeConstraints { make in
             make.trailing.equalTo(datesCollectionView.snp.trailing)
-            make.bottom.equalTo(datesCollectionView.snp.bottom).offset(-28)
+            make.top.equalTo(datesCollectionView.snp.top).offset(legendTop)
         }
 
         datesCollectionView.delegate = self
