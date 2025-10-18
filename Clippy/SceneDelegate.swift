@@ -28,12 +28,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         searchVC.tabBarItem = UITabBarItem(title: "검색", image: UIImage(systemName: "magnifyingglass"), selectedImage: UIImage(systemName: "magnifyingglass"))
         let likeVC = UINavigationController(rootViewController: LikeViewController())
         likeVC.tabBarItem = UITabBarItem(title: "즐겨찾기", image: UIImage(systemName: "star"), selectedImage: UIImage(systemName: "star.fill"))
+        let statisticsVC = UINavigationController(rootViewController: StatisticsViewController())
+        statisticsVC.tabBarItem = UITabBarItem(title: "통계", image: UIImage(systemName: "chart.bar"), selectedImage: UIImage(systemName: "chart.bar.fill"))
         // 설정 탭 비활성화 (다음 배포에서 구현 예정)
         // let settingVC = SettingViewController()
         // settingVC.tabBarItem = UITabBarItem(title: "설정", image: UIImage(systemName: "gearshape.2"), selectedImage: UIImage(systemName: "gearshape.2.fill"))
-        
-        // 탭바를 3개로 변경 (카테고리, 검색, 즐겨찾기)
-        tabBarController.viewControllers = [categoryVC, searchVC, likeVC]
+
+        // 탭바를 4개로 변경 (카테고리, 검색, 즐겨찾기, 통계)
+        tabBarController.viewControllers = [categoryVC, searchVC, likeVC, statisticsVC]
         tabBarController.tabBar.tintColor = .clippyBlue
         tabBarController.tabBar.unselectedItemTintColor = .systemGray
         
