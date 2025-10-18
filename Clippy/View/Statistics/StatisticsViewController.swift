@@ -362,6 +362,11 @@ final class StatisticsViewController: BaseViewController {
             }
             .disposed(by: disposeBag)
 
+        // 캘린더 날짜 선택 이벤트
+        calendarView.onDateSelected = { [weak self] date, links in
+            self?.showDateBottomSheet(date: date, links: links)
+        }
+
         // 카테고리 변경 감지
         NotificationCenter.default.rx
             .notification(.categoryDidUpdate)
@@ -376,6 +381,22 @@ final class StatisticsViewController: BaseViewController {
                 owner.updateCategoryDistribution()
             }
             .disposed(by: disposeBag)
+    }
+
+    private func showDateBottomSheet(date: Date, links: [LinkMetadata]) {
+        let bottomSheet = CalendarDateBottomSheet(date: date, links: links)
+
+        // 링크 탭 시 링크 상세 화면으로 이동
+        bottomSheet.onLinkTap = { [weak self] link in
+            bottomSheet.dismiss()
+            // 링크 상세 화면 표시 (LinkDetailViewController 사용)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                let linkDetailVC = LinkDetailViewController(link: link)
+                self?.navigationController?.pushViewController(linkDetailVC, animated: true)
+            }
+        }
+
+        bottomSheet.show(in: view)
     }
 
     private func updateCategoryDistribution() {
@@ -810,6 +831,566 @@ final class CategoryLegendItemView: UIView {
     }
 }
 
+// MARK: - Calendar Date Bottom Sheet
+final class CalendarDateBottomSheet: UIView {
+
+    // MARK: - Properties
+    private var selectedDate: Date
+    private var links: [LinkMetadata] = []
+    private let disposeBag = DisposeBag()
+    var onDismiss: (() -> Void)?
+    var onLinkTap: ((LinkMetadata) -> Void)?
+
+    // MARK: - UI Components
+    private let dimView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        view.alpha = 0
+        return view
+    }()
+
+    private let containerView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 20
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.clipsToBounds = true
+        return view
+    }()
+
+    private let handleBar = {
+        let view = UIView()
+        view.backgroundColor = .systemGray4
+        view.layer.cornerRadius = 2.5
+        return view
+    }()
+
+    private let dateLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.textColor = .black
+        return label
+    }()
+
+    private let countLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        label.textColor = .systemGray
+        return label
+    }()
+
+    private let tableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = true
+        tableView.register(CalendarLinkCell.self, forCellReuseIdentifier: "CalendarLinkCell")
+        return tableView
+    }()
+
+    private let emptyStateLabel = {
+        let label = UILabel()
+        label.text = "이 날짜에는 링크가 없습니다"
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .systemGray
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
+
+    // MARK: - Initialization
+    init(date: Date, links: [LinkMetadata]) {
+        self.selectedDate = date
+        self.links = links
+        super.init(frame: .zero)
+        setupUI()
+        setupActions()
+        updateContent()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Setup
+    private func setupUI() {
+        addSubview(dimView)
+        addSubview(containerView)
+
+        containerView.addSubview(handleBar)
+        containerView.addSubview(dateLabel)
+        containerView.addSubview(countLabel)
+        containerView.addSubview(tableView)
+        containerView.addSubview(emptyStateLabel)
+
+        dimView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        containerView.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalTo(500)
+        }
+
+        handleBar.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(8)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(40)
+            make.height.equalTo(5)
+        }
+
+        dateLabel.snp.makeConstraints { make in
+            make.top.equalTo(handleBar.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(20)
+        }
+
+        countLabel.snp.makeConstraints { make in
+            make.top.equalTo(dateLabel.snp.bottom).offset(4)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(countLabel.snp.bottom).offset(16)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        emptyStateLabel.snp.makeConstraints { make in
+            make.center.equalTo(tableView)
+        }
+
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+
+    private func setupActions() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimViewTapped))
+        dimView.addGestureRecognizer(tapGesture)
+
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        containerView.addGestureRecognizer(panGesture)
+    }
+
+    private func updateContent() {
+        // 날짜 포맷
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 M월 d일"
+        dateLabel.text = formatter.string(from: selectedDate)
+
+        // 저장된 링크와 마감일 개수 계산
+        let calendar = Calendar.current
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+
+        var createdCount = 0
+        var dueCount = 0
+
+        for link in links {
+            let createdDay = calendar.startOfDay(for: link.createdAt)
+            if createdDay == selectedDay {
+                createdCount += 1
+            }
+
+            if let dueDate = link.dueDate {
+                let dueDay = calendar.startOfDay(for: dueDate)
+                if dueDay == selectedDay {
+                    dueCount += 1
+                }
+            }
+        }
+
+        // 카운트 레이블 텍스트
+        var countText = ""
+        if createdCount > 0 && dueCount > 0 {
+            countText = "저장된 링크 \(createdCount)개 · 마감일 \(dueCount)개"
+        } else if createdCount > 0 {
+            countText = "저장된 링크 \(createdCount)개"
+        } else if dueCount > 0 {
+            countText = "마감일 \(dueCount)개"
+        }
+        countLabel.text = countText
+
+        // 빈 상태 처리
+        emptyStateLabel.isHidden = !links.isEmpty
+        tableView.isHidden = links.isEmpty
+
+        tableView.reloadData()
+    }
+
+    // MARK: - Actions
+    @objc private func dimViewTapped() {
+        dismiss()
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: self)
+        let velocity = gesture.velocity(in: self)
+
+        switch gesture.state {
+        case .changed:
+            if translation.y > 0 {
+                containerView.transform = CGAffineTransform(translationX: 0, y: translation.y)
+            }
+        case .ended:
+            if translation.y > 100 || velocity.y > 500 {
+                dismiss()
+            } else {
+                UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+                    self.containerView.transform = .identity
+                }
+            }
+        default:
+            break
+        }
+    }
+
+    // MARK: - Public Methods
+    func show(in view: UIView) {
+        view.addSubview(self)
+        self.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        // 초기 위치 설정
+        containerView.transform = CGAffineTransform(translationX: 0, y: 500)
+
+        // 애니메이션
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+            self.dimView.alpha = 1
+            self.containerView.transform = .identity
+        }
+    }
+
+    func dismiss() {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn) {
+            self.dimView.alpha = 0
+            self.containerView.transform = CGAffineTransform(translationX: 0, y: 500)
+        } completion: { _ in
+            self.removeFromSuperview()
+            self.onDismiss?()
+        }
+    }
+}
+
+// MARK: - UITableViewDelegate, UITableViewDataSource
+extension CalendarDateBottomSheet: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return links.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CalendarLinkCell", for: indexPath) as! CalendarLinkCell
+        let link = links[indexPath.row]
+
+        // 이 날짜가 저장 날짜인지 마감일인지 확인
+        let calendar = Calendar.current
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+        let createdDay = calendar.startOfDay(for: link.createdAt)
+
+        let isCreatedDate = createdDay == selectedDay
+        var isDueDate = false
+
+        if let dueDate = link.dueDate {
+            let dueDay = calendar.startOfDay(for: dueDate)
+            isDueDate = dueDay == selectedDay
+        }
+
+        cell.configure(with: link, isCreatedDate: isCreatedDate, isDueDate: isDueDate)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let link = links[indexPath.row]
+        onLinkTap?(link)
+    }
+
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 120
+    }
+}
+
+// MARK: - Calendar Link Cell
+final class CalendarLinkCell: UITableViewCell {
+
+    private let containerView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.systemGray5.cgColor
+        return view
+    }()
+
+    private let thumbnailImageView = {
+        let imageView = UIImageView()
+        imageView.backgroundColor = .clear
+        imageView.layer.cornerRadius = 8
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+
+    private let titleBadgeStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        return stackView
+    }()
+
+    private let createdBadge = {
+        let view = UIView()
+        view.backgroundColor = UIColor.clippyBlue
+        view.layer.cornerRadius = 8
+        view.isHidden = true
+
+        let label = UILabel()
+        label.text = "저장"
+        label.font = .systemFont(ofSize: 10, weight: .bold)
+        label.textColor = .white
+        label.tag = 100
+
+        view.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 3, left: 6, bottom: 3, right: 6))
+        }
+
+        return view
+    }()
+
+    private let dueBadge = {
+        let view = UIView()
+        view.backgroundColor = UIColor.systemRed
+        view.layer.cornerRadius = 8
+        view.isHidden = true
+
+        let label = UILabel()
+        label.text = "마감"
+        label.font = .systemFont(ofSize: 10, weight: .bold)
+        label.textColor = .white
+        label.tag = 100
+
+        view.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 3, left: 6, bottom: 3, right: 6))
+        }
+
+        return view
+    }()
+
+    private let titleLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        label.numberOfLines = 2
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return label
+    }()
+
+    private let descriptionLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 1
+        return label
+    }()
+
+    private let categoryTagsStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        return stackView
+    }()
+
+    private let dateLabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .secondaryLabel
+        return label
+    }()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        selectionStyle = .none
+        backgroundColor = .clear
+
+        contentView.addSubview(containerView)
+        containerView.addSubview(thumbnailImageView)
+        containerView.addSubview(titleBadgeStackView)
+        titleBadgeStackView.addArrangedSubview(createdBadge)
+        titleBadgeStackView.addArrangedSubview(dueBadge)
+        titleBadgeStackView.addArrangedSubview(titleLabel)
+        containerView.addSubview(descriptionLabel)
+        containerView.addSubview(categoryTagsStackView)
+        containerView.addSubview(dateLabel)
+
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 20, bottom: 6, right: 20))
+        }
+
+        thumbnailImageView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(12)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(60)
+        }
+
+        titleBadgeStackView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(12)
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
+            make.trailing.equalToSuperview().offset(-12)
+        }
+
+        descriptionLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleBadgeStackView.snp.bottom).offset(6)
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
+            make.trailing.equalToSuperview().offset(-12)
+        }
+
+        categoryTagsStackView.snp.makeConstraints { make in
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
+            make.bottom.equalToSuperview().offset(-12)
+        }
+
+        dateLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-12)
+            make.centerY.equalTo(categoryTagsStackView)
+            make.leading.greaterThanOrEqualTo(categoryTagsStackView.snp.trailing).offset(8)
+        }
+    }
+
+    func configure(with link: LinkMetadata, isCreatedDate: Bool, isDueDate: Bool) {
+        titleLabel.text = link.title
+
+        // 설명
+        if let description = link.description, !description.isEmpty {
+            descriptionLabel.text = description
+            descriptionLabel.isHidden = false
+        } else {
+            descriptionLabel.isHidden = true
+        }
+
+        // 썸네일
+        if let thumbnailImage = link.thumbnailImage {
+            thumbnailImageView.image = thumbnailImage
+            thumbnailImageView.contentMode = .scaleAspectFill
+        } else {
+            thumbnailImageView.image = UIImage(named: "AppLogo")
+            thumbnailImageView.contentMode = .scaleAspectFit
+        }
+
+        // 제목 앞 배지
+        createdBadge.isHidden = !isCreatedDate
+        dueBadge.isHidden = !isDueDate
+
+        // 배지 우선순위 설정 (크기 유지)
+        createdBadge.setContentHuggingPriority(.required, for: .horizontal)
+        createdBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        dueBadge.setContentHuggingPriority(.required, for: .horizontal)
+        dueBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        // 카테고리 태그
+        categoryTagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        if let categories = link.categories, !categories.isEmpty {
+            // 최대 2개만 표시
+            for categoryInfo in categories.prefix(2) {
+                let tagView = createCategoryTag(
+                    name: categoryInfo.name,
+                    color: CategoryColor.color(index: categoryInfo.colorIndex)
+                )
+                categoryTagsStackView.addArrangedSubview(tagView)
+            }
+
+            // 더 많은 카테고리가 있으면 "+N" 표시
+            if categories.count > 2 {
+                let moreLabel = UILabel()
+                moreLabel.text = "+\(categories.count - 2)"
+                moreLabel.font = .systemFont(ofSize: 11, weight: .medium)
+                moreLabel.textColor = .systemGray
+                categoryTagsStackView.addArrangedSubview(moreLabel)
+            }
+        }
+
+        // 마감일 표시 (LinkTableViewCell 로직 그대로)
+        if let dueDate = link.dueDate {
+            let calendar = Calendar.current
+            let now = Date()
+            let startOfToday = calendar.startOfDay(for: now)
+            let startOfDueDate = calendar.startOfDay(for: dueDate)
+
+            let daysDifference = calendar.dateComponents([.day], from: startOfToday, to: startOfDueDate).day ?? 0
+
+            let clockIcon = "clock"
+            let clockConfig = UIImage.SymbolConfiguration(pointSize: 11, weight: .medium)
+            let clockImage = UIImage(systemName: clockIcon, withConfiguration: clockConfig)
+
+            let attachment = NSTextAttachment()
+            attachment.image = clockImage
+
+            let attributedString = NSMutableAttributedString()
+
+            if daysDifference < 0 {
+                // 마감일 지남
+                attachment.image = clockImage?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " 마감"))
+                dateLabel.textColor = .secondaryLabel
+            } else if daysDifference == 0 {
+                // 오늘 마감
+                attachment.image = clockImage?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " 오늘"))
+                dateLabel.textColor = .systemRed
+            } else if daysDifference <= 3 {
+                // 3일 이내 - 빨간색으로 표시
+                attachment.image = clockImage?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                attributedString.append(NSAttributedString(string: " \(daysDifference)일 남음"))
+                dateLabel.textColor = .systemRed
+            } else {
+                // 3일 이후 - 기본 색상으로 날짜 표시
+                attachment.image = clockImage?.withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal)
+                attributedString.append(NSAttributedString(attachment: attachment))
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "M월 d일"
+                attributedString.append(NSAttributedString(string: " \(dateFormatter.string(from: dueDate))"))
+                dateLabel.textColor = .secondaryLabel
+            }
+
+            dateLabel.attributedText = attributedString
+            dateLabel.isHidden = false
+        } else {
+            dateLabel.isHidden = true
+        }
+    }
+
+    private func createCategoryTag(name: String, color: UIColor) -> UIView {
+        let containerView = UIView()
+        containerView.backgroundColor = color.withAlphaComponent(0.15)
+        containerView.layer.cornerRadius = 4
+
+        let label = UILabel()
+        label.text = name
+        label.font = .systemFont(ofSize: 11, weight: .medium)
+        label.textColor = color
+
+        containerView.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 3, left: 6, bottom: 3, right: 6))
+        }
+
+        return containerView
+    }
+}
+
 // MARK: - Calendar View
 final class CalendarView: UIView {
 
@@ -819,6 +1400,8 @@ final class CalendarView: UIView {
     private var selectedDate: Date?
     private var createdDates: Set<Date> = [] // 링크 저장 날짜
     private var dueDates: Set<Date> = [] // 마감일 날짜
+    private var allLinks: [LinkMetadata] = [] // 모든 링크 데이터
+    var onDateSelected: ((Date, [LinkMetadata]) -> Void)?
 
     // MARK: - UI Components
     private let headerView = UIView()
@@ -1035,6 +1618,7 @@ final class CalendarView: UIView {
     }
 
     func updateEvents(with links: [LinkMetadata]) {
+        allLinks = links
         let calendar = Calendar.current
         var newCreatedDates = Set<Date>()
         var newDueDates = Set<Date>()
@@ -1146,8 +1730,30 @@ extension CalendarView: UICollectionViewDelegate, UICollectionViewDataSource, UI
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let date = days[indexPath.item] else { return }
-        selectedDate = date
-        collectionView.reloadData()
+
+        // 해당 날짜에 링크가 있는지 확인
+        let calendar = Calendar.current
+        let selectedDay = calendar.startOfDay(for: date)
+
+        // 해당 날짜의 링크 필터링
+        let linksForDate = allLinks.filter { link in
+            let createdDay = calendar.startOfDay(for: link.createdAt)
+            var matchesDate = createdDay == selectedDay
+
+            if let dueDate = link.dueDate {
+                let dueDay = calendar.startOfDay(for: dueDate)
+                matchesDate = matchesDate || dueDay == selectedDay
+            }
+
+            return matchesDate
+        }
+
+        // 링크가 있으면 바텀시트 표시
+        if !linksForDate.isEmpty {
+            selectedDate = date
+            collectionView.reloadData()
+            onDateSelected?(date, linksForDate)
+        }
     }
 }
 
