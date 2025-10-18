@@ -30,10 +30,40 @@ final class LinkDetailViewController: BaseViewController {
         return view
     }()
     
+    private let dimmedBackgroundView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        return view
+    }()
+
     private let containerView = {
         let view = UIView()
         view.backgroundColor = .white
+        view.layer.cornerRadius = 20
+        view.layer.masksToBounds = true
         return view
+    }()
+
+    private let headerView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        return view
+    }()
+
+    private let closeButton = {
+        let button = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        button.setImage(UIImage(systemName: "xmark", withConfiguration: config), for: .normal)
+        button.tintColor = .black
+        return button
+    }()
+
+    private let headerTitleLabel = {
+        let label = UILabel()
+        label.text = "링크 상세"
+        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        label.textAlignment = .left
+        return label
     }()
     
     private let thumbnailImageView = {
@@ -47,7 +77,7 @@ final class LinkDetailViewController: BaseViewController {
     
     private let titleLabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.textColor = .label
         label.numberOfLines = 0
         return label
@@ -206,24 +236,27 @@ final class LinkDetailViewController: BaseViewController {
     
     // MARK: - Configuration
     private func configureUI() {
-        view.backgroundColor = .white
-        
-        // 네비게이션 설정
-        navigationItem.title = "링크 상세"
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "xmark"),
-            style: .plain,
-            target: self,
-            action: #selector(closeButtonTapped)
-        )
-        navigationItem.leftBarButtonItem?.tintColor = .black
-        
+        view.backgroundColor = .clear
+
+        // closeButton 액션 추가
+        closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+
+        // dimmedBackgroundView 탭 제스처 추가
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimmedBackgroundTapped))
+        dimmedBackgroundView.addGestureRecognizer(tapGesture)
+
         // UI 계층 구조 설정
+        view.addSubview(dimmedBackgroundView)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubview(containerView)
-        
-        [thumbnailImageView, titleLabel, descriptionLabel, urlButton, 
+
+        // headerView 구조
+        containerView.addSubview(headerView)
+        headerView.addSubview(closeButton)
+        headerView.addSubview(headerTitleLabel)
+
+        [thumbnailImageView, titleLabel, descriptionLabel, urlButton,
          categorySectionLabel, categoryTagsScrollView,
          memoSectionLabel, memoContainerView,
          deadlineSectionLabel, deadlineLabel,
@@ -235,21 +268,48 @@ final class LinkDetailViewController: BaseViewController {
         [unreadButton, favoriteButton, deleteButton].forEach { actionButtonsStackView.addArrangedSubview($0) }
         
         // 레이아웃 설정
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+        dimmedBackgroundView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
-        
+
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
         contentView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
             make.width.equalToSuperview()
+            make.height.equalToSuperview().priority(.low)
         }
-        
+
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.centerY.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.width.lessThanOrEqualTo(400)
+            make.centerX.equalToSuperview()
+            make.top.greaterThanOrEqualToSuperview().offset(40)
+            make.bottom.lessThanOrEqualToSuperview().offset(-40)
         }
-        
+
+        // headerView 레이아웃
+        headerView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(60)
+        }
+
+        headerTitleLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.centerY.equalToSuperview()
+        }
+
+        closeButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(44)
+        }
+
         thumbnailImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
+            make.top.equalTo(headerView.snp.bottom).offset(20)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(100)
         }
@@ -595,6 +655,10 @@ final class LinkDetailViewController: BaseViewController {
     }
     
     @objc private func closeButtonTapped() {
+        dismiss(animated: true)
+    }
+
+    @objc private func dimmedBackgroundTapped() {
         dismiss(animated: true)
     }
     

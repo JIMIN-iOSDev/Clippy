@@ -127,9 +127,8 @@ final class SearchViewController: BaseViewController {
             .subscribe(onNext: { [weak self] link in
                 guard let self = self else { return }
                 let detailVC = LinkDetailViewController(link: link)
-                let navController = UINavigationController(rootViewController: detailVC)
-                navController.modalPresentationStyle = .formSheet
-                self.present(navController, animated: true)
+                detailVC.modalPresentationStyle = .overFullScreen
+                self.present(detailVC, animated: true)
             })
             .disposed(by: disposeBag)
 

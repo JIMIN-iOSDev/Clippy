@@ -504,9 +504,8 @@ final class LinkListViewController: BaseViewController {
             }
             .bind(with: self) { owner, link in
                 let detailVC = LinkDetailViewController(link: link)
-                let navController = UINavigationController(rootViewController: detailVC)
-                navController.modalPresentationStyle = .formSheet
-                owner.present(navController, animated: true)
+                detailVC.modalPresentationStyle = .overFullScreen
+                owner.present(detailVC, animated: true)
             }
             .disposed(by: disposeBag)
         
