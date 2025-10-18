@@ -983,6 +983,28 @@ final class CalendarView: UIView {
     private func setupActions() {
         prevButton.addTarget(self, action: #selector(prevMonthTapped), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextMonthTapped), for: .touchUpInside)
+
+        // 스와이프 제스처 추가
+        let leftSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+        leftSwipeGesture.direction = .left
+        datesCollectionView.addGestureRecognizer(leftSwipeGesture)
+
+        let rightSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+        rightSwipeGesture.direction = .right
+        datesCollectionView.addGestureRecognizer(rightSwipeGesture)
+    }
+
+    @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
+        switch gesture.direction {
+        case .left:
+            // 왼쪽으로 스와이프 -> 다음 달
+            nextMonthTapped()
+        case .right:
+            // 오른쪽으로 스와이프 -> 이전 달
+            prevMonthTapped()
+        default:
+            break
+        }
     }
 
     @objc private func prevMonthTapped() {
