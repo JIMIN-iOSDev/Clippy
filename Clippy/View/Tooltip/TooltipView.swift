@@ -160,7 +160,7 @@ class TooltipView: UIView {
         dismissTooltip()
     }
     
-    public func show(in parentView: UIView, near targetView: UIView? = nil) {
+    func show(in parentView: UIView, near targetView: UIView? = nil) {
         parentView.addSubview(self)
         
         // 말풍선이 화면 밖으로 나가지 않도록 부모 뷰 범위 내에서 위치 조정
@@ -250,7 +250,7 @@ class TooltipView: UIView {
         }
     }
     
-    public func dismissTooltip() {
+    func dismissTooltip() {
         // 터치 차단을 유지하면서 애니메이션 (더 빠르게)
         UIView.animate(withDuration: 0.1, animations: {
             self.alpha = 0
