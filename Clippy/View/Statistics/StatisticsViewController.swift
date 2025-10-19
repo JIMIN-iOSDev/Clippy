@@ -709,7 +709,8 @@ final class CategoryDonutChartView: UIView {
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let radius: CGFloat = min(rect.width, rect.height) / 2 - 20
         let lineWidth: CGFloat = 30
-        let gapAngle: CGFloat = 0.05 // 각 섹션 사이 간격 (라디안) - 0.02에서 0.05로 증가
+        // 카테고리가 1개일 때는 간격 없이 가득 차게, 2개 이상일 때는 간격 적용
+        let gapAngle: CGFloat = chartData.count > 1 ? 0.05 : 0
 
         var startAngle: CGFloat = -.pi / 2 // Start from top
 
@@ -1456,7 +1457,7 @@ final class CalendarView: UIView {
     private let datesCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 8
-        layout.minimumInteritemSpacing = 0
+        layout.minimumInteritemSpacing = 8
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.isScrollEnabled = false
@@ -1529,9 +1530,9 @@ final class CalendarView: UIView {
         let cellWidth = (UIScreen.main.bounds.width - 40 - 6 * spacing) / 7 // 화면 너비 - 좌우 여백(40) - spacing
         let cellHeight = cellWidth
 
-        // 범례를 4행 bottom + 3 위치에 배치
-        let row3Bottom = (cellHeight + spacing) * 3 + cellHeight
-        let legendTop = row3Bottom + 3
+        // 범례를 5행 bottom + 3 위치에 배치
+        let row4Bottom = (cellHeight + spacing) * 4 + cellHeight
+        let legendTop = row4Bottom + 3
 
         // 범례 높이 계산: "저장 날짜"(18) + spacing(16) + "마감일"(18) = 52
         let legendHeight: CGFloat = 52
@@ -1689,28 +1690,32 @@ final class CalendarView: UIView {
     private func generateDaysInMonth(for date: Date) -> [Date?] {
         var days: [Date?] = []
 
-        guard let monthInterval = calendar.dateInterval(of: .month, for: date),
-              let monthFirstWeek = calendar.dateInterval(of: .weekOfMonth, for: monthInterval.start) else {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: date) else {
             return days
         }
 
+        // 달의 첫날
         let monthStart = monthInterval.start
-        let monthEnd = monthInterval.end
 
-        // Start from the first day of the first week
-        var currentDate = monthFirstWeek.start
+        // 달의 첫날이 무슨 요일인지 확인 (1 = 일요일, 2 = 월요일, ..., 7 = 토요일)
+        let weekdayOfFirst = calendar.component(.weekday, from: monthStart)
 
-        while currentDate < monthEnd {
-            if currentDate < monthStart {
-                days.append(nil)
-            } else {
-                days.append(currentDate)
+        // 요일 헤더가 ["일", "월", "화", "수", "목", "금", "토"]이므로
+        // 1일 앞에 빈 셀을 추가 (일요일이면 0개, 월요일이면 1개, ...)
+        let emptyDays = weekdayOfFirst - 1
+        for _ in 0..<emptyDays {
+            days.append(nil)
+        }
+
+        // 해당 달의 날짜 수 계산
+        let range = calendar.range(of: .day, in: .month, for: date)!
+        let numberOfDays = range.count
+
+        // 1일부터 마지막 날까지 추가
+        for day in 1...numberOfDays {
+            if let date = calendar.date(bySetting: .day, value: day, of: monthStart) {
+                days.append(date)
             }
-
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
-                break
-            }
-            currentDate = nextDate
         }
 
         return days
