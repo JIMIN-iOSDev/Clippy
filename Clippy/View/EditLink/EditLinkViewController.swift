@@ -310,7 +310,7 @@ final class EditLinkViewController: BaseViewController {
                             LinkManager.shared.deleteLink(url: editingLink.url)
                                 .subscribe()
                                 .disposed(by: self.disposeBag)
-                            
+
                             // CategoryRepository에서 따로 업데이트 (즐겨찾기/열람 상태 보존)
                             self.repository.updateLink(
                                 url: urlString,
@@ -322,8 +322,8 @@ final class EditLinkViewController: BaseViewController {
                                 preserveOpenedStatus: true,
                                 preserveOpenCount: true
                             )
-                            
-                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 상태 복원)
+
+                            // LinkManager에 추가 (메타데이터 fetch 및 캐시, 상태 복원, 생성일 유지)
                             return LinkManager.shared.addLink(
                                 url: url,
                                 title: actualTitle,
@@ -332,7 +332,8 @@ final class EditLinkViewController: BaseViewController {
                                 dueDate: dueDate,
                                 thumbnailImage: fetchedMetadata.thumbnailImage,
                                 isLiked: editingLink.isLiked,
-                                isOpened: editingLink.isOpened
+                                isOpened: editingLink.isOpened,
+                                createdAt: editingLink.createdAt
                             )
                         } else {
                             // 새 링크 추가 모드

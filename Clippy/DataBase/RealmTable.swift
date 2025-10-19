@@ -41,7 +41,7 @@ class LinkList: Object {
     
     @Persisted(originProperty: "category") var parentCategory: LinkingObjects<Category>   // 이 링크가 어떤 카테고리에 속하는지 역참조
     
-    convenience init(title: String, thumbnail: String, url: String, memo: String? = nil, likeStatus: Bool = false, deadline: Date? = nil, isOpened: Bool = false, openCount: Int = 0) {
+    convenience init(title: String, thumbnail: String, url: String, memo: String? = nil, likeStatus: Bool = false, deadline: Date? = nil, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
         self.init()
         self.title = title
         self.thumbnail = thumbnail
@@ -49,7 +49,7 @@ class LinkList: Object {
         self.memo = memo
         self.likeStatus = likeStatus
         self.deadline = deadline
-        self.date = Date()
+        self.date = date ?? Date()
         self.isOpened = isOpened
         self.openCount = openCount
     }

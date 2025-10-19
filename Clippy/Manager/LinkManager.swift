@@ -132,10 +132,10 @@ final class LinkManager {
         linksSubject.accept(allLinks)
     }
     
-    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false, isOpened: Bool = false, openCount: Int = 0) -> Observable<LinkMetadata> {
-        
+    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false, isOpened: Bool = false, openCount: Int = 0, createdAt: Date? = nil) -> Observable<LinkMetadata> {
+
         let cacheKey = url.absoluteString
-        
+
         // 메타데이터 생성
         let linkMetadata = LinkMetadata(
             url: url,
@@ -144,7 +144,7 @@ final class LinkManager {
             thumbnailImage: thumbnailImage,
             categories: categories,
             dueDate: dueDate,
-            createdAt: Date(),
+            createdAt: createdAt ?? Date(),
             isLiked: isLiked,
             isOpened: isOpened
         )

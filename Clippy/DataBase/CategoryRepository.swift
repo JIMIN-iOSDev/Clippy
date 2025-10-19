@@ -47,31 +47,31 @@ final class CategoryRepository {
         return category
     }
     
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0) {
+    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
         guard let category = readCategory(name: categoryName) else {
             print("\(categoryName) 없음")
             return
         }
-        
+
         // 이미 해당 카테고리에 같은 URL의 링크가 있는지 확인
         let existingLink = category.category.first { $0.url == url }
         if existingLink != nil {
             print("이미 존재하는 링크 \(url)")
             return
         }
-        
+
         // 다른 카테고리에 같은 URL의 링크가 있는지 확인
         let existingLinkInOtherCategory = getLinkByURL(url)
-        
+
         let link: LinkList
         if let existingLink = existingLinkInOtherCategory {
             // 기존 링크가 있으면 그 링크를 재사용
             link = existingLink
         } else {
             // 새로운 링크 생성
-            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: isOpened, openCount: openCount)
+            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: isOpened, openCount: openCount, date: date)
         }
-        
+
         do {
             try realm.write {
                 category.category.append(link)
@@ -83,28 +83,36 @@ final class CategoryRepository {
     
     func updateLink(url: String, title: String, description: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false, preserveOpenedStatus: Bool = true, preserveOpenCount: Bool = true) {
         let categories = realm.objects(Category.self)
-        
-        // 기존 링크의 즐겨찾기 상태 보존
+
+        // 기존 링크의 상태 보존 (즐겨찾기, 열람 상태, 열람 횟수, 생성일)
         var preservedLikeStatus = false
         var preservedIsOpened = false
         var preservedOpenCount = 0
-        if preserveLikeStatus {
-            for category in categories {
-                if let existingLink = category.category.first(where: { $0.url == url }) {
+        var preservedDate: Date?
+
+        // 기존 링크 찾기 (생성일은 항상 보존)
+        for category in categories {
+            if let existingLink = category.category.first(where: { $0.url == url }) {
+                preservedDate = existingLink.date
+                if preserveLikeStatus {
                     preservedLikeStatus = existingLink.likeStatus
-                    if preserveOpenedStatus { preservedIsOpened = existingLink.isOpened }
-                    if preserveOpenCount { preservedOpenCount = existingLink.openCount }
-                    break
                 }
+                if preserveOpenedStatus {
+                    preservedIsOpened = existingLink.isOpened
+                }
+                if preserveOpenCount {
+                    preservedOpenCount = existingLink.openCount
+                }
+                break
             }
         }
-        
+
         // 기존 링크 삭제
         deleteLink(url: url)
-        
-        // 새 카테고리에 링크 추가 (즐겨찾기 상태 보존)
+
+        // 새 카테고리에 링크 추가 (모든 상태 보존)
         categoryNames.forEach { categoryName in
-            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount)
+            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount, date: preservedDate)
         }
     }
     
