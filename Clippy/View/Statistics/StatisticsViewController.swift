@@ -1452,6 +1452,7 @@ final class CalendarView: UIView {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
+        stackView.spacing = 8 // 날짜 셀과 동일한 간격
         return stackView
     }()
 
