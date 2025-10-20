@@ -12,6 +12,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     private let appGroupID = "group.com.jimin.Clippy"
+    private let metadataDisposeBag = DisposeBag() // 메타데이터 업데이트용 DisposeBag
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -181,8 +182,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 extension SceneDelegate {
     private func importSharedItemsIfNeeded() {
         let defaults = UserDefaults(suiteName: appGroupID)
-        guard var items = defaults?.array(forKey: "shared_items") as? [[String: String]], !items.isEmpty else { 
-            return 
+        guard let items = defaults?.array(forKey: "shared_items") as? [[String: String]], !items.isEmpty else {
+            return
         }
 
         let repository = CategoryRepository()
@@ -191,11 +192,13 @@ extension SceneDelegate {
         dateFormatter.locale = Locale(identifier: "ko_KR")
         dateFormatter.dateFormat = "yyyy. MM. dd."
 
-        let importDisposeBag = DisposeBag()
-        let importObservables: [Observable<Void>] = items.compactMap { item in
-            guard let urlString = item["url"], !urlString.isEmpty else { return nil }
-            let title = item["title"]
-            let memo = item["memo"]
+        // 1단계: Realm에 먼저 저장 (빠른 표시)
+        for item in items {
+            guard let urlString = item["url"], !urlString.isEmpty else { continue }
+            guard let url = URL(string: urlString) else { continue }
+
+            let userTitle = item["title"]
+            let userMemo = item["memo"]
             let dueDateString = item["dueDate"]
             let dueDate: Date? = dueDateString.flatMap { dateFormatter.date(from: $0) }
 
@@ -203,66 +206,63 @@ extension SceneDelegate {
             let selectedCategoryNames = selectedCategoriesString.split(separator: "|").map { String($0) }.filter { !$0.isEmpty }
             let targetCategories = selectedCategoryNames.isEmpty ? ["일반"] : selectedCategoryNames
 
-            guard let url = URL(string: urlString) else { return nil }
+            // 일단 URL을 제목으로 사용하여 Realm에 저장
+            let tempTitle = userTitle?.isEmpty == false ? userTitle! : urlString
+            let tempDescription = userMemo?.isEmpty == false ? userMemo : nil
 
-            // 카테고리 정보 생성
-            var categoryInfos: [(name: String, colorIndex: Int)] = []
             for categoryName in targetCategories {
-                if let colorIdx = repository.readCategory(name: categoryName)?.colorIndex {
-                    categoryInfos.append((name: categoryName, colorIndex: colorIdx))
-                } else {
-                    categoryInfos.append((name: categoryName, colorIndex: 0))
-                }
+                repository.addLink(
+                    title: tempTitle,
+                    url: urlString,
+                    description: tempDescription,
+                    categoryName: categoryName,
+                    deadline: dueDate
+                )
             }
-
-            // 일단 메타데이터 없이 단순 저장
-            return Observable.just(())
-                .observe(on: MainScheduler.instance)
-                .map { _ in
-                    let actualTitle = (title?.isEmpty == false) ? title : urlString
-                    let actualDescription = (memo?.isEmpty == false) ? memo : nil
-                    
-                    // Realm에 저장
-                    for categoryName in targetCategories {
-                        repository.addLink(
-                            title: actualTitle ?? urlString, 
-                            url: urlString, 
-                            description: actualDescription, 
-                            categoryName: categoryName, 
-                            deadline: dueDate
-                        )
-                    }
-                    
-                    // LinkManager 캐시에도 저장
-                    _ = LinkManager.shared.addLink(
-                        url: url,
-                        title: actualTitle,
-                        descrpition: actualDescription,
-                        categories: categoryInfos,
-                        dueDate: dueDate,
-                        thumbnailImage: nil
-                    )
-                    
-                }
         }
 
-        if !importObservables.isEmpty {
-            Observable.zip(importObservables)
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { _ in
-                    defaults?.removeObject(forKey: "shared_items")
-                    
-                    // LinkManager 캐시 새로고침
-                    LinkManager.shared.refreshLinks()
-                    
-                    // UI 업데이트 알림
-                    NotificationCenter.default.post(name: .linkDidCreate, object: nil)
-                })
-                .disposed(by: importDisposeBag)
-        } else {
-            // 아무것도 없으면 기존대로 처리
-            defaults?.removeObject(forKey: "shared_items")
-            NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+        // UserDefaults 클리어
+        defaults?.removeObject(forKey: "shared_items")
+
+        // 2단계: LinkManager 캐시 새로고침 (Realm 데이터 로드)
+        LinkManager.shared.refreshLinks()
+
+        // 3단계: UI 업데이트 알림
+        NotificationCenter.default.post(name: .linkDidCreate, object: nil)
+
+        // 4단계: 백그라운드에서 메타데이터 업데이트
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else { return }
+
+            for item in items {
+                guard let urlString = item["url"], !urlString.isEmpty else { continue }
+                guard let url = URL(string: urlString) else { continue }
+
+                let userTitle = item["title"]
+                let userMemo = item["memo"]
+
+                // 메타데이터 가져오기
+                LinkManager.shared.fetchLinkMetadata(for: url)
+                    .observe(on: MainScheduler.instance)
+                    .subscribe(onNext: { metadata in
+                        // 사용자가 title을 입력하지 않았으면 메타데이터로 업데이트
+                        if userTitle?.isEmpty != false {
+                            let finalTitle = metadata.title
+                            let finalDescription = userMemo?.isEmpty == false ? userMemo : metadata.description
+
+                            // Realm에서 해당 URL의 모든 링크 찾아서 업데이트
+                            repository.updateLinkTitleAndDescription(
+                                url: urlString,
+                                title: finalTitle,
+                                description: finalDescription
+                            )
+
+                            // LinkManager 캐시 새로고침
+                            LinkManager.shared.refreshLinks()
+                        }
+                    })
+                    .disposed(by: self.metadataDisposeBag)
+            }
         }
     }
 

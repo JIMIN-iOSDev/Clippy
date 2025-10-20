@@ -230,14 +230,36 @@ final class CategoryRepository {
     /// - Returns: 해당 URL의 LinkList 객체
     func getLinkByURL(_ url: String) -> LinkList? {
         let categories = realm.objects(Category.self)
-        
+
         for category in categories {
             if let link = category.category.first(where: { $0.url == url }) {
                 return link
             }
         }
-        
+
         return nil
+    }
+
+    /// 링크의 제목과 설명만 업데이트 (다른 속성은 유지)
+    /// - Parameters:
+    ///   - url: 업데이트할 링크의 URL
+    ///   - title: 새로운 제목
+    ///   - description: 새로운 설명
+    func updateLinkTitleAndDescription(url: String, title: String, description: String?) {
+        guard let link = getLinkByURL(url) else {
+            print("링크 없음: \(url)")
+            return
+        }
+
+        do {
+            try realm.write {
+                link.title = title
+                link.memo = description
+            }
+            print("링크 제목/설명 업데이트 성공: \(url)")
+        } catch {
+            print("링크 업데이트 실패: \(error)")
+        }
     }
     
     /// 카테고리 삭제 (해당 카테고리의 링크들을 일반 카테고리로 이동)
