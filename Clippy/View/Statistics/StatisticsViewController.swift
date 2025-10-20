@@ -440,11 +440,13 @@ final class StatisticsViewController: BaseViewController {
 
         // 최근 7일간의 날짜 생성
         var dailyCounts: [Int] = Array(repeating: 0, count: 7)
+        var dates: [Date] = []
         var totalCount = 0
         var weeklyLinks: [LinkMetadata] = []
 
         for i in 0..<7 {
             guard let date = calendar.date(byAdding: .day, value: -6 + i, to: today) else { continue }
+            dates.append(date)
 
             let linksOnDate = links.filter { link in
                 calendar.isDate(link.createdAt, inSameDayAs: date)
@@ -458,8 +460,8 @@ final class StatisticsViewController: BaseViewController {
         // 주간 총 개수 업데이트
         weeklyChartCountLabel.text = "\(totalCount)"
 
-        // 차트 업데이트
-        weeklyChartView.updateChartData(dailyCounts)
+        // 차트 업데이트 (날짜 배열도 함께 전달)
+        weeklyChartView.updateChartData(dailyCounts, dates: dates)
 
         // 주간 인사이트 업데이트
         updateWeeklyInsight(with: weeklyLinks)
@@ -540,7 +542,6 @@ final class WeeklyChartView: UIView {
         return stackView
     }()
 
-    private let dayLabels = ["일", "월", "화", "수", "목", "금", "토"]
     private var barContainers: [UIView] = []
 
     // MARK: - Initialization
@@ -560,17 +561,10 @@ final class WeeklyChartView: UIView {
             make.top.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(160)
         }
-
-        // Create 7 bar items
-        for index in 0..<7 {
-            let barContainer = createBarContainer(dayLabel: dayLabels[index], count: 0)
-            barStackView.addArrangedSubview(barContainer)
-            barContainers.append(barContainer)
-        }
     }
 
-    func updateChartData(_ dailyCounts: [Int]) {
-        guard dailyCounts.count == 7 else { return }
+    func updateChartData(_ dailyCounts: [Int], dates: [Date]) {
+        guard dailyCounts.count == 7, dates.count == 7 else { return }
 
         // 최대값 찾기 (높이 정규화용)
         let maxCount = dailyCounts.max() ?? 1
@@ -579,10 +573,17 @@ final class WeeklyChartView: UIView {
         barContainers.forEach { $0.removeFromSuperview() }
         barContainers.removeAll()
 
+        let calendar = Calendar.current
+        let weekdaySymbols = ["일", "월", "화", "수", "목", "금", "토"]
+
         // 새 막대 추가
         for (index, count) in dailyCounts.enumerated() {
+            // 실제 날짜의 요일 계산
+            let weekday = calendar.component(.weekday, from: dates[index]) // 1=일요일, 2=월요일, ..., 7=토요일
+            let dayLabel = weekdaySymbols[weekday - 1]
+
             let normalizedHeight: CGFloat = maxCount > 0 ? CGFloat(count) / CGFloat(maxCount) : 0
-            let barContainer = createBarContainer(dayLabel: dayLabels[index], count: count, height: normalizedHeight)
+            let barContainer = createBarContainer(dayLabel: dayLabel, count: count, height: normalizedHeight)
             barStackView.addArrangedSubview(barContainer)
             barContainers.append(barContainer)
         }
