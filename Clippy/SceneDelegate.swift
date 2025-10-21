@@ -208,13 +208,14 @@ extension SceneDelegate {
 
             // 일단 URL을 제목으로 사용하여 Realm에 저장
             let tempTitle = userTitle?.isEmpty == false ? userTitle! : urlString
-            let tempDescription = userMemo?.isEmpty == false ? userMemo : nil
+            let tempUserMemo = userMemo?.isEmpty == false ? userMemo : nil
 
             for categoryName in targetCategories {
                 repository.addLink(
                     title: tempTitle,
                     url: urlString,
-                    description: tempDescription,
+                    userMemo: tempUserMemo,
+                    metadataDescription: nil, // 나중에 메타데이터로 업데이트
                     categoryName: categoryName,
                     deadline: dueDate
                 )
@@ -248,13 +249,15 @@ extension SceneDelegate {
                         // 사용자가 title을 입력하지 않았으면 메타데이터로 업데이트
                         if userTitle?.isEmpty != false {
                             let finalTitle = metadata.title
-                            let finalDescription = userMemo?.isEmpty == false ? userMemo : metadata.description
+                            let finalUserMemo = userMemo?.isEmpty == false ? userMemo : nil
+                            let finalMetadataDescription = metadata.metadataDescription
 
                             // Realm에서 해당 URL의 모든 링크 찾아서 업데이트
                             repository.updateLinkTitleAndDescription(
                                 url: urlString,
                                 title: finalTitle,
-                                description: finalDescription
+                                userMemo: finalUserMemo,
+                                metadataDescription: finalMetadataDescription
                             )
 
                             // LinkManager 캐시 새로고침

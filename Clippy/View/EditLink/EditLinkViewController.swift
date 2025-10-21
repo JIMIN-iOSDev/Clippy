@@ -284,28 +284,32 @@ final class EditLinkViewController: BaseViewController {
                 }
                 
                 let finalTitle = title.isEmpty ? nil : title
-                let finalMemo = memo.isEmpty ? nil : memo
-                
+                let finalUserMemo = memo.isEmpty ? nil : memo
+
                 // 카테고리 선택 안했으면 "일반"에 저장
                 let targetCategories = selectedCategories.isEmpty ? ["일반"] : selectedCategories
-                
+
                 // 카테고리 정보 가져오기 (색상 포함)
                 let categoryInfos: [(name: String, colorIndex: Int)] = targetCategories.compactMap { name in
                     guard let category = self.repository.readCategory(name: name) else { return nil }
                     return (name: category.name, colorIndex: category.colorIndex)
                 }
-                
+
                 // 먼저 메타데이터 가져오기
                 return LinkManager.shared.fetchLinkMetadata(for: url)
                     .flatMap { [weak self] fetchedMetadata -> Observable<LinkMetadata> in
                         guard let self = self else { return Observable.empty() }
-                        
-                        // 사용자가 입력하지 않았으면 메타데이터 사용
+
+                        // 제목: 사용자 입력 우선, 없으면 메타데이터 사용
                         let actualTitle = finalTitle ?? fetchedMetadata.title
-                        let actualDescription = finalMemo ?? fetchedMetadata.description
-                        
+                        // 사용자 메모: 사용자가 입력한 값 (있으면 저장, 없으면 nil)
+                        let actualUserMemo = finalUserMemo
+
                         // 수정 모드인 경우
                         if let editingLink = self.editingLink {
+                            // 메타데이터 설명: 수정 모드에서는 기존 값 보존 (URL이 변경되지 않으므로)
+                            let actualMetadataDescription = editingLink.metadataDescription
+
                             // 기존 링크 삭제
                             LinkManager.shared.deleteLink(url: editingLink.url)
                                 .subscribe()
@@ -315,7 +319,8 @@ final class EditLinkViewController: BaseViewController {
                             self.repository.updateLink(
                                 url: urlString,
                                 title: actualTitle,
-                                description: actualDescription,
+                                userMemo: actualUserMemo,
+                                metadataDescription: actualMetadataDescription, // 기존 값 보존
                                 categoryNames: targetCategories,
                                 deadline: dueDate,
                                 preserveLikeStatus: true,
@@ -327,7 +332,8 @@ final class EditLinkViewController: BaseViewController {
                             return LinkManager.shared.addLink(
                                 url: url,
                                 title: actualTitle,
-                                descrpition: actualDescription,
+                                userMemo: actualUserMemo,
+                                metadataDescription: actualMetadataDescription, // 기존 값 보존
                                 categories: categoryInfos,
                                 dueDate: dueDate,
                                 thumbnailImage: fetchedMetadata.thumbnailImage,
@@ -336,13 +342,15 @@ final class EditLinkViewController: BaseViewController {
                                 createdAt: editingLink.createdAt
                             )
                         } else {
-                            // 새 링크 추가 모드
+                            // 새 링크 추가 모드: 메타데이터에서 가져온 값 사용
+                            let actualMetadataDescription = fetchedMetadata.metadataDescription
+
                             targetCategories.forEach { categoryName in
-                                self.repository.addLink(title: actualTitle, url: urlString, description: actualDescription, categoryName: categoryName, deadline: dueDate)
+                                self.repository.addLink(title: actualTitle, url: urlString, userMemo: actualUserMemo, metadataDescription: actualMetadataDescription, categoryName: categoryName, deadline: dueDate)
                             }
-                            
+
                             // LinkManager에 추가 (메타데이터 fetch 및 캐시)
-                            return LinkManager.shared.addLink(url: url, title: actualTitle, descrpition: actualDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
+                            return LinkManager.shared.addLink(url: url, title: actualTitle, userMemo: actualUserMemo, metadataDescription: actualMetadataDescription, categories: categoryInfos, dueDate: dueDate, thumbnailImage: fetchedMetadata.thumbnailImage)
                         }
                     }
             }
@@ -596,11 +604,12 @@ final class EditLinkViewController: BaseViewController {
         if let link = editingLink {
             navigationItem.title = "링크 수정"
             saveButton.setTitle("수정하기", for: .normal)
-            
+
             // 기존 데이터 채우기
             urlTextField.text = link.url.absoluteString
             titleTextField.text = link.title
-            memoTextView.text = link.description
+            // 사용자 메모만 표시 (메타데이터 설명은 수정 불가)
+            memoTextView.text = link.userMemo
             
             // 마감일 설정
             if let dueDate = link.dueDate {

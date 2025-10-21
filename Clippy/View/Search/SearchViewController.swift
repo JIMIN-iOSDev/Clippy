@@ -71,11 +71,12 @@ final class SearchViewController: BaseViewController {
                 return Array(links.sorted { $0.createdAt > $1.createdAt }.prefix(20))
             }
             
-            // 제목, URL, 설명에서 검색 (대소문자 구분 없음)
+            // 제목, URL, 사용자 메모, 메타데이터 설명에서 검색 (대소문자 구분 없음)
             return links.filter { link in
                 link.title.range(of: query, options: .caseInsensitive) != nil ||
                 link.url.absoluteString.range(of: query, options: .caseInsensitive) != nil ||
-                (link.description?.range(of: query, options: .caseInsensitive) != nil)
+                (link.userMemo?.range(of: query, options: .caseInsensitive) != nil) ||
+                (link.metadataDescription?.range(of: query, options: .caseInsensitive) != nil)
             }
             .sorted { $0.createdAt > $1.createdAt }
             .prefix(20)

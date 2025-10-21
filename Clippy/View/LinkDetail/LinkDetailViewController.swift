@@ -455,10 +455,10 @@ final class LinkDetailViewController: BaseViewController {
     private func configureWithLink() {
         // 제목 설정
         titleLabel.text = link.title
-        
-        // 설명 설정 - 메타데이터 설명 표시
-        if let description = link.description, !description.isEmpty {
-            descriptionLabel.text = description
+
+        // 설명 설정 - 메타데이터 설명만 표시
+        if let metadataDescription = link.metadataDescription, !metadataDescription.isEmpty {
+            descriptionLabel.text = metadataDescription
             descriptionLabel.textColor = .secondaryLabel
         } else {
             descriptionLabel.text = "설명이 없습니다"
@@ -533,19 +533,13 @@ final class LinkDetailViewController: BaseViewController {
     
     private func configureMemo() {
         // 메모 표시 로직: 사용자 입력 메모만 표시, 없으면 placeholder
-        var memoText = ""
-        
-        // 사용자가 입력한 메모가 있는지 확인 (Realm에서 가져와야 함)
-        if let realmLink = repository.getLinkByURL(link.url.absoluteString),
-           let userMemo = realmLink.memo, !userMemo.isEmpty {
-            memoText = userMemo
+        if let userMemo = link.userMemo, !userMemo.isEmpty {
+            memoLabel.text = userMemo
+            memoLabel.textColor = .label
         } else {
-            // 사용자 메모가 없으면 placeholder 표시
-            memoText = "메모가 없습니다"
+            memoLabel.text = "메모가 없습니다"
+            memoLabel.textColor = .secondaryLabel
         }
-        
-        memoLabel.text = memoText
-        memoLabel.textColor = memoText == "메모가 없습니다" ? .secondaryLabel : .label
     }
     
     private func configureDeadline() {

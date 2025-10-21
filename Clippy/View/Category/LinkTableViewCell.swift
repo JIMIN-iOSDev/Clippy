@@ -256,9 +256,13 @@ final class LinkTableViewCell: UITableViewCell {
     func configure(with link: LinkMetadata) {
         titleLabel.text = link.title
         urlLabel.text = link.url.absoluteString
-        
-        if let description = link.description, !description.isEmpty {
-            descriptionLabel.text = description
+
+        // 설명 표시 우선순위: userMemo > metadataDescription
+        if let userMemo = link.userMemo, !userMemo.isEmpty {
+            descriptionLabel.text = userMemo
+            descriptionLabel.isHidden = false
+        } else if let metadataDescription = link.metadataDescription, !metadataDescription.isEmpty {
+            descriptionLabel.text = metadataDescription
             descriptionLabel.isHidden = false
         } else {
             descriptionLabel.isHidden = true

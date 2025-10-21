@@ -8,6 +8,7 @@
 import UIKit
 import FirebaseCore
 import FirebaseMessaging
+import RealmSwift
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,8 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Realm 마이그레이션 설정
+        configureRealmMigration()
+
         FirebaseApp.configure()
-        
+
         UNUserNotificationCenter.current().delegate = self
 
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
@@ -57,6 +61,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
+    // MARK: - Realm Migration
+    private func configureRealmMigration() {
+        let config = Realm.Configuration(
+            schemaVersion: 1, // 스키마 버전 1로 증가
+            migrationBlock: { migration, oldSchemaVersion in
+                if oldSchemaVersion < 1 {
+                    // 버전 0 → 1: memo 필드를 userMemo와 metadataDescription으로 분리
+                    migration.enumerateObjects(ofType: LinkList.className()) { oldObject, newObject in
+                        // 기존 memo 데이터를 userMemo로 이동 (사용자가 입력한 것으로 간주)
+                        if let memo = oldObject?["memo"] as? String {
+                            newObject?["userMemo"] = memo
+                        }
+                        // metadataDescription은 nil로 초기화 (새로운 링크부터 제대로 저장됨)
+                        newObject?["metadataDescription"] = nil
+                    }
+                }
+            }
+        )
+        Realm.Configuration.defaultConfiguration = config
+
+        // 마이그레이션 적용을 위해 Realm 인스턴스 생성
+        do {
+            _ = try Realm()
+            print("Realm 마이그레이션 완료")
+        } catch {
+            print("Realm 마이그레이션 실패: \(error)")
+        }
+    }
 
 }
 

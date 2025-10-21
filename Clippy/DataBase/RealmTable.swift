@@ -32,21 +32,23 @@ class LinkList: Object {
     @Persisted var title: String    // 링크 제목
     @Persisted var thumbnail: String    // 링크 이미지
     @Persisted var url: String  // 링크 URL
-    @Persisted var memo: String?    // 메모
+    @Persisted var userMemo: String?    // 사용자가 직접 입력한 메모
+    @Persisted var metadataDescription: String?    // 메타데이터에서 가져온 설명
     @Persisted var likeStatus: Bool // 즐겨찾기
     @Persisted var date: Date   // 링크 생성일
     @Persisted var deadline: Date?  // 사용자가 설정한 마감일
     @Persisted var isOpened: Bool   // 링크 열람 여부
     @Persisted var openCount: Int   // 링크별로 열린 총 횟수
-    
+
     @Persisted(originProperty: "category") var parentCategory: LinkingObjects<Category>   // 이 링크가 어떤 카테고리에 속하는지 역참조
-    
-    convenience init(title: String, thumbnail: String, url: String, memo: String? = nil, likeStatus: Bool = false, deadline: Date? = nil, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
+
+    convenience init(title: String, thumbnail: String, url: String, userMemo: String? = nil, metadataDescription: String? = nil, likeStatus: Bool = false, deadline: Date? = nil, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
         self.init()
         self.title = title
         self.thumbnail = thumbnail
         self.url = url
-        self.memo = memo
+        self.userMemo = userMemo
+        self.metadataDescription = metadataDescription
         self.likeStatus = likeStatus
         self.deadline = deadline
         self.date = date ?? Date()

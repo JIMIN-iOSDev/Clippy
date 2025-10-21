@@ -31,26 +31,28 @@ protocol CategoryRepositoryProtocol {
     /// - Parameters:
     ///   - title: 링크 제목
     ///   - url: URL 문자열
-    ///   - description: 링크 설명
+    ///   - userMemo: 사용자가 직접 입력한 메모
+    ///   - metadataDescription: 메타데이터에서 가져온 설명
     ///   - categoryName: 카테고리명
     ///   - deadline: 마감일
     ///   - likeStatus: 즐겨찾기 상태
     ///   - isOpened: 열람 상태
     ///   - openCount: 열람 횟수
     ///   - date: 생성일
-    func addLink(title: String, url: String, description: String?, categoryName: String, deadline: Date?, likeStatus: Bool, isOpened: Bool, openCount: Int, date: Date?)
+    func addLink(title: String, url: String, userMemo: String?, metadataDescription: String?, categoryName: String, deadline: Date?, likeStatus: Bool, isOpened: Bool, openCount: Int, date: Date?)
 
     /// 링크 수정
     /// - Parameters:
     ///   - url: URL 문자열
     ///   - title: 새로운 제목
-    ///   - description: 새로운 설명
+    ///   - userMemo: 새로운 사용자 메모
+    ///   - metadataDescription: 새로운 메타데이터 설명
     ///   - categoryNames: 카테고리명 배열
     ///   - deadline: 마감일
     ///   - preserveLikeStatus: 즐겨찾기 상태 보존 여부
     ///   - preserveOpenedStatus: 열람 상태 보존 여부
     ///   - preserveOpenCount: 열람 횟수 보존 여부
-    func updateLink(url: String, title: String, description: String?, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool, preserveOpenedStatus: Bool, preserveOpenCount: Bool)
+    func updateLink(url: String, title: String, userMemo: String?, metadataDescription: String?, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool, preserveOpenedStatus: Bool, preserveOpenCount: Bool)
 
     /// 링크 삭제
     /// - Parameter url: URL 문자열
@@ -91,12 +93,13 @@ protocol CategoryRepositoryProtocol {
     /// - Returns: LinkList 객체
     func getLinkByURL(_ url: String) -> LinkList?
 
-    /// 링크의 제목과 설명만 업데이트
+    /// 링크의 제목, 사용자 메모, 메타데이터 설명을 업데이트
     /// - Parameters:
     ///   - url: URL 문자열
     ///   - title: 새로운 제목
-    ///   - description: 새로운 설명
-    func updateLinkTitleAndDescription(url: String, title: String, description: String?)
+    ///   - userMemo: 새로운 사용자 메모
+    ///   - metadataDescription: 새로운 메타데이터 설명
+    func updateLinkTitleAndDescription(url: String, title: String, userMemo: String?, metadataDescription: String?)
 
     /// 카테고리 삭제
     /// - Parameter name: 카테고리명

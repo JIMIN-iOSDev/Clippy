@@ -47,7 +47,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
         return category
     }
     
-    func addLink(title: String, url: String, description: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
+    func addLink(title: String, url: String, userMemo: String? = nil, metadataDescription: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
         guard let category = readCategory(name: categoryName) else {
             print("\(categoryName) 없음")
             return
@@ -69,7 +69,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
             link = existingLink
         } else {
             // 새로운 링크 생성
-            link = LinkList(title: title, thumbnail: "", url: url, memo: description, likeStatus: likeStatus, deadline: deadline, isOpened: isOpened, openCount: openCount, date: date)
+            link = LinkList(title: title, thumbnail: "", url: url, userMemo: userMemo, metadataDescription: metadataDescription, likeStatus: likeStatus, deadline: deadline, isOpened: isOpened, openCount: openCount, date: date)
         }
 
         do {
@@ -81,7 +81,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
         }
     }
     
-    func updateLink(url: String, title: String, description: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false, preserveOpenedStatus: Bool = true, preserveOpenCount: Bool = true) {
+    func updateLink(url: String, title: String, userMemo: String? = nil, metadataDescription: String? = nil, categoryNames: [String], deadline: Date?, preserveLikeStatus: Bool = false, preserveOpenedStatus: Bool = true, preserveOpenCount: Bool = true) {
         let categories = realm.objects(Category.self)
 
         // 기존 링크의 상태 보존 (즐겨찾기, 열람 상태, 열람 횟수, 생성일)
@@ -112,7 +112,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
 
         // 새 카테고리에 링크 추가 (모든 상태 보존)
         categoryNames.forEach { categoryName in
-            addLink(title: title, url: url, description: description, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount, date: preservedDate)
+            addLink(title: title, url: url, userMemo: userMemo, metadataDescription: metadataDescription, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount, date: preservedDate)
         }
     }
     
@@ -240,12 +240,13 @@ final class CategoryRepository: CategoryRepositoryProtocol {
         return nil
     }
 
-    /// 링크의 제목과 설명만 업데이트 (다른 속성은 유지)
+    /// 링크의 제목, 사용자 메모, 메타데이터 설명을 업데이트 (다른 속성은 유지)
     /// - Parameters:
     ///   - url: 업데이트할 링크의 URL
     ///   - title: 새로운 제목
-    ///   - description: 새로운 설명
-    func updateLinkTitleAndDescription(url: String, title: String, description: String?) {
+    ///   - userMemo: 새로운 사용자 메모
+    ///   - metadataDescription: 새로운 메타데이터 설명
+    func updateLinkTitleAndDescription(url: String, title: String, userMemo: String?, metadataDescription: String?) {
         guard let link = getLinkByURL(url) else {
             print("링크 없음: \(url)")
             return
@@ -254,9 +255,10 @@ final class CategoryRepository: CategoryRepositoryProtocol {
         do {
             try realm.write {
                 link.title = title
-                link.memo = description
+                link.userMemo = userMemo
+                link.metadataDescription = metadataDescription
             }
-            print("링크 제목/설명 업데이트 성공: \(url)")
+            print("링크 제목/메모/설명 업데이트 성공: \(url)")
         } catch {
             print("링크 업데이트 실패: \(error)")
         }

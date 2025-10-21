@@ -112,7 +112,7 @@ final class LinkManager {
                 // 캐시된 이미지가 있으면 바로 사용, 없으면 기본 앱 로고 사용
                 let cachedImage = getCachedImage(for: linkList.url)
                 let thumbnailImage = cachedImage ?? UIImage(named: "AppLogo")
-                let metadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
+                let metadata = LinkMetadata(url: url, title: linkList.title, userMemo: linkList.userMemo, metadataDescription: linkList.metadataDescription, thumbnailImage: thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
                 
                 allLinks.append(metadata)
                 linkCache[linkList.url] = metadata
@@ -123,8 +123,8 @@ final class LinkManager {
                     fetchLinkMetadata(for: url)
                         .bind(with: self) { owner, fetchedMetadata in
                             // 썸네일만 업데이트
-                            let updatedMetadata = LinkMetadata(url: url, title: linkList.title, description: linkList.memo, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
-                            
+                            let updatedMetadata = LinkMetadata(url: url, title: linkList.title, userMemo: linkList.userMemo, metadataDescription: linkList.metadataDescription, thumbnailImage: fetchedMetadata.thumbnailImage, categories: categoryInfos, dueDate: linkList.deadline, createdAt: linkList.date, isLiked: linkList.likeStatus, isOpened: linkList.isOpened)
+
                             owner.linkCache[linkList.url] = updatedMetadata
                             owner.updateLinksArray(with: updatedMetadata)
                         }
@@ -136,7 +136,7 @@ final class LinkManager {
         linksSubject.accept(allLinks)
     }
     
-    func addLink(url: URL, title: String? = nil, descrpition: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false, isOpened: Bool = false, openCount: Int = 0, createdAt: Date? = nil) -> Observable<LinkMetadata> {
+    func addLink(url: URL, title: String? = nil, userMemo: String? = nil, metadataDescription: String? = nil, categories: [(name: String, colorIndex: Int)]? = nil, dueDate: Date? = nil, thumbnailImage: UIImage? = nil, isLiked: Bool = false, isOpened: Bool = false, openCount: Int = 0, createdAt: Date? = nil) -> Observable<LinkMetadata> {
 
         let cacheKey = url.absoluteString
 
@@ -144,7 +144,8 @@ final class LinkManager {
         let linkMetadata = LinkMetadata(
             url: url,
             title: title ?? url.absoluteString,
-            description: descrpition,
+            userMemo: userMemo,
+            metadataDescription: metadataDescription,
             thumbnailImage: thumbnailImage,
             categories: categories,
             dueDate: dueDate,
@@ -171,35 +172,35 @@ final class LinkManager {
     
     func toggleLike(for url: URL) -> Observable<LinkMetadata?> {
         let cacheKey = url.absoluteString
-        
+
         guard let linkMetadata = linkCache[cacheKey] else {
             return Observable.just(nil)
         }
-        
+
         repository.toggleLikeStatus(url: cacheKey)
-        
-        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked, isOpened: linkMetadata.isOpened)
-        
+
+        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, userMemo: linkMetadata.userMemo, metadataDescription: linkMetadata.metadataDescription, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: !linkMetadata.isLiked, isOpened: linkMetadata.isOpened)
+
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)
-        
+
         return Observable.just(updatedLink)
     }
     
     func toggleOpened(for url: URL) -> Observable<LinkMetadata?> {
         let cacheKey = url.absoluteString
-        
+
         guard let linkMetadata = linkCache[cacheKey] else {
             return Observable.just(nil)
         }
-        
+
         repository.toggleOpenedStatus(url: cacheKey)
-        
-        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, description: linkMetadata.description, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: linkMetadata.isLiked, isOpened: !linkMetadata.isOpened)
-        
+
+        let updatedLink = LinkMetadata(url: linkMetadata.url, title: linkMetadata.title, userMemo: linkMetadata.userMemo, metadataDescription: linkMetadata.metadataDescription, thumbnailImage: linkMetadata.thumbnailImage, categories: linkMetadata.categories, dueDate: linkMetadata.dueDate, createdAt: linkMetadata.createdAt, isLiked: linkMetadata.isLiked, isOpened: !linkMetadata.isOpened)
+
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)
-        
+
         return Observable.just(updatedLink)
     }
     
@@ -237,7 +238,8 @@ final class LinkManager {
         let dummyLink = LinkMetadata(
             url: dummyURL,
             title: "📝 스와이프 가이드",
-            description: "좌우 스와이프 기능",
+            userMemo: nil,
+            metadataDescription: "좌우 스와이프 기능",
             thumbnailImage: dummyImage,
             categories: [("일반", 0)],
             dueDate: nil,
@@ -316,7 +318,7 @@ final class LinkManager {
             
             // 이미지 캐시 확인
             if let cachedImage = self.getCachedImage(for: urlString) {
-                let cachedMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: cachedImage)
+                let cachedMetadata = LinkMetadata(url: url, title: url.absoluteString, userMemo: nil, metadataDescription: nil, thumbnailImage: cachedImage)
                 observer.onNext(cachedMetadata)
                 observer.onCompleted()
                 return Disposables.create()
@@ -334,22 +336,22 @@ final class LinkManager {
                     // LPMetadataProvider 실패 시 대안 방법: URL에서 도메인 추출하여 제목 생성
                     let fallbackTitle = self.generateFallbackTitle(from: url)
                     let defaultImage = UIImage(named: "AppLogo")
-                    let fallbackMetadata = LinkMetadata(url: url, title: fallbackTitle, description: nil, thumbnailImage: defaultImage)
-                    
+                    let fallbackMetadata = LinkMetadata(url: url, title: fallbackTitle, userMemo: nil, metadataDescription: nil, thumbnailImage: defaultImage)
+
                     observer.onNext(fallbackMetadata)
                     observer.onCompleted()
                     return
                 }
-                
+
                 guard let metadata else {
                     // 메타데이터가 없어도 기본 앱 로고와 함께 제공
                     let defaultImage = UIImage(named: "AppLogo")
-                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString, thumbnailImage: defaultImage)
+                    let basicMetadata = LinkMetadata(url: url, title: url.absoluteString, userMemo: nil, metadataDescription: nil, thumbnailImage: defaultImage)
                     observer.onNext(basicMetadata)
                     observer.onCompleted()
                     return
                 }
-                
+
                 let extractedTitle = metadata.title ?? url.absoluteString
                 let extractedDescription = metadata.value(forKey: "summary") as? String
                 
@@ -365,14 +367,14 @@ final class LinkManager {
                             // 이미지 로드 실패시 기본 앱 로고 사용
                             finalImage = UIImage(named: "AppLogo")
                         }
-                        let linkMetadata = LinkMetadata(url: url, title: extractedTitle, description: extractedDescription, thumbnailImage: finalImage)
+                        let linkMetadata = LinkMetadata(url: url, title: extractedTitle, userMemo: nil, metadataDescription: extractedDescription, thumbnailImage: finalImage)
                         observer.onNext(linkMetadata)
                         observer.onCompleted()
                     }
                 } else {
                     // 썸네일 이미지가 없으면 기본 앱 로고 사용
                     let defaultImage = UIImage(named: "AppLogo")
-                    let linkMetadata = LinkMetadata(url: url, title: extractedTitle, description: extractedDescription, thumbnailImage: defaultImage)
+                    let linkMetadata = LinkMetadata(url: url, title: extractedTitle, userMemo: nil, metadataDescription: extractedDescription, thumbnailImage: defaultImage)
                     observer.onNext(linkMetadata)
                     observer.onCompleted()
                 }
