@@ -33,6 +33,7 @@ final class LinkDetailViewController: BaseViewController {
     private let dimmedBackgroundView = {
         let view = UIView()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        view.isUserInteractionEnabled = true
         return view
     }()
 
@@ -242,8 +243,13 @@ final class LinkDetailViewController: BaseViewController {
         closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
 
         // dimmedBackgroundView 탭 제스처 추가
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimmedBackgroundTapped))
-        dimmedBackgroundView.addGestureRecognizer(tapGesture)
+        let dimmedTapGesture = UITapGestureRecognizer(target: self, action: #selector(dimmedBackgroundTapped))
+        dimmedBackgroundView.addGestureRecognizer(dimmedTapGesture)
+
+        // scrollView 탭 제스처 추가 (containerView 밖 영역 터치 감지용)
+        let scrollViewTapGesture = UITapGestureRecognizer(target: self, action: #selector(scrollViewTapped(_:)))
+        scrollViewTapGesture.cancelsTouchesInView = false
+        scrollView.addGestureRecognizer(scrollViewTapGesture)
 
         // UI 계층 구조 설정
         view.addSubview(dimmedBackgroundView)
@@ -654,6 +660,16 @@ final class LinkDetailViewController: BaseViewController {
 
     @objc private func dimmedBackgroundTapped() {
         dismiss(animated: true)
+    }
+
+    @objc private func scrollViewTapped(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: scrollView)
+        let containerFrame = containerView.frame
+
+        // containerView 밖을 터치했을 때만 닫기
+        if !containerFrame.contains(location) {
+            dismiss(animated: true)
+        }
     }
     
     private func configureURLButtonMenu() {
