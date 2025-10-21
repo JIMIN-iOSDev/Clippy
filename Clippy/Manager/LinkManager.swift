@@ -12,16 +12,20 @@ import LinkPresentation
 import UserNotifications
 
 final class LinkManager {
-    
+
     static let shared = LinkManager()
-    private init() {
+
+    // MARK: - Properties
+    private let disposeBag = DisposeBag()
+    private let repository: CategoryRepositoryProtocol
+
+    /// DI를 위한 Initializer
+    /// - Parameter repository: CategoryRepositoryProtocol을 구현한 객체 (기본값: CategoryRepository)
+    init(repository: CategoryRepositoryProtocol = CategoryRepository()) {
+        self.repository = repository
         loadLinksFromRealm()
         setupCategoryNotifications()
     }
-    
-    // MARK: - Properties
-    private let disposeBag = DisposeBag()
-    private let repository = CategoryRepository()
     
     private var linkCache: [String: LinkMetadata] = [:] // 캐시
     private var imageCache: [String: UIImage] = [:] // 이미지 캐시

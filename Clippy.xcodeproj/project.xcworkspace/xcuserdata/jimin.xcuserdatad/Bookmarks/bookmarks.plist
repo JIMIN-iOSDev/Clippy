@@ -36,13 +36,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -82,13 +82,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -128,13 +128,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -174,13 +174,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -220,13 +220,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -266,13 +266,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>
@@ -500,13 +500,13 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>        let dummyImage = createDummyThumbnail()
-        
+				<string>        // 더미 URL 생성
+        let dummyURL = URL(string: "https://clippy.dummy.swipe.guide")!
 </string>
 				<key>trailing</key>
-				<string>        // 더미링크 메타데이터 생성
-        let dummyLink = LinkMetadata(
-            url: dummyURL,
+				<string>        
+        // 더미 이미지 생성 (나중에 로고 이미지로 교체)
+        let dummyImage = createDummyThumbnail()
 </string>
 			</dict>
 			<key>title</key>

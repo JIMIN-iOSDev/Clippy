@@ -8,7 +8,7 @@
 import UIKit
 import RealmSwift
 
-final class CategoryRepository {
+final class CategoryRepository: CategoryRepositoryProtocol {
     
     let realm = try! Realm()
     
