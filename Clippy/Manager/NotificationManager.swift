@@ -20,18 +20,16 @@ final class NotificationManager {
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error = error {
-                print("❌ 알림 권한 요청 실패: \(error.localizedDescription)")
                 return
             }
-            
+
             if granted {
-                print("✅ 알림 권한 허용됨")
                 // 권한 설정 완료 후 기존 알림들 설정
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.setupNotificationsForAllLinks()
                 }
             } else {
-                print("❌ 알림 권한 거부됨")
+                // 알림 권한 거부됨
             }
         }
     }
@@ -40,20 +38,15 @@ final class NotificationManager {
     
     /// 링크의 마감일 하루 전 알림을 등록합니다
     func scheduleNotificationForLink(title: String, dueDate: Date, linkId: String) {
-        print("🔔 알림 등록 시도: \(title), 마감일: \(dueDate)")
-        
         // 권한 상태 확인
         UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("🔐 알림 권한 상태: \(settings.authorizationStatus.rawValue)")
-            print("🔔 알림 스타일: \(settings.alertSetting.rawValue)")
-            print("🔊 사운드 설정: \(settings.soundSetting.rawValue)")
+            // 알림 권한 상태 확인
         }
-        
+
         // 기존 알림 먼저 확인하고 취소
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let existingRequest = requests.first { $0.identifier == linkId }
             if existingRequest != nil {
-                print("🔄 기존 알림 취소 후 새로 등록: \(title)")
                 UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [linkId])
             }
         }
@@ -66,7 +59,6 @@ final class NotificationManager {
         // 마감일이 오늘 이전인 경우에만 알림 등록하지 않음
         // 내일 마감인 경우도 오늘 6시 이전에 추가되었다면 알림 등록
         guard dueDate >= tomorrowStart else {
-            print("⚠️ 마감일이 오늘 이전이므로 알림 등록하지 않음: \(title) - 마감일: \(dueDate), 내일 시작: \(tomorrowStart)")
             return
         }
         
@@ -97,33 +89,26 @@ final class NotificationManager {
         ]
         
         // 알림 이미지 첨부 - 더 단순한 방식
-        print("🔍 알림 이미지 첨부 시도...")
-        
         // 다양한 이미지 이름으로 시도
         let imageNames = ["Clippy 로고", "AppIcon", "Clippy로고"]
-        
+
         for imageName in imageNames {
             if let image = UIImage(named: imageName) {
-                print("📷 \(imageName) 이미지 발견!")
-                
                 // Bundle의 캐시 디렉토리에 저장
                 let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
                 let filename = "notification_\(imageName.replacingOccurrences(of: " ", with: "_")).png"
                 let imageURL = cacheDirectory.appendingPathComponent(filename)
-                
+
                 if let data = image.pngData() {
                     do {
                         try data.write(to: imageURL)
                         let attachment = try UNNotificationAttachment(identifier: "attachment", url: imageURL, options: nil)
                         content.attachments = [attachment]
-                        print("✅ \(imageName) 알림 첨부 성공!")
                         break // 성공하면 루프 종료
                     } catch {
-                        print("❌ \(imageName) 저장 실패: \(error)")
+                        // 이미지 저장 실패
                     }
                 }
-            } else {
-                print("❌ \(imageName) 이미지 없음")
             }
         }
         
@@ -131,15 +116,12 @@ final class NotificationManager {
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
         let request = UNNotificationRequest(identifier: linkId, content: content, trigger: trigger)
-        
-        print("📅 알림 시간 설정: \(dateComponents)")
-        print("🎯 예정된 알림 날짜: \(notificationDate)")
-        
+
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("❌ 알림 등록 실패: \(error.localizedDescription)")
+                // 알림 등록 실패
             } else {
-                print("✅ 알림 등록 성공: \(title) - \(notificationDate)")
+                // 알림 등록 성공
             }
         }
     }
@@ -147,7 +129,6 @@ final class NotificationManager {
     /// 특정 링크의 알림을 취소합니다
     func cancelNotificationForLink(linkId: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [linkId])
-        print("🗑️ 알림 취소: \(linkId)")
     }
     
     /// 특정 링크의 알림을 업데이트합니다 (기존 알림 취소 후 새로 등록)
@@ -192,8 +173,6 @@ final class NotificationManager {
                 }
             }
         }
-        
-        print("📱 총 \(notificationCount)개의 알림을 설정했습니다 (기존 링크만)")
     }
     
     private func sendNotificationForLink(title: String, dueDate: Date, url: String) {

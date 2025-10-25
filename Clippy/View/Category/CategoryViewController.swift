@@ -535,20 +535,18 @@ final class CategoryViewController: BaseViewController {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] granted, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    print("❌ 알림 권한 요청 실패: \(error.localizedDescription)")
                     // 권한 요청 실패해도 안내는 시작
                     self?.startTooltipsAfterPermission()
                     return
                 }
-                
+
                 if granted {
-                    print("✅ 알림 권한 허용됨")
                     // 백그라운드에서 알림 설정 (딜레이 없이)
                     DispatchQueue.global(qos: .background).async {
                         NotificationManager.shared.setupNotificationsForAllLinks()
                     }
                 } else {
-                    print("❌ 알림 권한 거부됨")
+                    // 알림 권한 거부됨
                 }
                 
                 // 딜레이 없이 즉시 안내 시작
@@ -607,7 +605,6 @@ final class CategoryViewController: BaseViewController {
         
         // 해당 카테고리의 Realm 객체 가져오기
         guard let realmCategory = repository.readCategory(name: categoryItem.title) else {
-            print("카테고리 없음: \(categoryItem.title)")
             return
         }
         

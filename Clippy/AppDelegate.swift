@@ -35,9 +35,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         Messaging.messaging().token { token, error in
           if let error = error {
-            print("Error fetching FCM registration token: \(error)")
+            // Error fetching FCM registration token
           } else if let token = token {
-            print("FCM registration token: \(token)")
+            // FCM registration token 발급 성공
           }
         }
         
@@ -84,9 +84,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 마이그레이션 적용을 위해 Realm 인스턴스 생성
         do {
             _ = try Realm()
-            print("Realm 마이그레이션 완료")
         } catch {
-            print("Realm 마이그레이션 실패: \(error)")
+            // Realm 마이그레이션 실패
         }
     }
 
@@ -100,8 +99,6 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 extension AppDelegate: MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-      print("Firebase registration token: \(String(describing: fcmToken))")
-
       let dataDict: [String: String] = ["token": fcmToken ?? ""]
       NotificationCenter.default.post(
         name: Notification.Name("FCMToken"),

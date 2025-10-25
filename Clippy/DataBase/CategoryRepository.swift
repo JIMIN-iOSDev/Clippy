@@ -26,14 +26,12 @@ final class CategoryRepository: CategoryRepositoryProtocol {
             }
             return true
         } catch {
-            print("카테고리 만들기 실패")
             return false
         }
     }
     
     /// 기본 카테고리 "일반" 제공
     func createDefaultCategory() {
-        print(realm.configuration.fileURL)
         if readCategory(name: "일반") == nil {
             createCategory(name: "일반", colorIndex: 0, iconName: "folder")
         }
@@ -49,14 +47,12 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     
     func addLink(title: String, url: String, userMemo: String? = nil, metadataDescription: String? = nil, categoryName: String, deadline: Date?, likeStatus: Bool = false, isOpened: Bool = false, openCount: Int = 0, date: Date? = nil) {
         guard let category = readCategory(name: categoryName) else {
-            print("\(categoryName) 없음")
             return
         }
 
         // 이미 해당 카테고리에 같은 URL의 링크가 있는지 확인
         let existingLink = category.category.first { $0.url == url }
         if existingLink != nil {
-            print("이미 존재하는 링크 \(url)")
             return
         }
 
@@ -77,7 +73,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 category.category.append(link)
             }
         } catch {
-            print("링크 저장 실패")
+            // 링크 저장 실패
         }
     }
     
@@ -133,7 +129,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 }
             }
         } catch {
-            print("링크 삭제 실패: \(error)")
+            // 링크 삭제 실패
         }
     }
     
@@ -171,7 +167,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 }
             }
         } catch {
-            print("즐겨찾기 토글 실패: \(error)")
+            // 즐겨찾기 토글 실패
         }
     }
     
@@ -188,7 +184,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 }
             }
         } catch {
-            print("열람 상태 토글 실패: \(error)")
+            // 열람 상태 토글 실패
         }
     }
     
@@ -200,13 +196,11 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     ///   - iconName: 아이콘명
     func updateCategory(oldName: String, newName: String, colorIndex: Int, iconName: String) -> Bool {
         guard let category = readCategory(name: oldName) else {
-            print("카테고리 없음: \(oldName)")
             return false
         }
-        
+
         // 새 이름이 이미 존재하는지 확인 (자기 자신 제외)
         if oldName != newName && readCategory(name: newName) != nil {
-            print("이미 존재하는 카테고리명: \(newName)")
             return false
         }
         
@@ -217,10 +211,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 category.iconName = iconName
                 category.updatedAt = Date()
             }
-            print("카테고리 수정 성공: \(oldName) -> \(newName)")
             return true
         } catch {
-            print("카테고리 수정 실패: \(error)")
             return false
         }
     }
@@ -248,7 +240,6 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     ///   - metadataDescription: 새로운 메타데이터 설명
     func updateLinkTitleAndDescription(url: String, title: String, userMemo: String?, metadataDescription: String?) {
         guard let link = getLinkByURL(url) else {
-            print("링크 없음: \(url)")
             return
         }
 
@@ -258,9 +249,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 link.userMemo = userMemo
                 link.metadataDescription = metadataDescription
             }
-            print("링크 제목/메모/설명 업데이트 성공: \(url)")
         } catch {
-            print("링크 업데이트 실패: \(error)")
+            // 링크 업데이트 실패
         }
     }
     
@@ -269,12 +259,10 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     func deleteCategory(name: String) -> Bool {
         // "일반" 카테고리는 삭제 불가
         if name == "일반" {
-            print("일반 카테고리는 삭제할 수 없습니다")
             return false
         }
-        
+
         guard let category = readCategory(name: name) else {
-            print("카테고리 없음: \(name)")
             return false
         }
         
@@ -295,10 +283,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 // 카테고리 삭제
                 realm.delete(category)
             }
-            print("카테고리 삭제 성공: \(name)")
             return true
         } catch {
-            print("카테고리 삭제 실패: \(error)")
             return false
         }
     }

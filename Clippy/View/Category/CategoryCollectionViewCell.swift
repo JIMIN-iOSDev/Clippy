@@ -162,7 +162,6 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Actions
     @objc private func editButtonTapped() {
-        print("🔧 편집 버튼 탭됨!")
         onEditTapped?()
     }
 }

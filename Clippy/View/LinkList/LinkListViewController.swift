@@ -654,22 +654,18 @@ final class LinkListViewController: BaseViewController {
     private func highlightLink(with linkId: String) {
         // 마감 임박 모드일 때만 하이라이트 실행
         guard case .expiring = mode else {
-            print("❌ 마감 임박 모드가 아니므로 하이라이트하지 않습니다")
             return
         }
-        
+
         let currentLinks = links.value
-        
+
         // linkId로 해당 링크 찾기 (URL 기반 매칭)
         guard let targetIndex = currentLinks.firstIndex(where: { link in
             let normalizedUrl = link.url.absoluteString.replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: ":", with: "_")
             return normalizedUrl == linkId
         }) else {
-            print("❌ 하이라이트할 링크를 찾을 수 없습니다: \(linkId)")
             return
         }
-        
-        print("✅ 하이라이트할 링크 찾음: \(currentLinks[targetIndex].title)")
         
         // 해당 위치로 스크롤
         let indexPath = IndexPath(row: targetIndex, section: 0)
