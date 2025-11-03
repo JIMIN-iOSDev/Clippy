@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 import LinkPresentation
 import UserNotifications
+import WidgetKit
 
 final class LinkManager {
 
@@ -78,7 +79,7 @@ final class LinkManager {
         // 캐시 클리어
         linkCache.removeAll()
         imageCache.removeAll()
-        
+
         // Realm에서 다시 로드
         loadLinksFromRealm()
     }
@@ -184,6 +185,9 @@ final class LinkManager {
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)
 
+        // 위젯 새로고침
+        WidgetCenter.shared.reloadAllTimelines()
+
         return Observable.just(updatedLink)
     }
     
@@ -201,28 +205,34 @@ final class LinkManager {
         linkCache[cacheKey] = updatedLink
         updateLinksArray(with: updatedLink)
 
+        // 위젯 새로고침
+        WidgetCenter.shared.reloadAllTimelines()
+
         return Observable.just(updatedLink)
     }
     
     func deleteLink(url: URL) -> Observable<Bool> {
         let cacheKey = url.absoluteString
-        
+
         // 관련 알림 취소
         NotificationManager.shared.cancelNotificationForLink(linkId: cacheKey)
-        
+
         // 링크 캐시와 이미지 캐시 모두 삭제
         linkCache.removeValue(forKey: cacheKey)
         imageCacheQueue.async(flags: .barrier) { [weak self] in
             self?.imageCache.removeValue(forKey: cacheKey)
         }
-        
+
         var currentLinks = linksSubject.value
         currentLinks.removeAll { $0.url.absoluteString == cacheKey }
         linksSubject.accept(currentLinks)
-        
+
         // 링크 삭제 알림 발생
         NotificationCenter.default.post(name: .linkDidDelete, object: nil)
-        
+
+        // 위젯 새로고침
+        WidgetCenter.shared.reloadAllTimelines()
+
         return Observable.just(true)
     }
     
@@ -477,7 +487,7 @@ final class LinkManager {
                 owner.loadLinksFromRealm() // 카테고리 정보가 변경되면 링크 데이터도 새로고침
             }
             .disposed(by: disposeBag)
-        
+
         NotificationCenter.default.rx
             .notification(.categoryDidDelete)
             .bind(with: self) { owner, _ in

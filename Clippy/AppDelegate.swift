@@ -62,9 +62,75 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // MARK: - Realm Migration
+
+    /// 기존 Documents 폴더의 Realm 파일을 App Group 컨테이너로 마이그레이션
+    private func migrateRealmToAppGroup(targetURL: URL) {
+        let fileManager = FileManager.default
+
+        // App Group에 이미 Realm 파일이 있으면 마이그레이션 불필요
+        if fileManager.fileExists(atPath: targetURL.path) {
+            print("App Group에 Realm 파일이 이미 존재합니다. 마이그레이션 건너뜀.")
+            return
+        }
+
+        // 기존 Documents 폴더의 Realm 파일 경로
+        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents 폴더를 찾을 수 없습니다")
+            return
+        }
+
+        let oldRealmURL = documentsURL.appendingPathComponent("default.realm")
+
+        // 기존 Realm 파일이 없으면 마이그레이션 불필요 (신규 사용자)
+        guard fileManager.fileExists(atPath: oldRealmURL.path) else {
+            print("기존 Realm 파일이 없습니다. 신규 사용자로 간주.")
+            return
+        }
+
+        print("기존 Realm 데이터를 App Group으로 마이그레이션 시작...")
+
+        do {
+            // Realm 파일 복사
+            try fileManager.copyItem(at: oldRealmURL, to: targetURL)
+            print("✅ Realm 파일 복사 성공")
+
+            // 관련 파일들도 복사 (.lock, .note, .management 등)
+            let realmRelatedFiles = [".lock", ".note", ".management"]
+            for suffix in realmRelatedFiles {
+                let oldFileURL = documentsURL.appendingPathComponent("default.realm\(suffix)")
+                let newFileURL = targetURL.deletingPathExtension().appendingPathExtension("realm\(suffix)")
+
+                if fileManager.fileExists(atPath: oldFileURL.path) {
+                    try? fileManager.copyItem(at: oldFileURL, to: newFileURL)
+                }
+            }
+
+            print("✅ Realm 데이터 마이그레이션 완료")
+
+            // 마이그레이션 성공 후 기존 파일 삭제 (선택사항)
+            // 안전을 위해 주석 처리. 필요시 활성화
+            // try? fileManager.removeItem(at: oldRealmURL)
+
+        } catch {
+            print("❌ Realm 마이그레이션 실패: \(error)")
+        }
+    }
+
     private func configureRealmMigration() {
+        // App Group 컨테이너 URL 가져오기 (위젯과 공유하기 위해)
+        guard let appGroupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jimin.Clippy") else {
+            print("App Group URL을 찾을 수 없습니다")
+            return
+        }
+
+        let realmURL = appGroupURL.appendingPathComponent("default.realm")
+
+        // 기존 데이터 마이그레이션: Documents 폴더 -> App Group
+        migrateRealmToAppGroup(targetURL: realmURL)
+
         let config = Realm.Configuration(
-            schemaVersion: 1, // 스키마 버전 1로 증가
+            fileURL: realmURL,
+            schemaVersion: 3, // 위젯과 동일한 버전 사용
             migrationBlock: { migration, oldSchemaVersion in
                 if oldSchemaVersion < 1 {
                     // 버전 0 → 1: memo 필드를 userMemo와 metadataDescription으로 분리
@@ -77,6 +143,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         newObject?["metadataDescription"] = nil
                     }
                 }
+                // 버전 1 → 2, 2 → 3은 자동 마이그레이션
             }
         )
         Realm.Configuration.defaultConfiguration = config
@@ -84,8 +151,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 마이그레이션 적용을 위해 Realm 인스턴스 생성
         do {
             _ = try Realm()
+            print("Realm 초기화 성공: \(realmURL.path)")
         } catch {
-            // Realm 마이그레이션 실패
+            print("Realm 마이그레이션 실패: \(error)")
         }
     }
 

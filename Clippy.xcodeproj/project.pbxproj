@@ -11,6 +11,14 @@
 		EC3E2BE92E90F7BD00E7F49B /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = EC3E2BE82E90F7BD00E7F49B /* FirebaseCrashlytics */; };
 		EC3E2BEB2E90F7BD00E7F49B /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = EC3E2BEA2E90F7BD00E7F49B /* FirebaseMessaging */; };
 		EC3E2BEF2E90FEB000E7F49B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = EC3E2BEE2E90FEB000E7F49B /* .gitignore */; };
+		EC4FE8F02EB874F700617325 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC4FE8EF2EB874F600617325 /* WidgetKit.framework */; };
+		EC4FE8F22EB874F700617325 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC4FE8F12EB874F700617325 /* SwiftUI.framework */; };
+		EC4FE8FD2EB874F700617325 /* ClippyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EC4FE8EE2EB874F600617325 /* ClippyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EC4FE9082EB8757B00617325 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = EC4FE9072EB8757B00617325 /* RealmSwift */; };
+		EC4FE90A2EB8757B00617325 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = EC4FE9072EB8757B00617325 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		EC4FE9122EB876C900617325 /* ClippyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90C2EB876C900617325 /* ClippyWidget.swift */; };
+		EC4FE9132EB876C900617325 /* ExpiredLinksWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90E2EB876C900617325 /* ExpiredLinksWidgetView.swift */; };
+		EC4FE9142EB876C900617325 /* ExpiredLinksProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90D2EB876C900617325 /* ExpiredLinksProvider.swift */; };
 		EC5368642E8417C200B411DB /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368632E8417C200B411DB /* RxCocoa */; };
 		EC5368662E8417C200B411DB /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = EC5368652E8417C200B411DB /* RxSwift */; };
 		EC536EBE2E8BFE1500B411DB /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = ECB793952E826D3800C44AF0 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -20,9 +28,31 @@
 		ECD17EC02E9FE30E00751E4F /* ClippyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ECD17EC92E9FECA600751E4F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17EC82E9FECA600751E4F /* SnapKit */; };
 		ECD17ECB2E9FF5EA00751E4F /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = ECD17ECA2E9FF5EA00751E4F /* Toast */; };
+		ECEA9F462EB880D700502DEB /* WidgetConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEA9F452EB880D700502DEB /* WidgetConfiguration.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		EC4FE8FB2EB874F700617325 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECB792682E82215900C44AF0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC4FE8ED2EB874F600617325;
+			remoteInfo = ClippyWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		EC4FE9092EB8757B00617325 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EC4FE90A2EB8757B00617325 /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EC536EBF2E8BFE1500B411DB /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -41,6 +71,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				ECD17EC02E9FE30E00751E4F /* ClippyShare.appex in Embed Foundation Extensions */,
+				EC4FE8FD2EB874F700617325 /* ClippyWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,11 +80,28 @@
 
 /* Begin PBXFileReference section */
 		EC3E2BEE2E90FEB000E7F49B /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		EC4FE8EE2EB874F600617325 /* ClippyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClippyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC4FE8EF2EB874F600617325 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		EC4FE8F12EB874F700617325 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		EC4FE90B2EB876C900617325 /* ClippyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClippyWidget.entitlements; sourceTree = "<group>"; };
+		EC4FE90C2EB876C900617325 /* ClippyWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClippyWidget.swift; sourceTree = "<group>"; };
+		EC4FE90D2EB876C900617325 /* ExpiredLinksProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpiredLinksProvider.swift; sourceTree = "<group>"; };
+		EC4FE90E2EB876C900617325 /* ExpiredLinksWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpiredLinksWidgetView.swift; sourceTree = "<group>"; };
+		EC4FE90F2EB876C900617325 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		ECB792702E82215900C44AF0 /* Clippy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clippy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClippyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECEA9F442EB87E1000502DEB /* ClippyWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClippyWidgetExtension.entitlements; sourceTree = "<group>"; };
+		ECEA9F452EB880D700502DEB /* WidgetConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfiguration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		EC4FE9162EB877FE00617325 /* Exceptions for "Clippy" folder in "ClippyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DataBase/RealmTable.swift,
+			);
+			target = EC4FE8ED2EB874F600617325 /* ClippyWidgetExtension */;
+		};
 		ECB792822E82215B00C44AF0 /* Exceptions for "Clippy" folder in "Clippy" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -75,6 +123,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				ECB792822E82215B00C44AF0 /* Exceptions for "Clippy" folder in "Clippy" target */,
+				EC4FE9162EB877FE00617325 /* Exceptions for "Clippy" folder in "ClippyWidgetExtension" target */,
 			);
 			path = Clippy;
 			sourceTree = "<group>";
@@ -90,6 +139,16 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		EC4FE8EB2EB874F600617325 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC4FE9082EB8757B00617325 /* RealmSwift in Frameworks */,
+				EC4FE8F22EB874F700617325 /* SwiftUI.framework in Frameworks */,
+				EC4FE8F02EB874F700617325 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB7926D2E82215900C44AF0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,14 +176,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EC4FE9102EB876C900617325 /* ClippyWidget */ = {
+			isa = PBXGroup;
+			children = (
+				EC4FE90B2EB876C900617325 /* ClippyWidget.entitlements */,
+				EC4FE90C2EB876C900617325 /* ClippyWidget.swift */,
+				EC4FE90D2EB876C900617325 /* ExpiredLinksProvider.swift */,
+				EC4FE90E2EB876C900617325 /* ExpiredLinksWidgetView.swift */,
+				EC4FE90F2EB876C900617325 /* Info.plist */,
+				ECEA9F452EB880D700502DEB /* WidgetConfiguration.swift */,
+			);
+			path = ClippyWidget;
+			sourceTree = "<group>";
+		};
 		ECB792672E82215800C44AF0 = {
 			isa = PBXGroup;
 			children = (
+				ECEA9F442EB87E1000502DEB /* ClippyWidgetExtension.entitlements */,
 				EC3E2BEE2E90FEB000E7F49B /* .gitignore */,
 				ECB792722E82215900C44AF0 /* Clippy */,
 				ECD17EB72E9FE30E00751E4F /* ClippyShare */,
 				ECD17EC72E9FECA600751E4F /* Frameworks */,
 				ECB792712E82215900C44AF0 /* Products */,
+				EC4FE9102EB876C900617325 /* ClippyWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -133,6 +207,7 @@
 			children = (
 				ECB792702E82215900C44AF0 /* Clippy.app */,
 				ECD17EB62E9FE30E00751E4F /* ClippyShare.appex */,
+				EC4FE8EE2EB874F600617325 /* ClippyWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,6 +215,8 @@
 		ECD17EC72E9FECA600751E4F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EC4FE8EF2EB874F600617325 /* WidgetKit.framework */,
+				EC4FE8F12EB874F700617325 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -147,6 +224,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		EC4FE8ED2EB874F600617325 /* ClippyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC4FE9002EB874F700617325 /* Build configuration list for PBXNativeTarget "ClippyWidgetExtension" */;
+			buildPhases = (
+				EC4FE8EA2EB874F600617325 /* Sources */,
+				EC4FE8EB2EB874F600617325 /* Frameworks */,
+				EC4FE8EC2EB874F600617325 /* Resources */,
+				EC4FE9092EB8757B00617325 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ClippyWidgetExtension;
+			packageProductDependencies = (
+				EC4FE9072EB8757B00617325 /* RealmSwift */,
+			);
+			productName = ClippyWidgetExtension;
+			productReference = EC4FE8EE2EB874F600617325 /* ClippyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		ECB7926F2E82215900C44AF0 /* Clippy */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = ECB792832E82215B00C44AF0 /* Build configuration list for PBXNativeTarget "Clippy" */;
@@ -161,6 +259,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				EC4FE8FC2EB874F700617325 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ECB792722E82215900C44AF0 /* Clippy */,
@@ -214,6 +313,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					EC4FE8ED2EB874F600617325 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					ECB7926F2E82215900C44AF0 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -245,11 +347,19 @@
 			targets = (
 				ECB7926F2E82215900C44AF0 /* Clippy */,
 				ECD17EB52E9FE30E00751E4F /* ClippyShare */,
+				EC4FE8ED2EB874F600617325 /* ClippyWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		EC4FE8EC2EB874F600617325 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB7926E2E82215900C44AF0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -294,6 +404,17 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		EC4FE8EA2EB874F600617325 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC4FE9122EB876C900617325 /* ClippyWidget.swift in Sources */,
+				EC4FE9132EB876C900617325 /* ExpiredLinksWidgetView.swift in Sources */,
+				ECEA9F462EB880D700502DEB /* WidgetConfiguration.swift in Sources */,
+				EC4FE9142EB876C900617325 /* ExpiredLinksProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB7926C2E82215900C44AF0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -310,7 +431,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		EC4FE8FC2EB874F700617325 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC4FE8ED2EB874F600617325 /* ClippyWidgetExtension */;
+			targetProxy = EC4FE8FB2EB874F700617325 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		EC4FE8FE2EB874F700617325 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ClippyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ClippyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ClippyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EC4FE8FF2EB874F700617325 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ClippyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6G3B344SZD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ClippyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ClippyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		ECB792842E82215B00C44AF0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -519,7 +704,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -545,7 +730,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jimin.Clippy.ClippyShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -558,6 +743,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		EC4FE9002EB874F700617325 /* Build configuration list for PBXNativeTarget "ClippyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC4FE8FE2EB874F700617325 /* Debug */,
+				EC4FE8FF2EB874F700617325 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		ECB7926B2E82215900C44AF0 /* Build configuration list for PBXProject "Clippy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -645,6 +839,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EC3E2BE52E90F7BD00E7F49B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		EC4FE9072EB8757B00617325 /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ECB793942E826D3800C44AF0 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
 		};
 		EC5368632E8417C200B411DB /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;

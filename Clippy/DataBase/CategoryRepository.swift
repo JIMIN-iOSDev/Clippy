@@ -7,10 +7,16 @@
 
 import UIKit
 import RealmSwift
+import WidgetKit
 
 final class CategoryRepository: CategoryRepositoryProtocol {
-    
-    let realm = try! Realm()
+
+    let realm: Realm
+
+    init() {
+        // defaultConfiguration을 명시적으로 사용 (AppDelegate에서 설정한 App Group 경로)
+        self.realm = try! Realm(configuration: Realm.Configuration.defaultConfiguration)
+    }
     
     /// 카테고리 추가
     /// - Parameter name: 카테고리명
@@ -72,6 +78,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
             try realm.write {
                 category.category.append(link)
             }
+            // 위젯 새로고침
+            WidgetCenter.shared.reloadAllTimelines()
         } catch {
             // 링크 저장 실패
         }
@@ -110,11 +118,14 @@ final class CategoryRepository: CategoryRepositoryProtocol {
         categoryNames.forEach { categoryName in
             addLink(title: title, url: url, userMemo: userMemo, metadataDescription: metadataDescription, categoryName: categoryName, deadline: deadline, likeStatus: preservedLikeStatus, isOpened: preservedIsOpened, openCount: preservedOpenCount, date: preservedDate)
         }
+
+        // 위젯 새로고침
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     func deleteLink(url: String) {
         let categories = realm.objects(Category.self)
-        
+
         do {
             try realm.write {
                 for category in categories {
@@ -128,6 +139,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                     }
                 }
             }
+            // 위젯 새로고침
+            WidgetCenter.shared.reloadAllTimelines()
         } catch {
             // 링크 삭제 실패
         }
@@ -157,7 +170,7 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     // 즐겨찾기 토글
     func toggleLikeStatus(url: String) {
         let categories = realm.objects(Category.self)
-        
+
         do {
             try realm.write {
                 for category in categories {
@@ -170,11 +183,11 @@ final class CategoryRepository: CategoryRepositoryProtocol {
             // 즐겨찾기 토글 실패
         }
     }
-    
+
     // 열람 상태 토글
     func toggleOpenedStatus(url: String) {
         let categories = realm.objects(Category.self)
-        
+
         do {
             try realm.write {
                 for category in categories {
@@ -249,6 +262,8 @@ final class CategoryRepository: CategoryRepositoryProtocol {
                 link.userMemo = userMemo
                 link.metadataDescription = metadataDescription
             }
+            // 위젯 새로고침
+            WidgetCenter.shared.reloadAllTimelines()
         } catch {
             // 링크 업데이트 실패
         }
