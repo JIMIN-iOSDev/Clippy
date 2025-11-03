@@ -15,7 +15,6 @@
 		EC4FE8F22EB874F700617325 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC4FE8F12EB874F700617325 /* SwiftUI.framework */; };
 		EC4FE8FD2EB874F700617325 /* ClippyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EC4FE8EE2EB874F600617325 /* ClippyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EC4FE9082EB8757B00617325 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = EC4FE9072EB8757B00617325 /* RealmSwift */; };
-		EC4FE90A2EB8757B00617325 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = EC4FE9072EB8757B00617325 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		EC4FE9122EB876C900617325 /* ClippyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90C2EB876C900617325 /* ClippyWidget.swift */; };
 		EC4FE9132EB876C900617325 /* ExpiredLinksWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90E2EB876C900617325 /* ExpiredLinksWidgetView.swift */; };
 		EC4FE9142EB876C900617325 /* ExpiredLinksProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FE90D2EB876C900617325 /* ExpiredLinksProvider.swift */; };
@@ -48,7 +47,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EC4FE90A2EB8757B00617325 /* RealmSwift in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
