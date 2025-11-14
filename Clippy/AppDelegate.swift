@@ -87,12 +87,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
-        print("기존 Realm 데이터를 App Group으로 마이그레이션 시작...")
-
         do {
             // Realm 파일 복사
             try fileManager.copyItem(at: oldRealmURL, to: targetURL)
-            print("✅ Realm 파일 복사 성공")
 
             // 관련 파일들도 복사 (.lock, .note, .management 등)
             let realmRelatedFiles = [".lock", ".note", ".management"]
@@ -104,8 +101,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     try? fileManager.copyItem(at: oldFileURL, to: newFileURL)
                 }
             }
-
-            print("✅ Realm 데이터 마이그레이션 완료")
 
             // 마이그레이션 성공 후 기존 파일 삭제 (선택사항)
             // 안전을 위해 주석 처리. 필요시 활성화

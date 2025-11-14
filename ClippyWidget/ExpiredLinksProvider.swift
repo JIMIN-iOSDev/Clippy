@@ -53,12 +53,10 @@ struct ExpiredLinksProvider: AppIntentTimelineProvider {
 
         // App Group을 통해 공유된 Realm 접근
         guard let appGroupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jimin.Clippy") else {
-            print("❌ [Widget] App Group URL을 찾을 수 없습니다")
             return []
         }
 
         let realmURL = appGroupURL.appendingPathComponent("default.realm")
-        print("🔷 [Widget] Realm 경로: \(realmURL.path)")
 
         // 파일 존재 확인
         if FileManager.default.fileExists(atPath: realmURL.path) {
@@ -74,11 +72,9 @@ struct ExpiredLinksProvider: AppIntentTimelineProvider {
 
         do {
             let realm = try Realm(configuration: config)
-            print("✅ [Widget] Realm 열기 성공")
 
             // 전체 링크 개수 확인
             let allLinks = realm.objects(LinkList.self)
-            print("🔷 [Widget] 전체 링크 개수: \(allLinks.count)")
 
             // contentType에 따라 다른 쿼리 실행
             let filteredLinks: Results<LinkList>
