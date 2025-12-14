@@ -8,7 +8,7 @@
 
 [![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/kr/app/clippy-%EB%A7%81%ED%81%AC-%EC%A0%80%EC%9E%A5-%ED%8F%B4%EB%8D%94-%EB%B6%84%EB%A5%98-%EB%A7%88%EA%B0%90%EC%9D%BC-%EC%95%8C%EB%A6%BC/id6753625594)
 
-## 📱 소개
+## 💡 소개
 
 **Clippy**는 링크를 카테고리별로 체계적으로 관리하고, 마감일이 있는 링크에 대해 알림을 제공하는 앱입니다. 웹 링크의 메타데이터를 자동으로 추출하여 썸네일과 제목을 제공하며, 즐겨찾기 기능과 검색 기능을 통해 효율적인 링크 관리를 지원합니다.
 
@@ -65,7 +65,7 @@
 - 4가지 위젯 타입: 마감 임박, 최근 추가, 즐겨찾기, 읽지 않음
 - Small/Medium 크기 지원
 
-## 📱 스크린샷
+## 📸 스크린샷
 
 <div align="center">
   <img src="screenshots/1.png" width="200" alt="스크린샷 1"/>
@@ -140,8 +140,8 @@ ClippyShare/                       # Share Extension
 
 ClippyWidget/                      # Widget Extension
 ├── ClippyWidget.swift             # 위젯 진입점
-├── WidgetConfiguration.swift     # 위젯 설정
-├── ExpiredLinksProvider.swift    # 위젯 데이터 제공
+├── WidgetConfiguration.swift      # 위젯 설정
+├── ExpiredLinksProvider.swift     # 위젯 데이터 제공
 └── ExpiredLinksWidgetView.swift   # 위젯 UI
 ```
 
