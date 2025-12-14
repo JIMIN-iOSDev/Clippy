@@ -38,33 +38,70 @@
 - 최근 추가순, 제목순, 마감일순 정렬
 
 ### 📊 통계 및 대시보드
-- 저장된 링크 총 개수 표시
-- 마감 임박 링크 개수 표시
-- 최근 추가된 링크 목록
+- **실시간 요약 정보**
+  - 저장된 링크 총 개수
+  - 마감 임박 링크 개수 (3일 이내)
+  - 최근 추가된 링크 목록
+
+- **캘린더 뷰**
+  - 날짜별 링크 저장 현황 시각화
+  - 마감일이 있는 링크 캘린더 표시
+  - 월간 링크 저장 패턴 분석
+
+- **주간 활동 분석**
+  - 최근 7일간 링크 저장 추이 막대 그래프
+  - 일별 저장 개수 비교
+
+- **카테고리 분포 차트**
+  - 도넛 차트로 카테고리별 링크 비율 시각화
+  - 가장 많이 사용하는 카테고리 인사이트 제공
+
+### 📤 외부 앱에서 바로 저장
+- Safari 및 다른 앱에서 직접 링크 저장
+- 공유 시 카테고리, 메모, 마감일 즉시 설정 가능
+
+### 📱 홈 화면 위젯
+- 홈 화면에서 바로 링크 확인
+- 4가지 위젯 타입: 마감 임박, 최근 추가, 즐겨찾기, 읽지 않음
+- Small/Medium 크기 지원
 
 ## 📱 스크린샷
 
 <div align="center">
-  <img src="screenshots/home.png" width="200" alt="홈 화면"/>
-  <img src="screenshots/search.png" width="200" alt="검색 화면"/>
-  <img src="screenshots/like.png" width="200" alt="즐겨찾기"/>
-  <img src="screenshots/duedate.png" width="200" alt="마감일 알림"/>
+  <img src="screenshots/1.png" width="200" alt="스크린샷 1"/>
+  <img src="screenshots/2.png" width="200" alt="스크린샷 2"/>
+  <img src="screenshots/3.png" width="200" alt="스크린샷 3"/>
+  <img src="screenshots/4.png" width="200" alt="스크린샷 4"/>
+</div>
+
+<div align="center">
+  <img src="screenshots/5.png" width="200" alt="스크린샷 5"/>
+  <img src="screenshots/6.png" width="200" alt="스크린샷 6"/>
+  <img src="screenshots/7.png" width="200" alt="스크린샷 7"/>
+  <img src="screenshots/8.png" width="200" alt="스크린샷 8"/>
 </div>
 
 ## 🛠️ 기술 스택
 
 ### Frontend
-- **Swift 5.0+** 
-- **UIKit** 
-- **SnapKit** 
-- **RxSwift/RxCocoa** 
+- **Swift 5.0+**
+- **UIKit**
+- **SnapKit**
+- **RxSwift/RxCocoa**
 
 ### Backend & Database
-- **Realm** 
-- **Firebase** 
+- **Realm**
+- **Firebase**
+
+### iOS Frameworks & Extensions
+- **WidgetKit**
+- **Share Extension**
+- **LinkPresentation**
+- **UserNotifications**
+- **App Groups**
 
 ### Architecture
-- **MVVM + Input/Output** 
+- **MVVM + Input/Output**
 - **Repository Pattern** 
 
 ## 📁 프로젝트 구조
@@ -92,10 +129,20 @@ Clippy/
 │   ├── LinkDetail/                # 링크 상세 화면
 │   ├── LinkList/                  # 링크 목록 화면
 │   ├── Search/                    # 검색 화면
+│   ├── Statistics/                # 통계 및 차트 화면
 │   └── Tooltip/                   # 사용자 가이드
-├── Extension/                      # 확장 기능
+├── Extension/                     # 확장 기능
 ├── Resource/                      # 리소스 및 유틸리티
 └── Assets.xcassets/               # 앱 아이콘 및 이미지
+
+ClippyShare/                       # Share Extension
+└── ShareViewController.swift      # 공유 확장 UI
+
+ClippyWidget/                      # Widget Extension
+├── ClippyWidget.swift             # 위젯 진입점
+├── WidgetConfiguration.swift     # 위젯 설정
+├── ExpiredLinksProvider.swift    # 위젯 데이터 제공
+└── ExpiredLinksWidgetView.swift   # 위젯 UI
 ```
 
 ## 🚀 주요 기술적 도전과제
@@ -120,6 +167,21 @@ Clippy/
 - **해결**: Realm을 활용한 관계형 데이터 모델링 및 인덱싱
 - **결과**: 빠른 검색 성능과 안정적인 데이터 관리
 
+### 5. Share Extension을 통한 외부 앱 연동
+- **문제**: Safari, Chrome 등 외부 앱에서 Clippy로 링크를 빠르게 저장하는 UX 구현
+- **해결**: Share Extension 타겟 생성 및 App Groups를 통한 메인 앱과 데이터 공유
+- **결과**: 별도 앱 실행 없이 공유 버튼으로 원터치 링크 저장 가능
+
+### 6. Widget과 메인 앱 간 실시간 데이터 동기화
+- **문제**: 메인 앱에서 링크를 추가/삭제할 때 위젯에 즉시 반영
+- **해결**: App Groups 공유 Realm 컨테이너 및 WidgetCenter 자동 새로고침
+- **결과**: 앱에서 변경 즉시 홈 화면 위젯 업데이트
+
+### 7. 통계 데이터 시각화
+- **문제**: 복잡한 링크 저장 패턴을 사용자가 쉽게 이해할 수 있도록 시각화
+- **해결**: 커스텀 캘린더 뷰, 막대 그래프, 도넛 차트 구현
+- **결과**: 직관적인 통계 정보 제공으로 사용 패턴 분석 가능
+
 ## 👨‍💻 개발 정보
 
 - **개발 기간**: 
@@ -143,9 +205,20 @@ Clippy/
 - **UserNotifications**: 로컬 알림 시스템 구현
 - **LinkPresentation**: Apple 프레임워크를 활용한 링크 메타데이터 자동 추출
 
+### iOS Extensions
+- **Share Extension**: 외부 앱에서 링크 공유 기능 구현
+- **WidgetKit**: 홈 화면 위젯 개발 (4가지 타입)
+- **App Groups**: 메인 앱과 Extension 간 데이터 공유
+
 ### 데이터 관리
 - **Realm**: 로컬 데이터베이스 설계 및 최적화
 - **데이터 모델링**: 관계형 데이터베이스 설계
+- **Thread-safe 캐싱**: Concurrent Queue를 활용한 이미지 캐시 구현
+
+### 데이터 시각화
+- **커스텀 캘린더**: 날짜별 링크 저장 현황 시각화
+- **차트 구현**: 막대 그래프, 도넛 차트
+- **인사이트 분석**: 사용 패턴 분석 및 통계 제공
 
 ### 외부 서비스 연동
 - **Firebase Analytics**: 사용자 행동 분석 및 앱 사용 패턴 파악
