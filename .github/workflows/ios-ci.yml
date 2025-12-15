@@ -1,12 +1,12 @@
- name: iOS CI
+name: iOS CI
 
-  on:
+on:
     push:
       branches: [ main ]
     pull_request:
       branches: [ main ]
 
-  jobs:
+jobs:
     test:
       name: Run Unit Tests
       runs-on: macos-14
