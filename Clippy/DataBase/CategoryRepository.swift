@@ -13,9 +13,14 @@ final class CategoryRepository: CategoryRepositoryProtocol {
 
     let realm: Realm
 
-    init() {
-        // defaultConfiguration을 명시적으로 사용 (AppDelegate에서 설정한 App Group 경로)
-        self.realm = try! Realm(configuration: Realm.Configuration.defaultConfiguration)
+    init(realm: Realm? = nil) {
+        if let realm = realm {
+            // 테스트용 Realm 주입 (In-Memory Realm 등)
+            self.realm = realm
+        } else {
+            // defaultConfiguration을 명시적으로 사용 (AppDelegate에서 설정한 App Group 경로)
+            self.realm = try! Realm(configuration: Realm.Configuration.defaultConfiguration)
+        }
     }
     
     /// 카테고리 추가

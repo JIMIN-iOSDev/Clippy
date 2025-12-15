@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcodebuild -project /Users/jimin/Desktop/SeSAC/Clippy/Clippy.xcodeproj -scheme Clippy -sdk iphonesimulator -configuration Debug build)",
+      "Bash(git log:*)",
+      "Bash(git tag:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(git restore:*)",
+      "Bash(defaults read:*)",
+      "Bash(xcrun simctl:*)",
+      "Bash(git reset:*)",
+      "Bash(mkdir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
