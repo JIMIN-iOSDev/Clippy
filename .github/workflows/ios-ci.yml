@@ -1,0 +1,88 @@
+name: iOS CI
+
+  # 트리거: main 브랜치에 push 또는 Pull Request 생성 시
+  on:
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+
+  jobs:
+    test:
+      name: Run Unit Tests
+      runs-on: macos-14  # GitHub의 최신 macOS runner
+
+      steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Xcode 버전 선택 (Xcode 16.2 사용)
+      - name: Select Xcode version
+        run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+      # 3. Swift Package 의존성 캐싱 (빌드 속도 향상)
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-spm-${{ hashFiles('Clippy.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      # 4. Ruby 의존성 캐싱 (Fastlane 설치 속도 향상)
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
+
+      # 5. Bundler 설치
+      - name: Install Bundler
+        run: gem install bundler
+
+      # 6. Fastlane 설치
+      - name: Install Fastlane
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      # 7. Swift Package 의존성 설치
+      - name: Resolve Package Dependencies
+        run: xcodebuild -resolvePackageDependencies -project Clippy.xcodeproj -scheme Clippy
+
+      # 8. Unit Test 실행 (Fastlane 사용)
+      - name: Run Unit Tests
+        run: bundle exec fastlane test
+
+      # 9. 테스트 결과 업로드 (실패 시 확인용)
+      - name: Upload Test Results
+        if: always()  # 테스트 실패해도 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/*.xcresult
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # 10. 코드 커버리지 리포트 생성 (선택사항)
+      - name: Generate Code Coverage Report
+        if: success()
+        run: |
+          xcrun xccov view --report --json \
+            ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/*.xcresult > coverage.json || true
+
+      # 11. 커버리지 업로드 (선택사항)
+      - name: Upload Coverage
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage.json
+          retention-days: 30
+          if-no-files-found: ignore
