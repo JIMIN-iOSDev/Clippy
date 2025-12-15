@@ -1,0 +1,126 @@
+# Fastfile - Clippy 빌드 및 배포 자동화
+
+default_platform(:ios)
+
+platform :ios do
+
+  # MARK: - 테스트 Lane
+
+  desc "Run unit tests"
+  lane :test do
+    run_tests(
+      project: "Clippy.xcodeproj",
+      scheme: "Clippy",
+      devices: ["iPhone 15 Pro"],
+      only_testing: ["ClippyTests"],
+      code_coverage: true
+    )
+  end
+
+  # MARK: - 베타 배포 Lane (TestFlight)
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    # 1. 빌드 번호 자동 증가
+    increment_build_number(
+      xcodeproj: "Clippy.xcodeproj"
+    )
+
+    # 2. 앱 빌드
+    build_app(
+      project: "Clippy.xcodeproj",
+      scheme: "Clippy",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "Clippy.ipa"
+    )
+
+    # 3. TestFlight에 업로드
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      apple_id: "6739104732"  # App Store Connect의 Apple ID
+    )
+
+    # 4. 성공 알림 (선택사항)
+    # slack(
+    #   message: "✅ Clippy 베타 버전이 TestFlight에 업로드되었습니다!",
+    #   success: true
+    # )
+  end
+
+  # MARK: - 프로덕션 배포 Lane (App Store)
+
+  desc "Deploy to App Store"
+  lane :release do
+    # 1. 버전 번호 증가 (메이저/마이너 버전)
+    increment_version_number(
+      bump_type: "patch"  # "major", "minor", "patch" 중 선택
+    )
+
+    # 2. 빌드 번호 자동 증가
+    increment_build_number(
+      xcodeproj: "Clippy.xcodeproj"
+    )
+
+    # 3. 앱 빌드
+    build_app(
+      project: "Clippy.xcodeproj",
+      scheme: "Clippy",
+      export_method: "app-store"
+    )
+
+    # 4. App Store에 업로드 및 심사 제출
+    upload_to_app_store(
+      submit_for_review: true,      # 자동 심사 제출
+      automatic_release: false,      # 승인 후 수동 출시 (true로 하면 승인 즉시 출시)
+      force: true,                   # 메타데이터 업데이트 없이 바이너리만 업로드
+      skip_metadata: true,
+      skip_screenshots: true,
+      precheck_include_in_app_purchases: false
+    )
+
+    # 5. 성공 알림
+    # slack(
+    #   message: "🎉 Clippy가 App Store 심사에 제출되었습니다!",
+    #   success: true
+    # )
+  end
+
+  # MARK: - 스크린샷 생성 Lane (선택사항)
+
+  desc "Generate screenshots for App Store"
+  lane :screenshots do
+    snapshot(
+      scheme: "ClippyUITests",
+      devices: [
+        "iPhone 15 Pro Max",
+        "iPhone 15 Pro",
+        "iPhone SE (3rd generation)",
+        "iPad Pro (12.9-inch) (6th generation)"
+      ]
+    )
+  end
+
+  # MARK: - 빌드만 수행 (업로드 없이)
+
+  desc "Build app only (no upload)"
+  lane :build do
+    build_app(
+      project: "Clippy.xcodeproj",
+      scheme: "Clippy",
+      export_method: "development",
+      output_directory: "./build"
+    )
+  end
+
+  # MARK: - 에러 처리
+
+  error do |lane, exception|
+    # 에러 발생 시 Slack 알림 (선택사항)
+    # slack(
+    #   message: "❌ #{lane} 실패: #{exception.message}",
+    #   success: false
+    # )
+  end
+
+end
