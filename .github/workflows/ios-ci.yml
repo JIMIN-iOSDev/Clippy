@@ -15,6 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create GoogleService-Info.plist
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}" | base64 --decode > Clippy/GoogleService-Info.plist
+
       - name: Select Xcode version
         run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
 
