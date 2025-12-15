@@ -8,7 +8,7 @@ platform :ios do
 
   desc "Run unit tests"
   lane :test do
-    run_tests(
+    scan(
       project: "Clippy.xcodeproj",
       scheme: "Clippy",
       device: "iPhone 15 Pro",
