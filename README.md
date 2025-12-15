@@ -101,6 +101,11 @@
 - **UserNotifications**
 - **App Groups**
 
+### Testing & CI/CD
+- **XCTest**
+- **GitHub Actions**
+- **Fastlane**
+
 ### Architecture
 - **MVVM + Input/Output**
 - **Repository Pattern** 
@@ -225,6 +230,13 @@ ClippyWidget/                      # Widget Extension
 - **Firebase Analytics**: 사용자 행동 분석 및 앱 사용 패턴 파악
 - **Firebase Crashlytics**: 앱 크래시 모니터링 및 안정성 개선
 - **Firebase Messaging**: 푸시 알림 서비스 (향후 구현 예정)
+
+### 테스트 & 자동화
+- **XCTest**: iOS 네이티브 테스트 프레임워크를 활용한 단위 테스트
+- **In-Memory Realm**: 테스트 격리를 위한 인메모리 데이터베이스 활용
+- **DI/DIP**: 테스트 가능한 코드 설계
+- **GitHub Actions**: 코드 푸시 시 자동 테스트 실행 (CI)
+- **Fastlane**: iOS 빌드 및 테스트 자동화
 
 ## 📞 문의사항
 
