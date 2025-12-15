@@ -2,6 +2,7 @@
 
 > 링크를 체계적으로 관리하고 마감일을 놓치지 않도록 도와주는 앱
 
+[![iOS CI](https://github.com/JIMIN-iOSDev/Clippy/actions/workflows/ios-ci.yml/badge.svg)](https://github.com/JIMIN-iOSDev/Clippy/actions/workflows/ios-ci.yml)
 ![iOS](https://img.shields.io/badge/iOS-16.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0+-orange.svg)
 ![Xcode](https://img.shields.io/badge/Xcode-16.4+-blue.svg)
