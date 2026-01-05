@@ -174,15 +174,12 @@ final class CategoryRepository: CategoryRepositoryProtocol {
     
     // 즐겨찾기 토글
     func toggleLikeStatus(url: String) {
-        let categories = realm.objects(Category.self)
+        // 링크를 한 번만 찾아서 한 번만 토글
+        guard let link = getLinkByURL(url) else { return }
 
         do {
             try realm.write {
-                for category in categories {
-                    if let link = category.category.first(where: { $0.url == url }) {
-                        link.likeStatus.toggle()
-                    }
-                }
+                link.likeStatus.toggle()
             }
         } catch {
             // 즐겨찾기 토글 실패
@@ -191,15 +188,12 @@ final class CategoryRepository: CategoryRepositoryProtocol {
 
     // 열람 상태 토글
     func toggleOpenedStatus(url: String) {
-        let categories = realm.objects(Category.self)
+        // 링크를 한 번만 찾아서 한 번만 토글
+        guard let link = getLinkByURL(url) else { return }
 
         do {
             try realm.write {
-                for category in categories {
-                    if let link = category.category.first(where: { $0.url == url }) {
-                        link.isOpened.toggle()
-                    }
-                }
+                link.isOpened.toggle()
             }
         } catch {
             // 열람 상태 토글 실패
