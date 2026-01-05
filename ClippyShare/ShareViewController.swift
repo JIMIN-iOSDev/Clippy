@@ -213,7 +213,16 @@ final class ShareViewController: UIViewController {
     private func setupNavBar() {
         view.addSubview(navBar)
         let navItem = UINavigationItem(title: "링크 추가")
-        let done = UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(onSave))
+
+        // iOS 26 이상에서는 .plain 스타일, 미만에서는 .done 스타일 사용
+        let doneStyle: UIBarButtonItem.Style
+        if #available(iOS 26.0, *) {
+            doneStyle = .plain
+        } else {
+            doneStyle = .done
+        }
+
+        let done = UIBarButtonItem(title: "완료", style: doneStyle, target: self, action: #selector(onSave))
         done.tintColor = clippyBlue
         let cancel = UIBarButtonItem(title: "취소", style: .plain, target: self, action: #selector(onCancel))
         cancel.tintColor = .systemGray
@@ -224,8 +233,15 @@ final class ShareViewController: UIViewController {
         navBar.shadowImage = UIImage()
         navBar.backgroundColor = .systemBackground
         navBar.barTintColor = .systemBackground
+
+        // iOS 26 이상에서는 10pt 아래로, 미만에서는 원래 위치
         navBar.snp.makeConstraints { make in
-            make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            if #available(iOS 26.0, *) {
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(10)
+            } else {
+                make.top.equalTo(view.safeAreaLayoutGuide)
+            }
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(44)
         }
     }

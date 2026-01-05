@@ -444,8 +444,16 @@ final class EditCategoryViewController: BaseViewController {
     
     /// 모드에 따라 UI 업데이트
     private func updateUIForMode() {
+        // iOS 26 이상에서는 .plain 스타일, 미만에서는 .done 스타일 사용
+        let completeButtonStyle: UIBarButtonItem.Style
+        if #available(iOS 26.0, *) {
+            completeButtonStyle = .plain
+        } else {
+            completeButtonStyle = .done
+        }
+
         // 완료 버튼 추가
-        let completeButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
+        let completeButton = UIBarButtonItem(title: "완료", style: completeButtonStyle, target: nil, action: nil)
         navigationItem.rightBarButtonItem = completeButton
         
         // 완료 버튼 바인딩 (카테고리 만들기/수정하기 버튼과 동일한 로직)
