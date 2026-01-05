@@ -454,6 +454,7 @@ final class EditCategoryViewController: BaseViewController {
 
         // 완료 버튼 추가
         let completeButton = UIBarButtonItem(title: "완료", style: completeButtonStyle, target: nil, action: nil)
+        completeButton.tintColor = .clippyBlue
         navigationItem.rightBarButtonItem = completeButton
         
         // 완료 버튼 바인딩 (카테고리 만들기/수정하기 버튼과 동일한 로직)

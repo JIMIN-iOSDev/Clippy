@@ -339,10 +339,20 @@ final class ShareViewController: UIViewController {
         calendarIconImageView.addGestureRecognizer(tap)
         let doneToolbar = UIToolbar()
         doneToolbar.sizeToFit()
+        let clearBtn = UIBarButtonItem(title: "지우기", style: .plain, target: self, action: #selector(clearDueDate))
         let flex = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneBtn = UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(selectDueDate))
+
+        // iOS 26 버전 분기 처리
+        let doneBtnStyle: UIBarButtonItem.Style
+        if #available(iOS 26.0, *) {
+            doneBtnStyle = .plain
+        } else {
+            doneBtnStyle = .done
+        }
+        let doneBtn = UIBarButtonItem(title: "완료", style: doneBtnStyle, target: self, action: #selector(selectDueDate))
         doneBtn.tintColor = clippyBlue
-        doneToolbar.setItems([flex, doneBtn], animated: false)
+
+        doneToolbar.setItems([clearBtn, flex, doneBtn], animated: false)
         dueDateTextField.inputAccessoryView = doneToolbar
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
 
@@ -430,6 +440,11 @@ final class ShareViewController: UIViewController {
 
     @objc private func openDatePicker() {
         dueDateTextField.becomeFirstResponder()
+    }
+    @objc private func clearDueDate() {
+        selectedDueDate = nil
+        dueDateTextField.text = nil
+        dueDateTextField.resignFirstResponder()
     }
     @objc private func selectDueDate() {
         selectedDueDate = datePicker.date

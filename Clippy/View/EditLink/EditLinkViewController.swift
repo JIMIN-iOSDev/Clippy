@@ -383,7 +383,17 @@ final class EditLinkViewController: BaseViewController {
         toolbar.sizeToFit()
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let clearButton = UIBarButtonItem(title: "지우기", style: .plain, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: "완료", style: .done, target: nil, action: nil)
+
+        // iOS 26 버전 분기 처리
+        let doneButtonStyle: UIBarButtonItem.Style
+        if #available(iOS 26.0, *) {
+            doneButtonStyle = .plain
+        } else {
+            doneButtonStyle = .done
+        }
+        let doneButton = UIBarButtonItem(title: "완료", style: doneButtonStyle, target: nil, action: nil)
+        doneButton.tintColor = .clippyBlue
+
         toolbar.setItems([clearButton, flexSpace, doneButton], animated: true)
         dueDateTextField.inputAccessoryView = toolbar
         
@@ -596,6 +606,7 @@ final class EditLinkViewController: BaseViewController {
 
         // 완료 버튼 추가
         let completeButton = UIBarButtonItem(title: "완료", style: completeButtonStyle, target: nil, action: nil)
+        completeButton.tintColor = .clippyBlue
         navigationItem.rightBarButtonItem = completeButton
         
         // 완료 버튼 바인딩 (수정하기 버튼과 동일한 로직)

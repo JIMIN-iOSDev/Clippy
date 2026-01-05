@@ -2,7 +2,7 @@
 //  ClippyWidget.swift
 //  ClippyWidget
 //
-//  Created by Claude Code
+//  Created by Jimin on 11/03/25.
 //
 
 import WidgetKit
